@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="ProjeHavuzu.Data/ProjeHavuzu.Data.csproj" />
+  <Project Path="ProjeHavuzu.MVCUI/ProjeHavuzu.MVCUI.csproj" />
+</Solution>
