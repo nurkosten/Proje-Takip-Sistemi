@@ -1,14 +1,13 @@
-﻿using ProjeHavuzu.Data.Entites.Common;
-using ProjeHavuzu.Data.Entites.Enums;
-using ProjeHavuzu.Data.Entites.Identity;
+﻿using ProjeHavuzu.Data.Entites.Enums;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ProjeHavuzu.Data.Entites
+namespace ProjeHavuzu.Data.DTOs.ProjectDto
 {
-    public class Project:BaseEntity
+    public class ProjectCreateDto
     {
+
         public string ProjectTitle { get; set; }
         public string Description { get; set; }
         public Guid CategoryId { get; set; }
@@ -16,10 +15,5 @@ namespace ProjeHavuzu.Data.Entites
         public int EndTime { get; set; } // Tamamlanma Süresi (gün olarak)
         public string ProjetLink { get; set; } //
         public Guid? AppUserId { get; set; }
-                
-        // Navigation property
-        public virtual AppUser  AppUser { get; set; }
-
-
     }
 }

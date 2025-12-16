@@ -1,30 +1,16 @@
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using ProjeHavuzu.Data.Context;
-using ProjeHavuzu.Data.Entites.Identity;
-using System;
+﻿using ProjectHavuzu.Business.Services.Abstracts;
+using ProjectHavuzu.Business.Services.Concretes;
+using ProjeHavuzu.Data.DependencyResolvers;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
-builder.Services.AddDbContext<ApplicationContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultServer")));
-builder.Services
-    .AddIdentity<ApplicationUser, IdentityRole>(options =>
-    {
-        options.Password.RequiredLength = 6;
-        options.User.RequireUniqueEmail = true;
-        options.Lockout.MaxFailedAccessAttempts = 5;
-    })
-    .AddEntityFrameworkStores<ApplicationContext>()
-    .AddDefaultTokenProviders();
+builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
+builder.Services.AddApplicationDbContextService(builder.Configuration);
+builder.Services.AddApplicationMappingService();
+builder.Services.AddDataRepositoryServices();
 
-builder.Services.ConfigureApplicationCookie(opt =>
-{
-    opt.LoginPath = "/Account/Login";
-    opt.AccessDeniedPath = "/Account/AccessDenied";
-});
-
+builder.Services.AddScoped<ICategoryManagerService, CategoryManagerService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -35,10 +21,17 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+using (var scope = app.Services.CreateScope())
+{
+    await ApplicationRoleSeedInjection.SeedRolesAsync(scope.ServiceProvider);
+}
+
+
 app.UseHttpsRedirection();
 app.UseRouting();
 
-app.UseAuthorization();
+app.UseAuthentication(); // ❗ MUTLAKA ÖNCE
+app.UseAuthorization();  // ❗ SONRA
 
 app.MapStaticAssets();
 

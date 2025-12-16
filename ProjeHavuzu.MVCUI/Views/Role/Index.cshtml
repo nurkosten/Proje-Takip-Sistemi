@@ -1,0 +1,29 @@
+﻿@using ProjeHavuzu.Data.Entites.Identity
+@model IEnumerable<AppRole>
+
+<h3>Roller</h3>
+
+<a asp-action="Create" class="btn btn-primary mb-2">Yeni Rol</a>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Rol Adı</th>
+            <th>İşlem</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var role in Model)
+        {
+            <tr>
+                <td>@role.Name</td>
+                <td>
+                    <form asp-action="Delete" method="post">
+                        <input type="hidden" name="id" value="@role.Id" />
+                        <button class="btn btn-danger btn-sm">Sil</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

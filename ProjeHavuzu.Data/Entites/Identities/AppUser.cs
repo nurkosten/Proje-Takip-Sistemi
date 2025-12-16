@@ -5,9 +5,9 @@ using System.Text;
 
 namespace ProjeHavuzu.Data.Entites.Identity
 {
-    public class ApplicationRole:IdentityRole<Guid>
+    public class AppUser:IdentityUser<Guid>
     {
-        public string RoleName { get; set; }
-        public string Description { get; set; } 
+        public string FirstName { get; set; }
+        public string LastName { get; set; }    
     }
 }

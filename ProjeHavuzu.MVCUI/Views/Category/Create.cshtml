@@ -1,0 +1,43 @@
+﻿@using ProjeHavuzu.Data.DTOs.CategoryDto
+@model CategoryAddDto
+
+@{
+    ViewData["Title"] = "Kategori Ekle";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Yeni Kategori Ekle</h5>
+                </div>
+
+                <div class="card-body">
+                    <form asp-action="Create" asp-controller="Category" method="post">
+
+                        <div class="mb-3">
+                            <label asp-for="CategoryName" class="form-label"></label>
+                            <input asp-for="CategoryName" class="form-control" placeholder="Kategori adı giriniz" />
+                            <span asp-validation-for="CategoryName" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <a asp-action="Index" class="btn btn-secondary me-2">
+                                İptal
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                Kaydet
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
