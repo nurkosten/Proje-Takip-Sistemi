@@ -22,5 +22,10 @@ namespace ProjeHavuzu.Data.Repository.Abstract
 
         void Update(T entity);
         void Remove(T entity);
+
+        Task<List<T>> GetAllAsync(
+        Expression<Func<T, bool>>? predicate = null,
+        params Expression<Func<T, object>>[] includes
+    );
     }
 }

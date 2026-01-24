@@ -24,14 +24,14 @@ namespace ProjeHavuzu.Data.Repository.Concrete
         public async Task AddAsync(T entity, CancellationToken cancellationToken = default)
         {
             await _dbSet.AddAsync(entity, cancellationToken);
-            SaveAsync();
+            await SaveAsync();
 
         }
 
         public async Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default)
         {
             await _dbSet.AddRangeAsync(entities, cancellationToken);
-            SaveAsync();
+            await SaveAsync();
 
         }
 
@@ -69,8 +69,22 @@ namespace ProjeHavuzu.Data.Repository.Concrete
         async Task SaveAsync()=> await _context.SaveChangesAsync();
         void Save()=> _context.SaveChanges();
 
+        public async Task<List<T>> GetAllAsync(Expression<Func<T, bool>>? predicate = null, params Expression<Func<T, object>>[] includes)
+        {
+            IQueryable<T> query = _dbSet.AsNoTracking();
 
+            if (predicate != null)
+                query = query.Where(predicate);
 
+            if (includes != null && includes.Any())
+            {
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
+            }
 
+            return await query.ToListAsync();
+        }
     }
 }

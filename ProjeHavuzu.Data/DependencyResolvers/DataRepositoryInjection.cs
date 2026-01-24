@@ -11,9 +11,16 @@ namespace ProjeHavuzu.Data.DependencyResolvers
     {
         public static void AddDataRepositoryServices(this IServiceCollection services)
         {
-            
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
+
+
+            // Generic Repository Injection
             services.AddScoped(typeof(IRepository<>), typeof(RepositoryBase<>));
             services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<IProjectRepository, ProjectRepository>();
+            services.AddScoped<IFacultyRepository, FacultyRepository>();
+            services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+            services.AddScoped<IProjectStudentRepository, ProjectStudentRepository>();
         }
     }
 }

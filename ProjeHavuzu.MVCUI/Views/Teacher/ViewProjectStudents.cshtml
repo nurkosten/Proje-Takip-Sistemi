@@ -1,0 +1,75 @@
+@using ProjeHavuzu.Data.DTOs.ProjectStudentDto
+@model List<ProjectStudentAssignDto>
+
+@{
+    ViewData["Title"] = "Atanmış Öğrenciler";
+    var projectTitle = ViewBag.ProjectTitle;
+    var projectId = ViewBag.ProjectId;
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3><i class="bi bi-people-fill"></i> Atanmış Öğrenciler</h3>
+        <div>
+            <a asp-action="AssignStudentsToProject" asp-route-projectId="@projectId" class="btn btn-primary">
+                <i class="bi bi-pencil-fill"></i> Öğrenci Atamalarını Düzenle
+            </a>
+            <a asp-action="AllProjects" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Geri Dön
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i> @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+    }
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <h5 class="card-title">Proje: @projectTitle</h5>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Öğrenci Listesi (@(Model?.Count ?? 0) Öğrenci)</h5>
+        </div>
+        <div class="card-body">
+            @if (Model != null && Model.Any())
+            {
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Öğrenci Adı</th>
+                                    <th>Öğrenci No</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            @for (int i = 0; i < Model.Count; i++)
+                            {
+                                var student = Model[i];
+                                        <tr>
+                                            <td>@(i + 1)</td>
+                                            <td>@student.StudentFullName</td>
+                                            <td>@student.StudentNumber</td>
+                                        </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+            }
+            else
+            {
+                    <div class="alert alert-info" role="alert">
+                        <i class="bi bi-info-circle-fill"></i> Bu projeye henüz öğrenci atanmamıştır.
+                    </div>
+            }
+        </div>
+    </div>
+</div>

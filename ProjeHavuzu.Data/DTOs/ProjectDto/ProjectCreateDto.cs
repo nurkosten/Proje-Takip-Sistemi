@@ -1,4 +1,5 @@
-﻿using ProjeHavuzu.Data.Entites.Enums;
+﻿using ProjeHavuzu.Data.Entites;
+using ProjeHavuzu.Data.Entites.Enums;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -13,7 +14,8 @@ namespace ProjeHavuzu.Data.DTOs.ProjectDto
         public Guid CategoryId { get; set; }
         public DifficultStatus DifficultyLevel { get; set; }
         public int EndTime { get; set; } // Tamamlanma Süresi (gün olarak)
-        public string ProjetLink { get; set; } //
+        public string? ProjectLink { get; set; } //
         public Guid? AppUserId { get; set; }
+        public List<Category> Categories { get; set; }
     }
 }

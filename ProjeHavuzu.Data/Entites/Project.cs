@@ -7,18 +7,21 @@ using System.Text;
 
 namespace ProjeHavuzu.Data.Entites
 {
-    public class Project:BaseEntity
+    public class Project : BaseEntity
     {
+        public bool IsQuickDraft;
+
         public string ProjectTitle { get; set; }
         public string Description { get; set; }
         public Guid CategoryId { get; set; }
         public DifficultStatus DifficultyLevel { get; set; }
         public int EndTime { get; set; } // Tamamlanma Süresi (gün olarak)
-        public string ProjetLink { get; set; } //
+        public string? ProjectLink { get; set; } //
         public Guid? AppUserId { get; set; }
-                
+        public int? Percentile { get; set; }
+
         // Navigation property
-        public virtual AppUser  AppUser { get; set; }
+        public virtual AppUser AppUser { get; set; }
 
 
     }

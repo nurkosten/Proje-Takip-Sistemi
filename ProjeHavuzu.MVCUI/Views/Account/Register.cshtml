@@ -1,6 +1,10 @@
-﻿@using ProjeHavuzu.MVCUI.Models.AccountModels
+﻿@using ProjeHavuzu.Data.Entites.Enums
+@using ProjeHavuzu.Data.Entites.Identity
+@using ProjeHavuzu.MVCUI.Models.AccountModels
 @model RegisterViewModel
-
+@{
+    Layout = "_loginlayout";
+}
 @{
     ViewData["Title"] = "Kayıt Ol";
 }
@@ -36,6 +40,7 @@
                             <input asp-for="Email" class="form-control" />
                             <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
+                     
 
                         <!-- Password -->
                         <div class="mb-3">
@@ -43,7 +48,7 @@
                             <input asp-for="Password" type="password" class="form-control" />
                             <span asp-validation-for="Password" class="text-danger"></span>
                         </div>
-
+                       
                         <!-- Confirm Password -->
                         <div class="mb-3">
                             <label asp-for="ConfirmPassword" class="form-label"></label>

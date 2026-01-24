@@ -1,5 +1,10 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using ProjeHavuzu.Data.Context;
+using ProjeHavuzu.Data.DTOs.ProjectDto;
+using ProjeHavuzu.Data.Entites;
+using ProjeHavuzu.Data.Repository.Abstract;
+using ProjeHavuzu.Data.Repository.Concrete;
 using ProjeHavuzu.MVCUI.Models;
 using System.Diagnostics;
 using System.Security.AccessControl;
@@ -8,30 +13,49 @@ namespace ProjeHavuzu.MVCUI.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ApplicationContext _context;
+        private readonly IProjectRepository _projectRepository;
+        private readonly ICategoryRepository _categoryRepository;
+        private readonly IMapper _mapper;
 
-        public HomeController(ApplicationContext context)
+        public HomeController(IProjectRepository projectRepository, ICategoryRepository categoryRepository = null, IMapper mapper = null)
         {
-            _context = context;
+            _projectRepository = projectRepository;
+            _categoryRepository = categoryRepository;
+            _mapper = mapper;
         }
 
-        public IActionResult Index()
-        {          
 
-                   
 
-            return View();
+
+        public async Task<IActionResult> Index()
+        {  
+            var projects = await _projectRepository.GetAllProjectsByCategoryAsync();
+            var result = _mapper.Map<List<ProjectListDto>>(projects);
+
+            return View("Index",result);
         }
-
-        public IActionResult Privacy()
+        public async Task<IActionResult> Create()
         {
-            return View();
+            ProjectCreateDto projectCreateDto = new ProjectCreateDto();
+            projectCreateDto.Categories = await _categoryRepository.ListAsync();
+            return View("Create", projectCreateDto);
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        [HttpPost]
+        public async Task<IActionResult> Create(ProjectCreateDto projectCreateDto)
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+
+            ProjectCreateDto projectDto = new ProjectCreateDto();
+
+            projectCreateDto.Categories = await _categoryRepository.ListAsync();
+
+            var project = _mapper.Map<Project>(projectCreateDto);
+            await _projectRepository.AddAsync(project);
+
+
+            return View("Index",_mapper.Map<List<ProjectListDto>>(await _projectRepository.GetAllProjectsByCategoryAsync()));
         }
+
+
     }
 }

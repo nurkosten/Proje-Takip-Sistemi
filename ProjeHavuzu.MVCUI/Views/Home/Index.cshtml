@@ -1,5 +1,107 @@
-﻿<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+﻿@using Microsoft.AspNetCore.Identity
+@using ProjeHavuzu.Data.DTOs.ProjectDto
+@using ProjeHavuzu.Data.Entites.Enums
+@using ProjeHavuzu.Data.Entites.Identity
+@model List<ProjectListDto>
+@inject UserManager<AppUser> UserManager
+
+@{
+    ViewData["Title"] = "Ana Sayfa";
+}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="welcome-section">
+            <h2>PROJE HAVUZU SİSTEMİ</h2>
+            <p>Projelerinizi sisteme yükleyebilir, mevcut projeleri inceleyebilir ve durumlarını takip edebilirsiniz.</p>
+        </div>
+    </div>
 </div>
 
+<div class="row mb-5" >
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-icon"><i class="fas fa-plus-circle"></i></div>
+            <a  href="~/Project/Create">
+               
+                <h3>Yeni Proje Ekle</h3>
+            </a>
+            
+            <p>Aklınızdaki proje fikrini sisteme girin ve danışman onayına sunun.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-icon"><i class="fas fa-tasks"></i></div>
+            <h3>Projelerim & Durum</h3>
+            <p>Mevcut projelerinizin onay durumunu ve görevleri takip edin.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-icon"><i class="bi bi-search"></i></div>
+            <h3>Proje Havuzu</h3>
+            <p>Okul genelindeki onaylanmış açık kaynak projeleri inceleyin.</p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white border-0 pt-4">
+                <h3 class="text-primary" style="font-size:1.2rem; font-weight:600;">
+                    <i class="fas fa-list me-2"></i>Mevcut Proje Listesi
+                </h3>
+            </div>
+            <div class="card-body">
+
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Proje</th>
+                                <th>Kategori</th>
+                                <th>Zorluk</th>
+                                <th>Süre</th>
+                                <th>Ekleyen</th>
+                                <th>Durum</th>
+                                <th>İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            @foreach (var projectItem in Model)
+                            {
+
+
+                                <tr>
+                                    <td>@projectItem.ProjectTitle</td>
+                                    <td>@projectItem.CategoryName</td>
+                                    <td><span class="badge bg-info">@projectItem.DifficultyLevel</span></td>
+                                    <td>@projectItem.EndTime</td>
+                                    <td>@projectItem.CreatedByFullName </td>
+                                    <td>
+                                        @if (!projectItem.IsActive)
+                                        {
+                                            <span class="badge bg-success">Aktif</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark">Pasif</span>
+                                        }
+                                    </td>
+
+                                    <td><button class="btn btn-sm btn-primary">Detay</button></td>
+
+
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

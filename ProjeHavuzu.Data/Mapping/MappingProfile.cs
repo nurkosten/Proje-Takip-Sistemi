@@ -1,5 +1,8 @@
 ﻿using AutoMapper;
 using ProjeHavuzu.Data.DTOs.CategoryDto;
+using ProjeHavuzu.Data.DTOs.DepartmentDto;
+using ProjeHavuzu.Data.DTOs.FacultyDto;
+using ProjeHavuzu.Data.DTOs.ProjectDto;
 using ProjeHavuzu.Data.Entites;
 using System;
 using System.Collections.Generic;
@@ -16,11 +19,19 @@ namespace ProjeHavuzu.Data.Mapping
             CreateMap<Category, CategoryAddDto>().ReverseMap();
             CreateMap<Category, CategoryEditDto>().ReverseMap();
             // Project Mappings
-            //CreateMap<Entites.Project, DTOs.ProjectDto.ProjectListDto>().ReverseMap();
-            //CreateMap<Entites.Project, DTOs.ProjectDto.ProjectAddDto>().ReverseMap();
-            //CreateMap<Entites.Project, DTOs.ProjectDto.ProjectEditDto>().ReverseMap();
+            CreateMap<Project, ProjectListDto>().ReverseMap();
+            CreateMap<Project, ProjectCreateDto>().ReverseMap();
+            //faculty mappings
+            CreateMap<Faculty, FacultyCreateDto>().ReverseMap();
+            CreateMap<Faculty, FacultyListDto>().ReverseMap();  
+          
+            //department mappings
+            CreateMap<DepartmentListDto, Department>().ReverseMap();
+
+
+
         }
 
-        
+
     }
 }

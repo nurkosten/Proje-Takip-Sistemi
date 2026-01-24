@@ -1,0 +1,130 @@
+@using ProjeHavuzu.Data.DTOs.ProjectStudentDto
+@model AssignProjectsToStudentDto
+
+@{
+    ViewData["Title"] = "Öğrenciye Proje Ata";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3><i class="bi bi-folder-plus"></i> Öğrenciye Proje Ata</h3>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Geri Dön
+        </a>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i> @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+    }
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <h5 class="card-title">Öğrenci Bilgileri</h5>
+            <p><strong>Ad Soyad:</strong> @Model.StudentFullName</p>
+            <p><strong>Öğrenci No:</strong> @Model.StudentNumber</p>
+        </div>
+    </div>
+
+    <form asp-action="AssignProjectsToStudent" asp-route-studentId="@Model.StudentId" method="post">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Proje Seçimi</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.AvailableProjects != null && Model.AvailableProjects.Any())
+                {
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="selectAll()">
+                                <i class="bi bi-check-all"></i> Tümünü Seç
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="deselectAll()">
+                                <i class="bi bi-x-lg"></i> Tümünü Kaldır
+                            </button>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 50px;">
+                                            <input type="checkbox" id="selectAllCheckbox" onchange="toggleAll(this)" />
+                                        </th>
+                                        <th>Proje Adı</th>
+                                        <th>Açıklama</th>
+                                        <th>Kategori</th>
+                                        <th>Süre (Gün)</th>
+                                        <th>Durum</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                @foreach (var project in Model.AvailableProjects)
+                                {
+                                            <tr class="@(project.IsAssigned ? "table-success" : "")">
+                                                <td>
+                                                    <input type="checkbox" 
+                                                           name="selectedProjectIds" 
+                                                           value="@project.ProjectId" 
+                                                           class="project-checkbox"
+                                            @(project.IsAssigned ? "checked" : "") />
+                                                </td>
+                                                <td>@project.ProjectTitle</td>
+                                                <td>@(project.Description.Length > 50 ? project.Description.Substring(0, 50) + "..." : project.Description)</td>
+                                                <td><span class="badge bg-info">@project.CategoryName</span></td>
+                                                <td>@project.EndTime</td>
+                                                <td>
+                                            @if (project.IsAssigned)
+                                            {
+                                                            <span class="badge bg-success">Atanmış</span>
+                                            }
+                                            else
+                                            {
+                                                            <span class="badge bg-secondary">Atanmamış</span>
+                                            }
+                                                </td>
+                                            </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                }
+                else
+                {
+                        <p class="text-muted text-center">Sistemde proje bulunmamaktadır.</p>
+                }
+            </div>
+            <div class="card-footer">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-save"></i> Kaydet
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> İptal
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+        <script>
+            function toggleAll(source) {
+                const checkboxes = document.querySelectorAll('.project-checkbox');
+                checkboxes.forEach(checkbox => checkbox.checked = source.checked);
+            }
+
+            function selectAll() {
+                const checkboxes = document.querySelectorAll('.project-checkbox');
+                checkboxes.forEach(checkbox => checkbox.checked = true);
+                document.getElementById('selectAllCheckbox').checked = true;
+            }
+
+            function deselectAll() {
+                const checkboxes = document.querySelectorAll('.project-checkbox');
+                checkboxes.forEach(checkbox => checkbox.checked = false);
+                document.getElementById('selectAllCheckbox').checked = false;
+            }
+        </script>
+}

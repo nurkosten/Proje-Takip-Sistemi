@@ -1,0 +1,519 @@
+﻿/* Genel Stiller */
+
+* {
+    font-family: 'Poppins'
+}
+
+/* Accordion başlığı */
+.accordion-toggle {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background: none;
+    border: none;
+    outline: none;
+    padding: 1rem 1.3rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: #BBC8D6; /* Açık silik mavi (senin görseldeki gibi) */
+    letter-spacing: .02em;
+    transition: background 0.13s, color 0.18s;
+    background: #003366;
+}
+
+    .accordion-toggle:hover,
+    .accordion-toggle.active {
+        background: #224777; /* Açık mavi/daha koyu arka plan efekti */
+        color: #fff !important;
+    }
+
+
+.accordion-menu {
+    background: #184176; /* Sidebar’dan bir tık daha açık, koyu mavi */
+    padding: 0.7rem 0 0.7rem 1.9rem;
+    border-left: 3px solid #43659a;
+    border-radius: 0 8px 8px 0;
+}
+
+    .accordion-menu li {
+        margin: 0.2rem 0;
+    }
+
+    .accordion-menu .nav-link {
+        color: #f3f7fa !important; /* Çok açık gri-beyaz yazı */
+        font-weight: 500;
+        font-size: 1.03rem;
+        padding: 0.32rem 0;
+        border-radius: 3px;
+        display: flex;
+        align-items: center;
+        transition: background .14s, color .16s;
+    }
+
+        .accordion-menu .nav-link:hover,
+        .accordion-menu .nav-item.active .nav-link {
+            background: #2b5fa3; /* Daha açık koyu mavi (hover) */
+            color: #fff !important;
+        }
+
+    .accordion-menu .bi {
+        margin-right: .6rem;
+        font-size: 1.15rem;
+        opacity: 0.7;
+    }
+
+/* Chevron döndürme */
+.rotate-chevron {
+    transform: rotate(180deg);
+    transition: transform 0.2s;
+}
+
+/* Accordion başlık arası mesafe */
+.accordion-item + .accordion-item {
+    margin-top: .2rem;
+}
+
+li.accordion-item {
+    background: #003366 !important; /* veya sidebar ana renginle aynı tonda, ör: #003366 */
+    color: #fff !important;
+    border: none !important;
+}
+
+
+:root {
+    --primary-color: #003366; /* Ana renk - Koyu mavi */
+    --primary-light: #336699; /* Açık ton */
+    --secondary-color: #f8f9fc; /* Arkaplan */
+    --accent-color: #e6f2ff; /* Vurgu rengi */
+    --text-color: #333; /* Ana metin */
+    --light-text: #555; /* Açık metin */
+    --white: #fff; /* Beyaz */
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --border-radius: 8px;
+    --sidebar-width: 250px;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.app-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar Stilleri - Koyu Mavi Tema */
+.sidebar, #sidebar {
+    width: var(--sidebar-width);
+    background: var(--primary-color);
+    color: var(--white);
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+    #sidebar.collapsed {
+        width: 0;
+        overflow: hidden;
+    }
+
+.sidebar-header {
+    padding: 1.5rem !important;
+    text-align: center !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    background-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+.sidebar-logo {
+    max-width: 100px !important;
+    margin-bottom: 1rem !important;
+    /*filter: brightness(0) invert(1);*/
+}
+
+.sidebar-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-nav li {
+    margin: 0;
+}
+
+.sidebar-nav a {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    transition: all 0.3s;
+    border-left: 4px solid transparent;
+}
+
+    .sidebar-nav a:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: var(--white);
+        border-left-color: var(--accent-color);
+    }
+
+    .sidebar-nav a i {
+        margin-right: 0.75rem;
+        width: 20px;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+.sidebar-nav .active a {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: var(--white);
+    border-left-color: var(--white);
+    font-weight: 500;
+}
+
+    .sidebar-nav .active a i {
+        color: var(--white);
+    }
+
+.sidebar-footer {
+    margin-top: auto;
+    padding: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 4px;
+    color: var(--white);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+    .logout-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .logout-btn i {
+        margin-right: 0.5rem;
+    }
+
+/* Main Content Stilleri */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--white);
+}
+
+.main-header {
+    display: flex;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: var(--white);
+    box-shadow: var(--shadow);
+    z-index: 10;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.sidebar-toggle {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    margin-right: 1rem;
+    cursor: pointer;
+    color: var(--primary-color);
+}
+
+.header-title h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.header-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.notification-bell {
+    position: relative;
+    font-size: 1.25rem;
+    cursor: pointer;
+    color: var(--primary-color);
+}
+
+.notification-count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #e74a3b;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+/* Page Content Stilleri */
+.page-content {
+    flex: 1;
+    padding: 2rem;
+    background-color: var(--white);
+}
+
+/* Ana Sayfa Özel Stiller */
+.welcome-section {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+    color: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+}
+
+    .welcome-section h2 {
+        margin-top: 0;
+        font-size: 2rem;
+        font-weight: 600;
+    }
+
+.welcome-text {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.9);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.info-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.card {
+    background: var(--white);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+    border-top: 4px solid var(--primary-color);
+}
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+.card-icon {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.card h3 {
+    margin-top: 0;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.card p {
+    color: var(--light-text);
+    margin-bottom: 0;
+}
+
+.inline-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    border-bottom: 1px dashed var(--primary-color);
+    transition: all 0.2s;
+}
+
+    .inline-link:hover {
+        color: var(--primary-light);
+        border-bottom-color: var(--primary-light);
+    }
+
+.quick-actions {
+    margin: 3rem 0;
+}
+
+    .quick-actions h3 {
+        color: var(--primary-color);
+        margin-bottom: 1.5rem;
+        font-weight: 600;
+        text-align: center;
+    }
+
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.action-btn {
+    flex: 1 1 220px;
+    max-width: 280px;
+    background: var(--primary-color);
+    color: var(--white);
+    padding: 1.25rem 1rem;
+    border-radius: var(--border-radius);
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow);
+}
+
+    .action-btn:hover {
+        background: var(--primary-light);
+        transform: translateY(-3px);
+    }
+
+    .action-btn i {
+        font-size: 1.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .action-btn span {
+        font-weight: 500;
+    }
+
+.benefits-section {
+    background: var(--accent-color);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    margin-top: 3rem;
+    border-left: 4px solid var(--primary-color);
+}
+
+    .benefits-section h3 {
+        color: var(--primary-color);
+        margin-top: 0;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+.benefits-list {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0 0;
+}
+
+    .benefits-list li {
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: flex-start;
+        color: var(--text-color);
+    }
+
+    .benefits-list i {
+        color: var(--primary-color);
+        margin-right: 0.75rem;
+        margin-top: 0.2rem;
+    }
+
+/* Responsive Tasarım */
+@media (max-width: 992px) {
+    .sidebar {
+        position: fixed;
+        left: calc(-1 * var(--sidebar-width));
+        height: 100%;
+        z-index: 1000;
+    }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+    .main-content {
+        margin-left: 0;
+        transition: margin-left 0.3s;
+    }
+
+    .sidebar.active + .main-content {
+        margin-left: var(--sidebar-width);
+    }
+}
+
+@media (max-width: 768px) {
+    .info-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .action-btn {
+        max-width: 100%;
+    }
+
+    .page-content {
+        padding: 1.5rem;
+    }
+}
+
+/* Animasyonlar */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card, .action-btn, .benefits-section {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+    .card:nth-child(2) {
+        animation-delay: 0.1s;
+    }
+
+    .card:nth-child(3) {
+        animation-delay: 0.2s;
+    }
+
+    .card:nth-child(4) {
+        animation-delay: 0.3s;
+    }
+
+    .action-btn:nth-child(2) {
+        animation-delay: 0.1s;
+    }
+
+    .action-btn:nth-child(3) {
+        animation-delay: 0.2s;
+    }

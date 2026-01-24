@@ -1,0 +1,76 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using ProjeHavuzu.Data.Entites.Identity
+@model AppUser
+
+@{
+    ViewData["Title"] = "Kullanıcı Profili";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="bi bi-person-circle"></i> Kullanıcı Profili</h4>
+                </div>
+                <div class="card-body">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["SuccessMessage"]
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                    }
+
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["ErrorMessage"]
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                    }
+
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Ad Soyad:</div>
+                        <div class="col-md-8">@Model.FullName</div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Email:</div>
+                        <div class="col-md-8">@Model.Email</div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Öğrenci Numarası:</div>
+                        <div class="col-md-8">@(Model.StudentNumber ?? "-")</div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Fakülte:</div>
+                        <div class="col-md-8">@(Model.Faculty?.FacultyName ?? "-")</div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Bölüm:</div>
+                        <div class="col-md-8">@(Model.Department?.DepartmentName ?? "-")</div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Telefon:</div>
+                        <div class="col-md-8">@(Model.PhoneNumber ?? "-")</div>
+                    </div>
+                </div>
+
+                <div class="card-footer text-end">
+                    <a asp-action="Index" asp-controller="Home" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Ana Sayfa
+                    </a>
+                    <a asp-action="EditProfile" class="btn btn-primary">
+                        <i class="bi bi-pencil"></i> Düzenle
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

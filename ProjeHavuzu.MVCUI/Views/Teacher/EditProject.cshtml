@@ -1,0 +1,83 @@
+@using ProjeHavuzu.Data.DTOs.ProjectDto
+@using ProjeHavuzu.Data.Entites.Enums
+@model ProjectCreateDto
+
+@{
+    ViewData["Title"] = "Proje Düzenle";
+    var projectId = ViewBag.ProjectId;
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3><i class="bi bi-pencil-fill"></i> Proje Düzenle</h3>
+        <a asp-action="AllProjects" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Geri Dön
+        </a>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <form asp-action="EditProject" asp-route-id="@projectId" method="post" class="card p-4 shadow-sm">
+        <div class="mb-3">
+            <label asp-for="ProjectTitle" class="form-label">Proje Adı</label>
+            <input asp-for="ProjectTitle" class="form-control" />
+            <span asp-validation-for="ProjectTitle" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label">Açıklama</label>
+            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="CategoryId" class="form-label">Proje Kategorisi</label>
+            <select asp-for="CategoryId" class="form-select">
+                <option value="">Kategori Seçiniz</option>
+                @foreach (var category in Model.Categories)
+                {
+                    <option value="@category.Id">@category.CategoryName</option>
+                }
+            </select>
+            <span asp-validation-for="CategoryId" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="DifficultyLevel" class="form-label">Zorluk Derecesi</label>
+            <select asp-for="DifficultyLevel" asp-items="Html.GetEnumSelectList<DifficultStatus>()" class="form-select">
+            </select>
+            <span asp-validation-for="DifficultyLevel" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="EndTime" class="form-label">Bitiş Süresi (Gün)</label>
+            <input asp-for="EndTime" type="number" class="form-control" min="1" />
+            <span asp-validation-for="EndTime" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="ProjectLink" class="form-label">Proje Linki</label>
+            <input asp-for="ProjectLink" class="form-control" placeholder="https://..." />
+            <span asp-validation-for="ProjectLink" class="text-danger"></span>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> Kaydet
+            </button>
+            <a asp-action="AllProjects" class="btn btn-secondary">
+                <i class="bi bi-x-circle"></i> İptal
+            </a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

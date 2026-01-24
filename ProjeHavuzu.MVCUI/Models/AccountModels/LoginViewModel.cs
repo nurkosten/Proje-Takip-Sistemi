@@ -11,4 +11,11 @@ namespace ProjeHavuzu.MVCUI.Models.LoginModels
         public bool RememberMe { get; set; }
 
     }
+    public class ForgotPasswordViewModel
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; }
+    }
+
 }

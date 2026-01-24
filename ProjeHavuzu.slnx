@@ -1,5 +1,4 @@
 <Solution>
-  <Project Path="ProjectHavuzu.Business/ProjectHavuzu.Business.csproj" Id="0c8bd639-9f78-45bc-aff0-ea222bf33691" />
   <Project Path="ProjeHavuzu.Data/ProjeHavuzu.Data.csproj" />
   <Project Path="ProjeHavuzu.MVCUI/ProjeHavuzu.MVCUI.csproj" />
 </Solution>

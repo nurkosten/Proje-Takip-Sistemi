@@ -1,10 +1,16 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using ProjeHavuzu.Business.Services.Abstract;
+using ProjeHavuzu.Data.Context;
 using ProjeHavuzu.Data.Entites.Identity;
 using ProjeHavuzu.MVCUI.Models.AccountModels;
 using ProjeHavuzu.MVCUI.Models.LoginModels;
 using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
+using ForgotPasswordViewModel = ProjeHavuzu.MVCUI.Models.AccountModels.ForgotPasswordViewModel;
+
 
 namespace ProjeHavuzu.MVCUI.Controllers
 {
@@ -12,14 +18,102 @@ namespace ProjeHavuzu.MVCUI.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
+        private readonly RoleManager<AppRole> _roleManager;
+        private readonly IEmailSender _emailSender;
+        private readonly IFacultyService _facultyService;
+        private readonly IDepartmentService _departmentService;
+        private readonly ApplicationContext _context;
 
         public AccountController(
             UserManager<AppUser> userManager,
-            SignInManager<AppUser> signInManager)
+            SignInManager<AppUser> signInManager = null,
+            RoleManager<AppRole> roleManager = null,
+            ApplicationContext context = null,
+            IFacultyService facultyService = null,
+            IDepartmentService departmentService = null)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _roleManager = roleManager;
+            _context = context;
+            _facultyService = facultyService;
+            _departmentService = departmentService;
         }
+
+        [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                // Güvenlik için kullanıcı yoksa bile aynı mesaj
+                return RedirectToAction("ForgotPasswordConfirmation");
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            var resetLink = Url.Action(
+                "ResetPassword",
+                "Account",
+                new { token = token, email = model.Email },
+                Request.Scheme);
+
+            await _emailSender.SendEmailAsync(
+                model.Email,
+                "Şifre Sıfırlama",
+                $"Şifrenizi sıfırlamak için <a href='{resetLink}'>tıklayın</a>");
+
+            return RedirectToAction("ForgotPasswordConfirmation");
+
+
+        }
+        [HttpGet]
+        public IActionResult ResetPassword(string token, string email)
+        {
+            return View(new ResetPasswordViewModel
+            {
+                Token = token,
+                Email = email
+            });
+        }
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(
+    ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            if (user == null)
+                return RedirectToAction("ResetPasswordConfirmation");
+
+            var result = await _userManager.ResetPasswordAsync(
+                user,
+                model.Token,
+                model.Password);
+
+            if (result.Succeeded)
+                return RedirectToAction("ResetPasswordConfirmation");
+
+            foreach (var error in result.Errors)
+                ModelState.AddModelError("", error.Description);
+
+            return View(model);
+        }
+
+
+
+
         public async Task<IActionResult> Register()
         {
             return View("Register");
@@ -32,6 +126,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
 
             var user = new AppUser
             {
+                Id = Guid.NewGuid(),
                 UserName = model.Email,
                 Email = model.Email,
                 FirstName = model.FirstName,
@@ -41,14 +136,17 @@ namespace ProjeHavuzu.MVCUI.Controllers
 
             var result = await _userManager.CreateAsync(user, model.Password);
 
+
             if (result.Succeeded)
             {
-                await _signInManager.SignInAsync(user, false);
-                return RedirectToAction("Index", "Home");
+
+                return RedirectToAction("Login", "Account");
             }
 
             foreach (var error in result.Errors)
                 ModelState.AddModelError("", error.Description);
+
+
 
             return View(model);
         }
@@ -62,39 +160,189 @@ namespace ProjeHavuzu.MVCUI.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            var result = await _signInManager.PasswordSignInAsync(
-                model.Email,
-                model.Password,
-                model.RememberMe,
-                false);
+            // Önce email ile kullanıcıyı bul
             var user = await _userManager.FindByEmailAsync(model.Email);
 
+            if (user == null)
+            {
+                ModelState.AddModelError("", "Email veya şifre hatalı");
+                return View(model);
+            }
+
+            // UserName ile giriş yap (Identity UserName ile çalışır)
+            var result = await _signInManager.PasswordSignInAsync(
+                user.UserName,
+                model.Password,
+                model.RememberMe,
+                lockoutOnFailure: false);
 
             if (result.Succeeded)
             {
+                // Claims ekle
                 var claims = new List<Claim>
-                        {
-                          new Claim("FullName", $"{user.FirstName} {user.LastName}")
-                        };
+                {
+                    new Claim("FullName", $"{user.FirstName} {user.LastName}")
+                };
 
+                // Mevcut sign-in'i iptal et ve claims ile yeniden sign in yap
+                await _signInManager.SignOutAsync();
                 await _signInManager.SignInWithClaimsAsync(
                     user,
                     model.RememberMe,
-                    claims
-                );
+                    claims);
 
                 return RedirectToAction("Index", "Home");
+            }
+
+            if (result.IsLockedOut)
+            {
+                ModelState.AddModelError("", "Hesabınız kilitlenmiştir. Lütfen daha sonra tekrar deneyin.");
+                return View(model);
             }
 
             ModelState.AddModelError("", "Email veya şifre hatalı");
             return View(model);
         }
 
-        [HttpPost]
+        [HttpGet]
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
             return RedirectToAction("Login", "Account");
         }
+
+
+        public async Task<IActionResult> AccountProfile()
+        {
+            var user = await _userManager.Users
+                .Include(u => u.Faculty)
+                .Include(u => u.Department)
+                .FirstOrDefaultAsync(u => u.Id == Guid.Parse(_userManager.GetUserId(User)));
+            return View("AccountProfile", user);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditProfile()
+        {
+            var user = await _userManager.Users
+                .Include(u => u.Faculty)
+                .Include(u => u.Department)
+                .FirstOrDefaultAsync(u => u.Id == Guid.Parse(_userManager.GetUserId(User)));
+
+            if (user == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var faculties = await _facultyService.GetAllFacultiesAsync();
+            var departments = user.FacultyId.HasValue
+                ? await _departmentService.GetAllDepartmentsAsync()
+                : new List<Data.DTOs.DepartmentDto.DepartmentListDto>();
+
+            // Fakülteye göre bölümleri filtrele
+            if (user.FacultyId.HasValue)
+            {
+                var faculty = faculties.FirstOrDefault(f => f.Id == user.FacultyId);
+                if (faculty != null)
+                {
+                    departments = departments.Where(d => d.FacultyName == faculty.FacultyName).ToList();
+                }
+            }
+
+            var model = new UserProfileEditViewModel
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                StudentNumber = user.StudentNumber,
+                PhoneNumber = user.PhoneNumber,
+                FacultyId = user.FacultyId,
+                DepartmentId = user.DepartmentId,
+                Faculties = faculties,
+                Departments = departments
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditProfile(UserProfileEditViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                model.Faculties = await _facultyService.GetAllFacultiesAsync();
+                model.Departments = model.FacultyId.HasValue
+                    ? (await _departmentService.GetAllDepartmentsAsync())
+                        .Where(d =>
+                        {
+                            var faculty = model.Faculties.FirstOrDefault(f => f.Id == model.FacultyId);
+                            return faculty != null && d.FacultyName == faculty.FacultyName;
+                        }).ToList()
+                    : new List<Data.DTOs.DepartmentDto.DepartmentListDto>();
+                return View(model);
+            }
+
+            var user = await _userManager.FindByIdAsync(model.Id.ToString());
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "Kullanıcı bulunamadı.";
+                return RedirectToAction("AccountProfile");
+            }
+
+            try
+            {
+                user.FirstName = model.FirstName;
+                user.LastName = model.LastName;
+                user.Email = model.Email;
+                user.UserName = model.Email;
+                user.StudentNumber = model.StudentNumber;
+                user.PhoneNumber = model.PhoneNumber;
+                user.FacultyId = model.FacultyId;
+                user.DepartmentId = model.DepartmentId;
+
+                var result = await _userManager.UpdateAsync(user);
+
+                if (result.Succeeded)
+                {
+                    TempData["SuccessMessage"] = "Profil başarıyla güncellendi.";
+                    return RedirectToAction("AccountProfile");
+                }
+
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+            }
+
+            model.Faculties = await _facultyService.GetAllFacultiesAsync();
+            model.Departments = new List<Data.DTOs.DepartmentDto.DepartmentListDto>();
+            return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetDepartmentsByFaculty(Guid facultyId)
+        {
+            var faculties = await _facultyService.GetAllFacultiesAsync();
+            var faculty = faculties.FirstOrDefault(f => f.Id == facultyId);
+
+            if (faculty == null)
+            {
+                return Json(new List<object>());
+            }
+
+            var allDepartments = await _departmentService.GetAllDepartmentsAsync();
+            var departments = allDepartments
+                .Where(d => d.FacultyName == faculty.FacultyName)
+                .Select(d => new { id = d.Id, name = d.DepartmentName })
+                .ToList();
+
+            return Json(departments);
+        }
     }
 }
+

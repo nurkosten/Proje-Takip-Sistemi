@@ -1,0 +1,128 @@
+@using ProjeHavuzu.MVCUI.Models.AccountModels
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model UserProfileEditViewModel
+
+@{
+    ViewData["Title"] = "Profil Düzenle";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="bi bi-person-gear"></i> Profil Düzenle</h4>
+                </div>
+                <div class="card-body">
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                            <div class="alert alert-danger">
+                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                        <div>@error.ErrorMessage</div>
+                            }
+                            </div>
+                    }
+
+                    <form asp-action="EditProfile" asp-controller="Account" method="post">
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="FirstName" class="form-label"></label>
+                                <input asp-for="FirstName" class="form-control" />
+                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="LastName" class="form-label"></label>
+                                <input asp-for="LastName" class="form-control" />
+                                <span asp-validation-for="LastName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Email" class="form-label"></label>
+                                <input asp-for="Email" class="form-control" type="email" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="PhoneNumber" class="form-label"></label>
+                                <input asp-for="PhoneNumber" class="form-control" type="tel" />
+                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="StudentNumber" class="form-label"></label>
+                            <input asp-for="StudentNumber" class="form-control" />
+                            <span asp-validation-for="StudentNumber" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="FacultyId" class="form-label"></label>
+                                <select asp-for="FacultyId" class="form-select" id="facultyDropdown" 
+                                        asp-items="@(new SelectList(Model.Faculties, "Id", "FacultyName"))">
+                                    <option value="">-- Fakülte Seçin --</option>
+                                </select>
+                                <span asp-validation-for="FacultyId" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="DepartmentId" class="form-label"></label>
+                                <select asp-for="DepartmentId" class="form-select" id="departmentDropdown"
+                                        asp-items="@(new SelectList(Model.Departments, "Id", "DepartmentName"))">
+                                    <option value="">-- Bölüm Seçin --</option>
+                                </select>
+                                <span asp-validation-for="DepartmentId" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Güncelle
+                            </button>
+                            <a asp-action="AccountProfile" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> İptal
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+        <script>
+            $(document).ready(function () {
+                $('#facultyDropdown').change(function () {
+                    var facultyId = $(this).val();
+                    var departmentDropdown = $('#departmentDropdown');
+
+                    // Bölüm dropdown'ını temizle
+                    departmentDropdown.empty();
+                    departmentDropdown.append('<option value="">-- Bölüm Seçin --</option>');
+
+                    if (facultyId) {
+                        $.ajax({
+                            url: '@Url.Action("GetDepartmentsByFaculty", "Account")',
+                            type: 'GET',
+                            data: { facultyId: facultyId },
+                            success: function (data) {
+                                $.each(data, function (index, item) {
+                                    departmentDropdown.append(
+                                        $('<option></option>').val(item.id).text(item.name)
+                                    );
+                                });
+                            },
+                            error: function () {
+                                console.log('Bölümler yüklenirken hata oluştu.');
+                            }
+                        });
+                    }
+                });
+            });
+        </script>
+}

@@ -1,0 +1,45 @@
+@using ProjeHavuzu.Data.DTOs.DepartmentDto
+@model DepartmentListDto
+
+@{
+    ViewData["Title"] = "Bölüm Sil";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">Bölüm Sil</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Uyarı!</strong> Bu bölümü silmek istediğinizden emin misiniz?
+                    </div>
+
+                    <dl class="row">
+                        <dt class="col-sm-4">Fakülte:</dt>
+                        <dd class="col-sm-8">@Model.FacultyName</dd>
+
+                        <dt class="col-sm-4">Bölüm Adı:</dt>
+                        <dd class="col-sm-8">@Model.DepartmentName</dd>
+                    </dl>
+
+                    <form asp-action="Delete" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Evet, Sil
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> İptal
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

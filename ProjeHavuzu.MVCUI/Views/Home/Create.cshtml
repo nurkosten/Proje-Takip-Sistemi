@@ -1,0 +1,57 @@
+﻿@using ProjeHavuzu.Data.DTOs.ProjectDto
+@using ProjeHavuzu.Data.Entites.Enums
+@model ProjectCreateDto
+
+<form asp-action="Create" asp-controller="Project" method="post" class="card p-4 shadow-sm">
+
+    <div class="mb-3">
+        <label asp-for="ProjectTitle" class="form-label"></label>
+        <input asp-for="ProjectTitle" class="form-control" />
+        <span asp-validation-for="ProjectTitle" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label"></label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="CategoryId" class="form-label"></label>
+        <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-select">
+            <option value="">Kategori Seçiniz</option>
+            @foreach (var category in Model.Categories)
+            {
+                    <option value="@category.Id">@category.CategoryName</option>
+            }
+        </select>
+        <span asp-validation-for="CategoryId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="DifficultyLevel" class="form-label"></label>
+        <select asp-for="DifficultyLevel"
+                asp-items="Html.GetEnumSelectList<DifficultStatus>()"
+                class="form-select">
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="EndTime" class="form-label"></label>
+        <input asp-for="EndTime" type="number" class="form-control" />
+        <span asp-validation-for="EndTime" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ProjectLink" class="form-label"></label>
+        <input asp-for="ProjectLink" class="form-control" />
+        <span asp-validation-for="ProjectLink" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+
+</form>
+
+@section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+}

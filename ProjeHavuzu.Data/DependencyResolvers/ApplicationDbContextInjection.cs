@@ -12,14 +12,14 @@ public static class ApplicationDbContextInjection
         services.AddDbContext<ApplicationContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultServer")));
 
-        services.
-            AddIdentity<AppUser, AppRole>(options =>
+        services.AddIdentity<AppUser, AppRole>(options =>
         {
             options.Password.RequiredLength = 6;
             options.User.RequireUniqueEmail = true;
         })
         .AddEntityFrameworkStores<ApplicationContext>()
         .AddDefaultTokenProviders();
+
         services.AddScoped<RoleManager<AppRole>>();
 
 

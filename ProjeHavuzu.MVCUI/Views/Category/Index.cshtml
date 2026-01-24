@@ -1,5 +1,10 @@
-﻿@using ProjeHavuzu.Data.DTOs.CategoryDto
+﻿@using Microsoft.AspNetCore.Identity
+@using ProjeHavuzu.Data.DTOs.CategoryDto
+@using ProjeHavuzu.Data.Entites.Identity
 @model List<CategoryListDto>
+@inject SignInManager<AppUser> SignInManager
+@inject UserManager<AppUser> UserManager
+
 
 @{
     ViewData["Title"] = "Kategori Listesi";
@@ -21,6 +26,7 @@
                         <th>#</th>
                         <th>Kategori Adı</th>
                         <th>Oluşturulma Tarihi</th>
+                        <th>Oluşturan</th>
                         <th class="text-end">İşlemler</th>
                     </tr>
                 </thead>
@@ -34,6 +40,31 @@
                                 <td>@index</td>
                                 <td>@item.CategoryName</td>
                                 <td>@item.CreatedDate.ToString("dd.MM.yyyy")</td>
+                                <td>@{
+                                    
+                                if (!string.IsNullOrEmpty(item.CreatedBy.ToString()))
+                                    {
+                                        var user = await UserManager.FindByIdAsync(item.CreatedBy.ToString());
+                                        if (user != null)
+                                        {
+                                                @user.FirstName @user.LastName
+                                        }
+                                        else
+                                        {
+                                            @:Bilinmiyor
+                                        }
+                                    }
+                                    else
+                                    {
+                                        @:Bilinmiyor
+                                    }       
+                                
+                                
+                                
+                                } </td>
+
+
+
                                 <td class="text-end">
                                     <a asp-action="Edit"
                                        asp-route-id="@item.Id"

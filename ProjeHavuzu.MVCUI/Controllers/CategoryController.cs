@@ -25,27 +25,25 @@ namespace ProjeHavuzu.MVCUI.Controllers
             var categories = await _categoryRepository.ListAsync();
             var result = _mapper.Map<List<CategoryListDto>>(categories);
 
-            return View("Index",result);
+            return View("Index", result);
         }
 
 
-        public async Task<IActionResult> Create()=>View("Create");
+        public async Task<IActionResult> Create() => View("Create");
 
         [HttpPost]
-        public async Task<IActionResult> Create(CategoryAddDto categoryAddDto, CancellationToken cancellationToken)
+        public async Task<IActionResult> Create(
+    CategoryAddDto categoryAddDto,
+    CancellationToken cancellationToken)
         {
-
             var category = _mapper.Map<Category>(categoryAddDto);
+
             await _categoryRepository.AddAsync(category);
-
-            var categories = await _categoryRepository.ListAsync();
-            var result = _mapper.Map<List<CategoryListDto>>(categories);
-
-            return View("Index",result);
+            return RedirectToAction(nameof(Index));
         }
 
 
-       
+
 
 
 

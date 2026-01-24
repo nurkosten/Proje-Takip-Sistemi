@@ -1,3 +1,7 @@
 ﻿@{
-    Layout = "_Layout";
+    var role = User.IsInRole("Admin") ? "_LayoutAdmin" :
+    User.IsInRole("Teacher") ? "_LayoutTeacher" :
+    User.IsInRole("Student") ? "_LayoutStudent" :
+    "_Layout";
+    Layout = role;
 }

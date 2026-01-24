@@ -9,5 +9,14 @@ namespace ProjeHavuzu.Data.Entites.Identity
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }    
+        public string FullName => $"{FirstName} {LastName}";
+        public Guid? FacultyId { get; set; } 
+        public Guid? DepartmentId { get; set; }
+        public string? StudentNumber { get; set; }
+
+        //relations property
+        public Faculty Faculty { get; set; }
+        public Department Department { get; set; }
+        
     }
 }

@@ -1,6 +1,10 @@
-﻿using ProjectHavuzu.Business.Services.Abstracts;
-using ProjectHavuzu.Business.Services.Concretes;
+using Microsoft.AspNetCore.Identity;
+using ProjeHavuzu.Business.DependencyResolvers;
 using ProjeHavuzu.Data.DependencyResolvers;
+using ProjeHavuzu.Data.Entites.Identity;
+using ProjeHavuzu.Data.Helpers;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,8 +13,10 @@ builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
 builder.Services.AddApplicationDbContextService(builder.Configuration);
 builder.Services.AddApplicationMappingService();
 builder.Services.AddDataRepositoryServices();
+builder.Services.AddBusinessServices();
+builder.Services.AddMailService(builder.Configuration);
 
-builder.Services.AddScoped<ICategoryManagerService, CategoryManagerService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -20,6 +26,17 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var userManager = services.GetRequiredService<UserManager<AppUser>>();
+    var roleManager = services.GetRequiredService<RoleManager<AppRole>>();
+
+    await IdentitySeed.SeedAsync(userManager, roleManager);
+}
+
 
 using (var scope = app.Services.CreateScope())
 {
@@ -37,8 +54,8 @@ app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
+    pattern: "{controller=Account}/{action=Login}/{id?}")
     .WithStaticAssets();
 
 
-app.Run();
+app.Run(); 

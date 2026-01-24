@@ -164,6 +164,89 @@ namespace ProjeHavuzu.Data.Migrations
                     b.ToTable("Categories");
                 });
 
+            modelBuilder.Entity("ProjeHavuzu.Data.Entites.Department", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DepartmentName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Descripiton")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("FacultyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FacultyId");
+
+                    b.ToTable("Departments");
+                });
+
+            modelBuilder.Entity("ProjeHavuzu.Data.Entites.Faculty", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Descripiton")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FacultyName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Faculties");
+                });
+
             modelBuilder.Entity("ProjeHavuzu.Data.Entites.Identity.AppRole", b =>
                 {
                     b.Property<Guid>("Id")
@@ -205,12 +288,18 @@ namespace ProjeHavuzu.Data.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("DepartmentId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<Guid?>("FacultyId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -243,7 +332,13 @@ namespace ProjeHavuzu.Data.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<Guid?>("ProjectStudentId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StudentNumber")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("TwoFactorEnabled")
@@ -255,6 +350,10 @@ namespace ProjeHavuzu.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DepartmentId");
+
+                    b.HasIndex("FacultyId");
+
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -262,6 +361,8 @@ namespace ProjeHavuzu.Data.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.HasIndex("ProjectStudentId");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -303,11 +404,16 @@ namespace ProjeHavuzu.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<string>("ProjectTitle")
-                        .IsRequired()
+                    b.Property<int?>("Percentile")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ProjectLink")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ProjetLink")
+                    b.Property<Guid?>("ProjectStudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ProjectTitle")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -324,7 +430,50 @@ namespace ProjeHavuzu.Data.Migrations
 
                     b.HasIndex("AppUserId");
 
+                    b.HasIndex("ProjectStudentId");
+
                     b.ToTable("Projects");
+                });
+
+            modelBuilder.Entity("ProjeHavuzu.Data.Entites.ProjectStudent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Descripiton")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProjectStudents");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -378,13 +527,67 @@ namespace ProjeHavuzu.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ProjeHavuzu.Data.Entites.Department", b =>
+                {
+                    b.HasOne("ProjeHavuzu.Data.Entites.Faculty", "Faculty")
+                        .WithMany("Departments")
+                        .HasForeignKey("FacultyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Faculty");
+                });
+
+            modelBuilder.Entity("ProjeHavuzu.Data.Entites.Identity.AppUser", b =>
+                {
+                    b.HasOne("ProjeHavuzu.Data.Entites.Department", "Department")
+                        .WithMany("AppUsers")
+                        .HasForeignKey("DepartmentId");
+
+                    b.HasOne("ProjeHavuzu.Data.Entites.Faculty", "Faculty")
+                        .WithMany("AppUsers")
+                        .HasForeignKey("FacultyId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ProjeHavuzu.Data.Entites.ProjectStudent", null)
+                        .WithMany("AspNetUsers")
+                        .HasForeignKey("ProjectStudentId");
+
+                    b.Navigation("Department");
+
+                    b.Navigation("Faculty");
+                });
+
             modelBuilder.Entity("ProjeHavuzu.Data.Entites.Project", b =>
                 {
                     b.HasOne("ProjeHavuzu.Data.Entites.Identity.AppUser", "AppUser")
                         .WithMany()
                         .HasForeignKey("AppUserId");
 
+                    b.HasOne("ProjeHavuzu.Data.Entites.ProjectStudent", null)
+                        .WithMany("Projects")
+                        .HasForeignKey("ProjectStudentId");
+
                     b.Navigation("AppUser");
+                });
+
+            modelBuilder.Entity("ProjeHavuzu.Data.Entites.Department", b =>
+                {
+                    b.Navigation("AppUsers");
+                });
+
+            modelBuilder.Entity("ProjeHavuzu.Data.Entites.Faculty", b =>
+                {
+                    b.Navigation("AppUsers");
+
+                    b.Navigation("Departments");
+                });
+
+            modelBuilder.Entity("ProjeHavuzu.Data.Entites.ProjectStudent", b =>
+                {
+                    b.Navigation("AspNetUsers");
+
+                    b.Navigation("Projects");
                 });
 #pragma warning restore 612, 618
         }
