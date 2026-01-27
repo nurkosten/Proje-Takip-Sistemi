@@ -3,6 +3,7 @@ using ProjeHavuzu.Data.DTOs.CategoryDto;
 using ProjeHavuzu.Data.DTOs.DepartmentDto;
 using ProjeHavuzu.Data.DTOs.FacultyDto;
 using ProjeHavuzu.Data.DTOs.ProjectDto;
+using ProjeHavuzu.Data.DTOs.SystemLogDto;
 using ProjeHavuzu.Data.Entites;
 using System;
 using System.Collections.Generic;
@@ -27,6 +28,11 @@ namespace ProjeHavuzu.Data.Mapping
           
             //department mappings
             CreateMap<DepartmentListDto, Department>().ReverseMap();
+
+            // Log Mappings
+            CreateMap<SystemLog, SystemLogListDto>()
+                .ForMember(dest => dest.CreatedByUserName, opt => opt.MapFrom(src => src.CreatedBy.ToString())) // Kullanıcı adı için repository join lazım ama şimdilik ID
+                .ReverseMap();
 
 
 

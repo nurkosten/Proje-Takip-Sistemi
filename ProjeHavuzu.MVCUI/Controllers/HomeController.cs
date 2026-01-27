@@ -57,5 +57,15 @@ namespace ProjeHavuzu.MVCUI.Controllers
         }
 
 
+        public IActionResult ProjectDetails(Guid id)
+        {
+            if (User.IsInRole("Teacher") || User.IsInRole("Admin"))
+            {
+                return RedirectToAction("ProjectDetails", "Teacher", new { id = id });
+            }
+            
+            // Öğrenci ise veya rolü yoksa Student detayına gönder (Student controller Authorize ile login'e zorlayabilir)
+            return RedirectToAction("ProjectDetails", "Student", new { id = id });
+        }
     }
 }

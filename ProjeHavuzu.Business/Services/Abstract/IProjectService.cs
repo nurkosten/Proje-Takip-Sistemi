@@ -14,5 +14,10 @@ namespace ProjeHavuzu.Business.Services.Abstract
         Task<bool> UpdateProjectAsync(Guid id, ProjectCreateDto projectCreateDto);
         Task<bool> DeleteProjectAsync(Guid id);
         Task<bool> SoftDeleteProjectAsync(Guid id);
+        
+        // Recycle Bin Methods
+        Task<List<ProjectListDto>> GetDeletedProjectsAsync();
+        Task<bool> RestoreProjectAsync(Guid id);
+        Task<bool> HardDeleteProjectAsync(Guid id);
     }
 }

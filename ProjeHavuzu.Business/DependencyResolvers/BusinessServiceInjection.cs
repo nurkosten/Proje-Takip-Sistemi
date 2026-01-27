@@ -26,6 +26,8 @@ namespace ProjeHavuzu.Business.DependencyResolvers
             services.AddScoped<IFacultyService, FacultyService>();
             services.AddScoped<IDepartmentService, DepartmentService>();
             services.AddScoped<IProjectStudentService, ProjectStudentService>();
+            services.AddScoped<ISystemLogService, SystemLogService>();
+            services.AddScoped<ISystemHealthService, SystemHealthService>(); // Health Check Servisi
 
             // Validator Injections
             services.AddScoped<IValidator<ProjectCreateDto>, ProjectCreateValidator>();

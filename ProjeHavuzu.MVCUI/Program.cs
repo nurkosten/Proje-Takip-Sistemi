@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.HttpOverrides;
 using ProjeHavuzu.Business.DependencyResolvers;
 using ProjeHavuzu.Data.DependencyResolvers;
 using ProjeHavuzu.Data.Entites.Identity;
@@ -6,15 +7,45 @@ using ProjeHavuzu.Data.Helpers;
 
 
 
+using Hangfire;
+
 var builder = WebApplication.CreateBuilder(args);
 
+// Hangfire Servisleri
+var connectionString = builder.Configuration.GetConnectionString("DefaultServer");
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(connectionString, new Hangfire.SqlServer.SqlServerStorageOptions
+    {
+        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+        QueuePollInterval = TimeSpan.Zero,
+        UseRecommendedIsolationLevel = true,
+        DisableGlobalLocks = true
+    }));
+
+// Hangfire Sunucusu
+builder.Services.AddHangfireServer();
+
 // Add services to the container.
-builder.Services.AddControllersWithViews().AddRazorRuntimeCompilation();
+// Add services to the container.
+builder.Services.AddControllersWithViews(options =>
+{
+    // Global Loglama Filtresi - Tüm controllerları loglar
+    // options.Filters.Add(typeof(ProjeHavuzu.MVCUI.Filters.LogActionFilter)); 
+    // ŞİMDİLİK YORUM SATIRI BIRAKIYORUM. Çünkü her refresh log yaratır. 
+    // Sadece [LogAction] attribute'ü olanları veya manuel eklenenleri kullanmak daha temiz olabilir.
+    // Ancak kullanıcı "otomatik" istediği için aktif ediyorum:
+    options.Filters.Add(typeof(ProjeHavuzu.MVCUI.Filters.LogActionFilter));
+}).AddRazorRuntimeCompilation();
 builder.Services.AddApplicationDbContextService(builder.Configuration);
 builder.Services.AddApplicationMappingService();
 builder.Services.AddDataRepositoryServices();
 builder.Services.AddBusinessServices();
 builder.Services.AddMailService(builder.Configuration);
+builder.Services.AddHttpContextAccessor(); // Loglama için gerekli
 
 
 var app = builder.Build();
@@ -44,11 +75,25 @@ using (var scope = app.Services.CreateScope())
 }
 
 
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
 app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseAuthentication(); // ❗ MUTLAKA ÖNCE
 app.UseAuthorization();  // ❗ SONRA
+
+// Hangfire Dashboard (Panel) - İsteğe bağlı "/hangfire" adresinden erişilebilir
+app.UseHangfireDashboard("/hangfire");
+
+// Sistem Sağlık Kontrolü (Her Dakika)
+RecurringJob.AddOrUpdate<ProjeHavuzu.Business.Services.Abstract.ISystemHealthService>(
+    "system-health-check",
+    service => service.CheckSystemHealthAsync(),
+    Cron.Minutely);
 
 app.MapStaticAssets();
 

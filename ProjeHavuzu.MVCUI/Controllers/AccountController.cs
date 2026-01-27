@@ -1,13 +1,12 @@
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjeHavuzu.Business.Services.Abstract;
 using ProjeHavuzu.Data.Context;
 using ProjeHavuzu.Data.Entites.Identity;
+using ProjeHavuzu.Data.MailService;
 using ProjeHavuzu.MVCUI.Models.AccountModels;
 using ProjeHavuzu.MVCUI.Models.LoginModels;
-using System.Reflection.Metadata.Ecma335;
 using System.Security.Claims;
 using ForgotPasswordViewModel = ProjeHavuzu.MVCUI.Models.AccountModels.ForgotPasswordViewModel;
 
@@ -19,13 +18,14 @@ namespace ProjeHavuzu.MVCUI.Controllers
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly RoleManager<AppRole> _roleManager;
-        private readonly IEmailSender _emailSender;
+        private readonly IMailSender _emailSender;
         private readonly IFacultyService _facultyService;
         private readonly IDepartmentService _departmentService;
         private readonly ApplicationContext _context;
 
         public AccountController(
             UserManager<AppUser> userManager,
+            IMailSender emailSender,
             SignInManager<AppUser> signInManager = null,
             RoleManager<AppRole> roleManager = null,
             ApplicationContext context = null,
@@ -33,6 +33,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
             IDepartmentService departmentService = null)
         {
             _userManager = userManager;
+            _emailSender = emailSender;
             _signInManager = signInManager;
             _roleManager = roleManager;
             _context = context;
@@ -67,10 +68,19 @@ namespace ProjeHavuzu.MVCUI.Controllers
                 new { token = token, email = model.Email },
                 Request.Scheme);
 
-            await _emailSender.SendEmailAsync(
-                model.Email,
-                "Şifre Sıfırlama",
-                $"Şifrenizi sıfırlamak için <a href='{resetLink}'>tıklayın</a>");
+            try
+            {
+                await _emailSender.SendEmailAsync(
+                    model.Email,
+                    "Şifre Sıfırlama",
+                    $"Şifrenizi sıfırlamak için <a href='{resetLink}'>tıklayın</a>");
+            }
+            catch (Exception ex)
+            {
+                // Mail gönderim hatasını yakala ve kullanıcıya göster
+                ModelState.AddModelError("", $"Mail gönderilemedi: {ex.Message}");
+                return View(model);
+            }
 
             return RedirectToAction("ForgotPasswordConfirmation");
 
@@ -139,16 +149,56 @@ namespace ProjeHavuzu.MVCUI.Controllers
 
             if (result.Succeeded)
             {
+                // Varsayılan olarak Student rolü ata
+                // Rolün varlığını kontrol etmek iyi bir pratik olsa da, SeedData ile oluşturulduğunu varsayıyoruz
+                await _userManager.AddToRoleAsync(user, "Student");
 
+                try
+                {
+                    // Email Doğrulama Maili Gönder
+                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var confirmationLink = Url.Action("ConfirmEmail", "Account", new { token, email = user.Email }, Request.Scheme);
+                    await _emailSender.SendEmailAsync(user.Email, "Email Doğrulama", 
+                        $"<h2>Proje Havuz Sistemi Hoşgeldiniz!</h2>" +
+                        $"<p>Hesabınızı oluşturduğunuz için teşekkürler.</p>" +
+                        $"<p>Hesabınızı aktif etmek için lütfen aşağıdaki linke tıklayın:</p>" +
+                        $"<a href='{confirmationLink}' style='background-color:#A41F35; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;'>Hesabımı Doğrula</a>");
+
+                    TempData["SuccessMessage"] = "Kayıt başarılı! Lütfen e-postanıza gönderilen doğrulama linkine tıklayınız.";
+                }
+                catch (Exception ex)
+                {
+                    TempData["ErrorMessage"] = $"Kayıt tamamlandı ANCAK mail gönderilemedi: {ex.Message}";
+                }
+                
                 return RedirectToAction("Login", "Account");
             }
 
             foreach (var error in result.Errors)
                 ModelState.AddModelError("", error.Description);
 
-
-
             return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ConfirmEmail(string token, string email)
+        {
+            if (token == null || email == null)
+                return RedirectToAction("Login", "Account");
+
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+                return RedirectToAction("Login", "Account");
+
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+            if (result.Succeeded)
+            {
+                TempData["SuccessMessage"] = "Hesabınız başarıyla doğrulandı. Giriş yapabilirsiniz.";
+                return RedirectToAction("Login", "Account");
+            }
+            
+            TempData["ErrorMessage"] = "Email doğrulama başarısız oldu.";
+            return RedirectToAction("Login", "Account");
         }
 
         public IActionResult Login() => View();

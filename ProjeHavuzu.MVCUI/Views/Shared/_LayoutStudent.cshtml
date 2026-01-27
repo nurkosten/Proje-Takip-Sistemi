@@ -31,7 +31,7 @@
                 <small style="font-weight:bold;" class="text-muted">Öğrenci Paneli</small>
             </div>
             <nav class="sidebar-nav">
-                <ul class="nav flex-column h-100" style="display: flex; flex-direction: column; min-height: 80vh;">
+                <ul class="nav flex-column">
                     <li class="nav-item">
                         <a href="@Url.Action("Index", "Home")">
                             <i class="fas fa-home"></i>
@@ -44,30 +44,25 @@
                             <span>Profilim</span>
                         </a>
                     </li>
-                    <li class="accordion-item">
-                        <button type="button" class="accordion-toggle">
-                            <i class="bi bi-folder"></i>
-                            <span>Proje İşlemleri</span>
-                            <i class="bi bi-chevron-down ms-auto"></i>
-                        </button>
-                        <ul class="accordion-menu">
-                            <li class="nav-item">
-                                <a class="nav-link" href="/Project/Index">
-                                    <i class="bi bi-list-check"></i>
-                                    <span>Projelerim</span>
-                                </a>
-                            </li>
-                        </ul>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Student/MyProjects">
+                            <i class="bi bi-folder-check"></i>
+                            <span>Projelerim & Durum</span>
+                        </a>
                     </li>
-                    <li class="nav-item" style="margin-top: auto !important; padding-bottom: 20px;">
-                        <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                            <button type="submit" class="logout-btn" style="width:100%; border:none; background:none; text-align:left; padding:10px 20px; color:white;">
-                                <i class="fas fa-sign-out-alt"></i> <span><a href="~/Account/Logout"> Çıkış Yap</a> </span>
-                            </button>
-                        </form>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Student/ProjectPool">
+                            <i class="bi bi-collection"></i>
+                            <span>Proje Havuzu</span>
+                        </a>
                     </li>
                 </ul>
             </nav>
+            <div class="sidebar-footer">
+                <a href="/Account/Logout" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> <span>Çıkış Yap</span>
+                </a>
+            </div>
         </aside>
         <div class="main-content">
             <header class="main-header">

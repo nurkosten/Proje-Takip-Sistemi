@@ -1,3 +1,43 @@
-﻿.vs/
-**/bin/
-**/obj/
+﻿## Visual Studio ##
+.vs/
+.vscode/
+
+# Build results
+[Bb]in/
+[Oo]bj/
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# User-specific files (MonoDevelop/Xamarin Studio)
+*.userprefs
+
+# VS Code directory for project
+.vscode/
+
+## NetCore ##
+*.json
+!appsettings.json
+!launchSettings.json
+!global.json
+
+# Mobile Tools for .NET Core
+.ionide
+
+## DotnetCLI ##
+/*.project.json
+/project.lock.json
+/artifacts/
+
+## ASP.NET Core ##
+**/wwwroot/runtimes/
+**/wwwroot/lib/
+# node_modules might be needed if you use backend node processes, but usually for aspnetcore mvc we might exclude it if managed by libman or just include generic lib
+node_modules/
+npm-debug.log
+
+# Log files
+*.log

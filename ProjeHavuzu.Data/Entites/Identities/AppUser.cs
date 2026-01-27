@@ -13,6 +13,8 @@ namespace ProjeHavuzu.Data.Entites.Identity
         public Guid? FacultyId { get; set; } 
         public Guid? DepartmentId { get; set; }
         public string? StudentNumber { get; set; }
+        public bool IsActive { get; set; } = true;
+        public string? DeactivationReason { get; set; }
 
         //relations property
         public Faculty Faculty { get; set; }

@@ -13,6 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/home.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" />
     <style>
         body { line-height: 1.6 !important; }
         .sidebar-logo { max-width: 100px !important; margin-bottom: 1.5rem !important; }
@@ -28,14 +29,38 @@
             <div class="sidebar-header text-center p-3">
                 <img src="~/images/mtu-logo.png" alt="Logo" class="sidebar-logo mb-2" />
                 <h3 class="h5 mb-1">Proje Havuz Sistemi</h3>
-                <small style="font-weight:bold;" class="text-muted">Öğretmen Paneli</small>
+                <small style="font-weight:bold;" class="text-muted">Akademisyen Paneli</small>
             </div>
             <nav class="sidebar-nav">
-                <ul class="nav flex-column h-100" style="display: flex; flex-direction: column; min-height: 80vh;">
+                <ul class="nav flex-column">
                     <li class="nav-item">
                         <a href="@Url.Action("Index", "Home")">
                             <i class="fas fa-home"></i>
                             <span>Ana Sayfa</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Teacher/Index">
+                            <i class="bi bi-speedometer2"></i>
+                            <span>Akademisyen Paneli</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Teacher/ProjectPool">
+                            <i class="bi bi-collection"></i>
+                            <span>Proje Havuzu</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Student/MyProjects">
+                            <i class="bi bi-folder-check"></i>
+                            <span>Projelerim & Durum</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Teacher/Students">
+                            <i class="bi bi-people"></i>
+                            <span>Öğrenciler</span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -44,36 +69,19 @@
                             <span>Profilim</span>
                         </a>
                     </li>
-                    <li class="accordion-item">
-                        <button type="button" class="accordion-toggle">
-                            <i class="bi bi-folder"></i>
-                            <span>Proje İşlemleri</span>
-                            <i class="bi bi-chevron-down ms-auto"></i>
-                        </button>
-                        <ul class="accordion-menu">
-                            <li class="nav-item">
-                                <a class="nav-link" href="/Project/Create">
-                                    <i class="bi bi-plus-circle"></i>
-                                    <span>Yeni Proje Ekle</span>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/Project/Index">
-                                    <i class="bi bi-list-check"></i>
-                                    <span>Projelerim</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="nav-item" style="margin-top: auto !important; padding-bottom: 20px;">
-                        <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                            <button type="submit" class="logout-btn" style="width:100%; border:none; background:none; text-align:left; padding:10px 20px; color:white;">
-                                <i class="fas fa-sign-out-alt"></i> <span><a href="~/Account/Logout"> Çıkış Yap</a> </span>
-                            </button>
-                        </form>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Project/RecycleBin">
+                            <i class="bi bi-trash"></i>
+                            <span>Çöp Kutusu</span>
+                        </a>
                     </li>
                 </ul>
             </nav>
+            <div class="sidebar-footer">
+                <a href="/Account/Logout" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> <span>Çıkış Yap</span>
+                </a>
+            </div>
         </aside>
         <div class="main-content">
             <header class="main-header">
@@ -92,8 +100,27 @@
         </div>
     </div>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.table').each(function() {
+                if (!$.fn.DataTable.isDataTable(this)) {
+                    $(this).DataTable({
+                        "pageLength": 50,
+                        "language": {
+                            "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json"
+                        },
+                        "columnDefs": [
+                            { "orderable": false, "targets": "no-sort" }
+                        ]
+                    });
+                }
+            });
+        });
+    </script>
     <script>
         document.querySelectorAll('.accordion-menu').forEach(ul => ul.style.display = 'none');
         document.querySelectorAll('.accordion-toggle').forEach(btn => {

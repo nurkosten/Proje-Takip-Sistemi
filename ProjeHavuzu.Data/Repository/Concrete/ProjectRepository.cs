@@ -27,8 +27,10 @@ namespace ProjeHavuzu.Data.Repository.Concrete
 
             var result =
     from p in _context.Projects
+    where !p.IsDeleted // Sadece silinmemiş projeler
     join c in _context.Categories
         on p.CategoryId equals c.Id
+    where !c.IsDeleted // Sadece silinmemiş kategorilerdeki projeler
     join u in _context.Users
         on p.CreatedBy equals u.Id into userGroup
     from u in userGroup.DefaultIfEmpty() // 👈 LEFT JOIN
@@ -39,7 +41,8 @@ namespace ProjeHavuzu.Data.Repository.Concrete
         Description = p.Description,
         CreatedDate = p.CreatedDate,
         DifficultyLevel = p.DifficultyLevel,
-        EndTime = p.EndTime,
+        StartDate = p.StartDate,
+        EndDate = p.EndDate,
         ProjectLink = p.ProjectLink,
         CategoryId = c.Id,
         CategoryName = c.CategoryName,
@@ -47,6 +50,33 @@ namespace ProjeHavuzu.Data.Repository.Concrete
             ? u.FirstName + " " + u.LastName
             : "Unknown"
     };
+            return await result.ToListAsync();
+        }
+
+        public async Task<List<ProjectListDto>> GetDeletedProjectsAsync()
+        {
+            var result =
+                from p in _context.Projects
+                where p.IsDeleted // Sadece SİLİNMİŞ projeler
+                join c in _context.Categories
+                    on p.CategoryId equals c.Id // Kategori silinmiş olsa bile gelebilir, o yüzden filtre koymuyorum
+                join u in _context.Users
+                    on p.CreatedBy equals u.Id into userGroup
+                from u in userGroup.DefaultIfEmpty()
+                select new ProjectListDto
+                {
+                    Id = p.Id,
+                    ProjectTitle = p.ProjectTitle,
+                    Description = p.Description,
+                    CreatedDate = p.CreatedDate,
+                    DifficultyLevel = p.DifficultyLevel,
+                    StartDate = p.StartDate,
+                    EndDate = p.EndDate,
+                    ProjectLink = p.ProjectLink,
+                    CategoryId = c.Id,
+                    CategoryName = c.CategoryName,
+                    CreatedByFullName = u != null ? u.FirstName + " " + u.LastName : "Unknown"
+                };
             return await result.ToListAsync();
         }
 

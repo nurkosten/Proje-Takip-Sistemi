@@ -12,7 +12,8 @@ namespace ProjeHavuzu.Data.DTOs.ProjectDto
         public string ProjectTitle { get; set; }
         public string Description { get; set; }
         public DifficultStatus DifficultyLevel { get; set; }
-        public int EndTime { get; set; } // Tamamlanma Süresi (gün olarak)
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
         public string? ProjectLink { get; set; } //
         public Guid CategoryId { get; set; }
         public string CategoryName { get; set; }

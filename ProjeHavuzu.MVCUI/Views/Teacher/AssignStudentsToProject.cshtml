@@ -25,7 +25,7 @@
         <div class="card-body">
             <h5 class="card-title">Proje Bilgileri</h5>
             <p><strong>Proje Adı:</strong> @Model.ProjectTitle</p>
-            <p><strong>Proje ID:</strong> @Model.ProjectId</p>
+
         </div>
     </div>
 
@@ -37,7 +37,8 @@
             <div class="card-body">
                 @if (Model.AvailableStudents != null && Model.AvailableStudents.Any())
                 {
-                    <div class="mb-3">
+                <div class="row align-items-center mb-3">
+                    <div class="col-md-6 mb-2 mb-md-0">
                         <button type="button" class="btn btn-sm btn-outline-primary" onclick="selectAll()">
                             <i class="bi bi-check-all"></i> Tümünü Seç
                         </button>
@@ -45,6 +46,13 @@
                             <i class="bi bi-x-lg"></i> Tümünü Kaldır
                         </button>
                     </div>
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" id="studentSearchInput" class="form-control" placeholder="Öğrenci ara (Ad, No, Email, Bölüm)..." onkeyup="filterStudents()">
+                        </div>
+                    </div>
+                </div>
 
                     <div class="table-responsive">
                         <table class="table table-hover">
@@ -109,19 +117,66 @@
     <script>
         function toggleAll(source) {
             const checkboxes = document.querySelectorAll('.student-checkbox');
-            checkboxes.forEach(checkbox => checkbox.checked = source.checked);
+            // Sadece görünür olan checkbox'ları seç/kaldır
+            checkboxes.forEach(checkbox => {
+                const row = checkbox.closest('tr');
+                if (row.style.display !== 'none') {
+                    checkbox.checked = source.checked;
+                }
+            });
         }
 
         function selectAll() {
             const checkboxes = document.querySelectorAll('.student-checkbox');
-            checkboxes.forEach(checkbox => checkbox.checked = true);
+            checkboxes.forEach(checkbox => {
+                const row = checkbox.closest('tr');
+                if (row.style.display !== 'none') {
+                    checkbox.checked = true;
+                }
+            });
+            // Eğer tüm görünürler seçiliyse ana checkbox'ı da işaretle (basitleştirilmiş mantık)
             document.getElementById('selectAllCheckbox').checked = true;
         }
 
         function deselectAll() {
             const checkboxes = document.querySelectorAll('.student-checkbox');
-            checkboxes.forEach(checkbox => checkbox.checked = false);
+            checkboxes.forEach(checkbox => {
+                const row = checkbox.closest('tr');
+                if (row.style.display !== 'none') {
+                    checkbox.checked = false;
+                }
+            });
             document.getElementById('selectAllCheckbox').checked = false;
+        }
+
+        function filterStudents() {
+            const input = document.getElementById('studentSearchInput');
+            const filter = input.value.toLowerCase().trim();
+            const table = document.querySelector('table tbody');
+            const rows = table.getElementsByTagName('tr');
+
+            for (let i = 0; i < rows.length; i++) {
+                const nameCell = rows[i].getElementsByTagName('td')[1];
+                const noCell = rows[i].getElementsByTagName('td')[2];
+                const emailCell = rows[i].getElementsByTagName('td')[3];
+                const deptCell = rows[i].getElementsByTagName('td')[4];
+
+                if (nameCell && noCell && emailCell && deptCell) {
+                    const nameText = nameCell.textContent || nameCell.innerText;
+                    const noText = noCell.textContent || noCell.innerText;
+                    const emailText = emailCell.textContent || emailCell.innerText;
+                    const deptText = deptCell.textContent || deptCell.innerText;
+
+                    if (nameText.toLowerCase().indexOf(filter) > -1 || 
+                        noText.toLowerCase().indexOf(filter) > -1 || 
+                        emailText.toLowerCase().indexOf(filter) > -1 || 
+                        deptText.toLowerCase().indexOf(filter) > -1) {
+                        rows[i].style.display = "";
+                    } else {
+                        rows[i].style.display = "none";
+                    }
+                }
+            }
         }
     </script>
 }

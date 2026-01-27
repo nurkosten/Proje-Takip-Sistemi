@@ -29,9 +29,13 @@ namespace ProjeHavuzu.Data.Validators.ProjectValidators
             RuleFor(x => x.DifficultyLevel)
                 .IsInEnum().WithMessage("Geçersiz zorluk seviyesi seçildi.");
 
-            RuleFor(x => x.EndTime)
-                .GreaterThan(0).WithMessage("Tamamlanma süresi 0'dan büyük olmalıdır.")
-                .LessThanOrEqualTo(365).WithMessage("Tamamlanma süresi en fazla 365 gün olabilir.");
+            RuleFor(x => x.StartDate)
+                .NotEmpty().WithMessage("Başlangıç tarihi boş olamaz.");
+
+            RuleFor(x => x.EndDate)
+                .NotEmpty().WithMessage("Bitiş tarihi boş olamaz.")
+                .GreaterThan(x => x.StartDate).WithMessage("Bitiş tarihi başlangıç tarihinden sonra olmalıdır.")
+                .GreaterThanOrEqualTo(new DateTime(2026, 1, 1)).WithMessage("Bitiş tarihi 2026 yılından önce olamaz.");
 
             RuleFor(x => x.ProjectLink)
                 .NotEmpty().WithMessage("Proje linki boş olamaz.")

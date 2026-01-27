@@ -18,7 +18,8 @@ namespace ProjeHavuzu.Data.DTOs.ProjectStudentDto
         public string? ProjectTitle { get; set; }
         public string? Description { get; set; }
         public string? CategoryName { get; set; }
-        public int EndTime { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
         public bool IsAssigned { get; set; }
     }
 }

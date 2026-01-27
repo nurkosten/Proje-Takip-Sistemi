@@ -54,9 +54,12 @@ namespace ProjeHavuzu.Data.Repository.Concrete
 
         public void Remove(T entity)
         {
+            if (_context.Entry(entity).State == EntityState.Detached)
+            {
+                _dbSet.Attach(entity);
+            }
             _dbSet.Remove(entity);
             Save();
-
         }
 
         public void Update(T entity)

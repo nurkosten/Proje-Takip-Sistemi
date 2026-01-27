@@ -53,30 +53,38 @@
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="StudentNumber" class="form-label"></label>
-                            <input asp-for="StudentNumber" class="form-control" />
-                            <span asp-validation-for="StudentNumber" class="text-danger"></span>
-                        </div>
+                        @if (User.IsInRole("Student") || User.IsInRole("Teacher"))
+                        {
+                            <div class="mb-3">
+                                <label asp-for="StudentNumber" class="form-label">
+                                    @(User.IsInRole("Teacher") ? "Sicil Numarası" : "Öğrenci Numarası")
+                                </label>
+                                <input asp-for="StudentNumber" class="form-control" />
+                                <span asp-validation-for="StudentNumber" class="text-danger"></span>
+                            </div>
+                        }
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="FacultyId" class="form-label"></label>
-                                <select asp-for="FacultyId" class="form-select" id="facultyDropdown" 
-                                        asp-items="@(new SelectList(Model.Faculties, "Id", "FacultyName"))">
-                                    <option value="">-- Fakülte Seçin --</option>
-                                </select>
-                                <span asp-validation-for="FacultyId" class="text-danger"></span>
+                        @if (User.IsInRole("Student") || User.IsInRole("Teacher"))
+                        {
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="FacultyId" class="form-label"></label>
+                                    <select asp-for="FacultyId" class="form-select" id="facultyDropdown" 
+                                            asp-items="@(new SelectList(Model.Faculties, "Id", "FacultyName"))">
+                                        <option value="">-- Fakülte Seçin --</option>
+                                    </select>
+                                    <span asp-validation-for="FacultyId" class="text-danger"></span>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="DepartmentId" class="form-label"></label>
+                                    <select asp-for="DepartmentId" class="form-select" id="departmentDropdown"
+                                            asp-items="@(new SelectList(Model.Departments, "Id", "DepartmentName"))">
+                                        <option value="">-- Bölüm Seçin --</option>
+                                    </select>
+                                    <span asp-validation-for="DepartmentId" class="text-danger"></span>
+                                </div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="DepartmentId" class="form-label"></label>
-                                <select asp-for="DepartmentId" class="form-select" id="departmentDropdown"
-                                        asp-items="@(new SelectList(Model.Departments, "Id", "DepartmentName"))">
-                                    <option value="">-- Bölüm Seçin --</option>
-                                </select>
-                                <span asp-validation-for="DepartmentId" class="text-danger"></span>
-                            </div>
-                        </div>
+                        }
 
                         <div class="d-flex justify-content-between mt-4">
                             <button type="submit" class="btn btn-primary">

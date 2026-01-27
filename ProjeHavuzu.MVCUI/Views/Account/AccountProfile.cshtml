@@ -40,20 +40,52 @@
                         <div class="col-md-8">@Model.Email</div>
                     </div>
 
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Öğrenci Numarası:</div>
-                        <div class="col-md-8">@(Model.StudentNumber ?? "-")</div>
-                    </div>
+                    @if (User.IsInRole("Student"))
+                    {
+                        <div class="row mb-3">
+                            <div class="col-md-4 fw-bold">Öğrenci Numarası:</div>
+                            <div class="col-md-8">@(Model.StudentNumber ?? "-")</div>
+                        </div>
 
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Fakülte:</div>
-                        <div class="col-md-8">@(Model.Faculty?.FacultyName ?? "-")</div>
-                    </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4 fw-bold">Fakülte:</div>
+                            <div class="col-md-8">@(Model.Faculty?.FacultyName ?? "-")</div>
+                        </div>
 
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Bölüm:</div>
-                        <div class="col-md-8">@(Model.Department?.DepartmentName ?? "-")</div>
-                    </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4 fw-bold">Bölüm:</div>
+                            <div class="col-md-8">@(Model.Department?.DepartmentName ?? "-")</div>
+                        </div>
+                    }
+                    else if (User.IsInRole("Teacher"))
+                    {
+                        <div class="row mb-3">
+                            <div class="col-md-4 fw-bold">Unvan:</div>
+                            <div class="col-md-8">Öğretim Üyesi</div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4 fw-bold">Fakülte:</div>
+                            <div class="col-md-8">@(Model.Faculty?.FacultyName ?? "-")</div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4 fw-bold">Bölüm:</div>
+                            <div class="col-md-8">@(Model.Department?.DepartmentName ?? "-")</div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4 fw-bold">Görev:</div>
+                            <div class="col-md-8">Akademisyen</div>
+                        </div>
+                    }
+                    else if (User.IsInRole("Admin"))
+                    {
+                        <div class="row mb-3">
+                            <div class="col-md-4 fw-bold">Rol:</div>
+                            <div class="col-md-8"><span class="badge bg-danger">Sistem Yöneticisi</span></div>
+                        </div>
+                    }
 
                     <div class="row mb-3">
                         <div class="col-md-4 fw-bold">Telefon:</div>

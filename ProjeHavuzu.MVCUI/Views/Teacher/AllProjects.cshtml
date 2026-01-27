@@ -13,6 +13,30 @@
         </a>
     </div>
 
+    <!-- Search Box -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" id="searchInput" class="form-control" placeholder="Proje adı, kategori veya oluşturan kişi ara...">
+                <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select id="difficultyFilter" class="form-select">
+                <option value="">Tüm Zorluklar</option>
+                <option value="Kolay">Kolay</option>
+                <option value="Orta">Orta</option>
+                <option value="Zor">Zor</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <span id="resultCount" class="badge bg-primary fs-6 p-2"></span>
+        </div>
+    </div>
+
     @if (TempData["SuccessMessage"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -37,7 +61,7 @@
                     <th>Açıklama</th>
                     <th>Kategori</th>
                     <th>Zorluk</th>
-                    <th>Süre (Gün)</th>
+                    <th>Bitiş Tarihi</th>
                     <th>Oluşturan</th>
                     <th>İşlemler</th>
                 </tr>
@@ -68,7 +92,7 @@
                                         break;
                                 }
                             </td>
-                            <td>@item.EndTime gün</td>
+                            <td>@item.EndDate.ToShortDateString()</td>
                             <td>@item.CreatedByFullName</td>
                             <td>
                                 <div class="btn-group" role="group">
@@ -132,5 +156,61 @@
             var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
             deleteModal.show();
         }
+
+        // Search and Filter Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const difficultyFilter = document.getElementById('difficultyFilter');
+            const clearSearch = document.getElementById('clearSearch');
+            const resultCount = document.getElementById('resultCount');
+            const tableBody = document.querySelector('table tbody');
+            const rows = tableBody ? tableBody.querySelectorAll('tr') : [];
+
+            function filterTable() {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                const difficulty = difficultyFilter.value;
+                let visibleCount = 0;
+
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length === 0) return; // Skip if no data cells
+
+                    const projectName = cells[0]?.textContent?.toLowerCase() || '';
+                    const description = cells[1]?.textContent?.toLowerCase() || '';
+                    const category = cells[2]?.textContent?.toLowerCase() || '';
+                    const rowDifficulty = cells[3]?.textContent?.trim() || '';
+                    const creator = cells[5]?.textContent?.toLowerCase() || '';
+
+                    const matchesSearch = !searchTerm || 
+                        projectName.includes(searchTerm) || 
+                        description.includes(searchTerm) ||
+                        category.includes(searchTerm) || 
+                        creator.includes(searchTerm);
+
+                    const matchesDifficulty = !difficulty || rowDifficulty === difficulty;
+
+                    if (matchesSearch && matchesDifficulty) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                resultCount.textContent = visibleCount + ' proje bulundu';
+            }
+
+            // Initial count
+            resultCount.textContent = rows.length + ' proje bulundu';
+
+            searchInput.addEventListener('input', filterTable);
+            difficultyFilter.addEventListener('change', filterTable);
+            
+            clearSearch.addEventListener('click', function() {
+                searchInput.value = '';
+                difficultyFilter.value = '';
+                filterTable();
+            });
+        });
     </script>
 }

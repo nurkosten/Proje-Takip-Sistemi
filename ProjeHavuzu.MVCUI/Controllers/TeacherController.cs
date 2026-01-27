@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ProjeHavuzu.MVCUI.Controllers
 {
-    //[Authorize(Roles = "Teacher")]
+    [Authorize(Roles = "Teacher,Admin")]
     public class TeacherController : Controller
     {
         private readonly IProjectService _projectService;
@@ -30,6 +30,49 @@ namespace ProjeHavuzu.MVCUI.Controllers
         public IActionResult Index()
         {
             return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> MyProjects()
+        {
+            // Akademisyenler için şimdilik tüm projeler sayfasına yönlendirelim
+            // İleride sadece kendi oluşturdukları projeleri getirecek şekilde ayrılabilir
+            return RedirectToAction("AllProjects");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ProjectPool()
+        {
+            try
+            {
+                var projects = await _projectService.GetAllProjectsAsync();
+                return View(projects);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Projeler yüklenirken hata oluştu: {ex.Message}";
+                return RedirectToAction("Index");
+            }
+        }
+        
+        [HttpGet]
+        public async Task<IActionResult> ProjectDetails(Guid id)
+        {
+             try
+            {
+                var project = await _projectService.GetProjectByIdAsync(id);
+                if (project == null)
+                {
+                    TempData["ErrorMessage"] = "Proje bulunamadı.";
+                    return RedirectToAction("ProjectPool");
+                }
+                return View(project);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Proje yüklenirken hata oluştu: {ex.Message}";
+                return RedirectToAction("ProjectPool");
+            }
         }
 
         // ====================
@@ -72,7 +115,8 @@ namespace ProjeHavuzu.MVCUI.Controllers
                     Description = project.Description,
                     CategoryId = project.CategoryId,
                     DifficultyLevel = project.DifficultyLevel,
-                    EndTime = project.EndTime,
+                    StartDate = project.StartDate,
+                    EndDate = project.EndDate,
                     ProjectLink = project.ProjectLink,
                     Categories = projectDto.Categories
                 };
@@ -258,6 +302,85 @@ namespace ProjeHavuzu.MVCUI.Controllers
                 TempData["ErrorMessage"] = $"Hata: {ex.Message}";
                 return RedirectToAction("AllProjects");
             }
+        }
+
+        // ====================
+        // Deactivate Student (Pasifleştir)
+        // ====================
+
+        [HttpPost]
+        public async Task<IActionResult> DeactivateStudent(Guid studentId, string reason)
+        {
+            try
+            {
+                var student = await _userManager.FindByIdAsync(studentId.ToString());
+                if (student == null)
+                {
+                    TempData["ErrorMessage"] = "Öğrenci bulunamadı.";
+                    return RedirectToAction("Students");
+                }
+
+                if (string.IsNullOrWhiteSpace(reason))
+                {
+                    TempData["ErrorMessage"] = "Pasifleştirme nedeni boş olamaz.";
+                    return RedirectToAction("Students");
+                }
+
+                student.IsActive = false;
+                student.DeactivationReason = reason;
+                var result = await _userManager.UpdateAsync(student);
+
+                if (result.Succeeded)
+                {
+                    TempData["SuccessMessage"] = $"{student.FullName} başarıyla pasifleştirildi.";
+                }
+                else
+                {
+                    var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                    TempData["ErrorMessage"] = $"Öğrenci durumu güncellenirken bir hata oluştu: {errors}";
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Hata: {ex.Message}";
+            }
+            return RedirectToAction("Students");
+        }
+
+        // ====================
+        // Activate Student (Aktifleştir)
+        // ====================
+
+        [HttpPost]
+        public async Task<IActionResult> ActivateStudent(Guid studentId)
+        {
+            try
+            {
+                var student = await _userManager.FindByIdAsync(studentId.ToString());
+                if (student == null)
+                {
+                    TempData["ErrorMessage"] = "Öğrenci bulunamadı.";
+                    return RedirectToAction("Students");
+                }
+
+                student.IsActive = true;
+                student.DeactivationReason = null;
+                var result = await _userManager.UpdateAsync(student);
+
+                if (result.Succeeded)
+                {
+                    TempData["SuccessMessage"] = $"{student.FullName} başarıyla aktifleştirildi.";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Öğrenci durumu güncellenirken bir hata oluştu.";
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Hata: {ex.Message}";
+            }
+            return RedirectToAction("Students");
         }
     }
 }

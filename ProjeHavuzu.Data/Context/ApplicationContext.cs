@@ -28,6 +28,7 @@ namespace ProjeHavuzu.Data.Context
         public DbSet<Faculty> Faculties { get; set; }
         public DbSet<Department> Departments { get; set; }
         public DbSet<ProjectStudent> ProjectStudents { get; set; }
+        public DbSet<SystemLog> SystemLogs { get; set; }
 
 
 

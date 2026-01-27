@@ -33,14 +33,27 @@
     <div class="col-md-4">
         <div class="card h-100">
             <div class="card-icon"><i class="fas fa-tasks"></i></div>
-            <h3>Projelerim & Durum</h3>
+                <a href="/Student/MyProjects">
+                    <h3>Projelerim & Durum</h3>
+                </a>
             <p>Mevcut projelerinizin onay durumunu ve görevleri takip edin.</p>
         </div>
     </div>
     <div class="col-md-4">
         <div class="card h-100">
             <div class="card-icon"><i class="bi bi-search"></i></div>
-            <h3>Proje Havuzu</h3>
+            @if (User.IsInRole("Teacher") || User.IsInRole("Admin"))
+            {
+                <a href="/Teacher/ProjectPool">
+                    <h3>Proje Havuzu</h3>
+                </a>
+            }
+            else
+            {
+                <a href="/Student/ProjectPool">
+                    <h3>Proje Havuzu</h3>
+                </a>
+            }
             <p>Okul genelindeki onaylanmış açık kaynak projeleri inceleyin.</p>
         </div>
     </div>
@@ -63,7 +76,7 @@
                                 <th>Proje</th>
                                 <th>Kategori</th>
                                 <th>Zorluk</th>
-                                <th>Süre</th>
+                                <th>Bitiş Tarihi</th>
                                 <th>Ekleyen</th>
                                 <th>Durum</th>
                                 <th>İşlem</th>
@@ -79,7 +92,7 @@
                                     <td>@projectItem.ProjectTitle</td>
                                     <td>@projectItem.CategoryName</td>
                                     <td><span class="badge bg-info">@projectItem.DifficultyLevel</span></td>
-                                    <td>@projectItem.EndTime</td>
+                                    <td>@projectItem.EndDate.ToShortDateString()</td>
                                     <td>@projectItem.CreatedByFullName </td>
                                     <td>
                                         @if (!projectItem.IsActive)
@@ -92,9 +105,14 @@
                                         }
                                     </td>
 
-                                    <td><button class="btn btn-sm btn-primary">Detay</button></td>
-
-
+                                    <td>
+                                        <div class="d-grid gap-2">
+                                            <a asp-action="ProjectDetails" asp-route-id="@projectItem.Id" class="btn btn-primary btn-sm">
+                                                <i class="bi bi-eye"></i> Detay
+                                            </a>
+                                            <!-- Silme butonu kaldırıldı. Yalnızca detay görüntülenebilir. -->
+                                        </div>
+                                    </td>
                                 </tr>
                             }
                         </tbody>
@@ -105,3 +123,4 @@
         </div>
     </div>
 </div>
+<!-- Modal ve Script kaldırıldı -->

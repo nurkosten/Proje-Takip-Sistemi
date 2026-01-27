@@ -11,6 +11,7 @@ namespace ProjeHavuzu.Data.Repository.Abstract
 
 
         Task<List<ProjectListDto>> GetAllProjectsByCategoryAsync();
+        Task<List<ProjectListDto>> GetDeletedProjectsAsync();
       //  Task<List<ProjectListDto>> ProjectsWithCount();
 
 

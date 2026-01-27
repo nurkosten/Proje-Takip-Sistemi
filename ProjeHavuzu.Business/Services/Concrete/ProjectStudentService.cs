@@ -133,7 +133,8 @@ namespace ProjeHavuzu.Business.Services.Concrete
                     ProjectTitle = p.ProjectTitle,
                     Description = p.Description,
                     CategoryName = p.CategoryName,
-                    EndTime = p.EndTime,
+                    StartDate = p.StartDate,
+                    EndDate = p.EndDate,
                     IsAssigned = assignedProjectIds.Contains(p.Id)
                 }).ToList();
 

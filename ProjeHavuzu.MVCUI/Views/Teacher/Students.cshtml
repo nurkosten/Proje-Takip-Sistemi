@@ -15,52 +15,232 @@
 
     @if (TempData["ErrorMessage"] != null)
     {
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="bi bi-exclamation-triangle-fill"></i> @TempData["ErrorMessage"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
     }
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Search Box -->
+    <div class="row mb-3">
+        <div class="col-md-5">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" id="searchInput" class="form-control" placeholder="Ad soyad, öğrenci no veya e-posta ara...">
+                <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <select id="departmentFilter" class="form-select">
+                <option value="">Tüm Bölümler</option>
+                @if (Model != null)
+                {
+                    @foreach (var dept in Model.Select(s => s.Department?.DepartmentName).Where(d => !string.IsNullOrEmpty(d)).Distinct().OrderBy(d => d))
+                    {
+                        <option value="@dept">@dept</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <span id="resultCount" class="badge bg-primary fs-6 p-2"></span>
+        </div>
+    </div>
 
     <div class="card shadow-sm">
         <div class="card-body">
             @if (Model != null && Model.Any())
             {
-                    <div class="table-responsive">
-                        <table class="table table-hover table-striped">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Ad Soyad</th>
-                                    <th>Öğrenci No</th>
-                                    <th>E-posta</th>
-                                    <th>Bölüm</th>
-                                    <th>İşlemler</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            @foreach (var student in Model)
-                            {
-                                        <tr>
-                                            <td>@student.FullName</td>
-                                            <td>@student.StudentNumber</td>
-                                            <td>@student.Email</td>
-                                            <td>@(student.Department?.DepartmentName ?? "-")</td>
-                                            <td>
-                                                <a asp-action="AssignProjectsToStudent" asp-route-studentId="@student.Id" class="btn btn-sm btn-success">
-                                                    <i class="bi bi-folder-plus"></i> Proje Ata / Düzenle
-                                                </a>
-                                            </td>
-                                        </tr>
-                            }
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Ad Soyad</th>
+                                <th>Öğrenci No</th>
+                                <th>E-posta</th>
+                                <th>Bölüm</th>
+                                <th>Durum</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var student in Model)
+                        {
+                            <tr class="@(!student.IsActive ? "table-secondary" : "")">
+                                <td>@student.FullName</td>
+                                <td>@student.StudentNumber</td>
+                                <td>@student.Email</td>
+                                <td>@(student.Department?.DepartmentName ?? "-")</td>
+                                <td>
+                                    @if (student.IsActive)
+                                    {
+                                        <span class="badge bg-success">Aktif</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary" data-bs-toggle="tooltip" data-bs-placement="top" title="Pasifleştirme Nedeni: @student.DeactivationReason">
+                                            <i class="bi bi-info-circle"></i> Pasif
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="AssignProjectsToStudent" asp-route-studentId="@student.Id" class="btn btn-sm btn-success">
+                                            <i class="bi bi-folder-plus"></i> Proje Ata
+                                        </a>
+                                        @if (student.IsActive)
+                                        {
+                                            <button type="button" class="btn btn-sm btn-warning" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#deactivateModal"
+                                                    data-student-id="@student.Id"
+                                                    data-student-name="@student.FullName">
+                                                <i class="bi bi-pause-circle"></i> Pasifleştir
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <form asp-action="ActivateStudent" asp-route-studentId="@student.Id" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-info" 
+                                                        onclick="return confirm('@student.FullName öğrencisini aktifleştirmek istediğinize emin misiniz?');">
+                                                    <i class="bi bi-play-circle"></i> Aktifleştir
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
             }
             else
             {
-                    <div class="alert alert-info text-center">
-                        <i class="bi bi-info-circle"></i> Sistemde kayıtlı öğrenci bulunmamaktadır.
-                    </div>
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle"></i> Sistemde kayıtlı öğrenci bulunmamaktadır.
+                </div>
             }
         </div>
     </div>
 </div>
+
+<!-- Pasifleştirme Modal -->
+<div class="modal fade" id="deactivateModal" tabindex="-1" aria-labelledby="deactivateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="DeactivateStudent" method="post">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title" id="deactivateModalLabel">
+                        <i class="bi bi-pause-circle"></i> Öğrenci Pasifleştir
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="studentId" id="modalStudentId" />
+                    <p class="mb-3">
+                        <strong id="modalStudentName"></strong> öğrencisini pasifleştirmek üzeresiniz.
+                    </p>
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">Pasifleştirme Nedeni <span class="text-danger">*</span></label>
+                        <textarea class="form-control" name="reason" id="reason" rows="3" required 
+                                  placeholder="Pasifleştirme nedenini yazınız..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> İptal
+                    </button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-pause-circle"></i> Pasifleştir
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const departmentFilter = document.getElementById('departmentFilter');
+            const clearSearch = document.getElementById('clearSearch');
+            const resultCount = document.getElementById('resultCount');
+            const tableBody = document.querySelector('table tbody');
+            const rows = tableBody ? tableBody.querySelectorAll('tr') : [];
+
+            function filterTable() {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                const selectedDepartment = departmentFilter.value;
+                let visibleCount = 0;
+
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length === 0) return;
+
+                    const fullName = cells[0]?.textContent?.toLowerCase() || '';
+                    const studentNo = cells[1]?.textContent?.toLowerCase() || '';
+                    const email = cells[2]?.textContent?.toLowerCase() || '';
+                    const department = cells[3]?.textContent?.trim() || '';
+
+                    const matchesSearch = !searchTerm || 
+                        fullName.includes(searchTerm) || 
+                        studentNo.includes(searchTerm) ||
+                        email.includes(searchTerm);
+
+                    const matchesDepartment = !selectedDepartment || department === selectedDepartment;
+
+                    if (matchesSearch && matchesDepartment) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                resultCount.textContent = visibleCount + ' öğrenci bulundu';
+            }
+
+            // Initial count
+            resultCount.textContent = rows.length + ' öğrenci bulundu';
+
+            searchInput.addEventListener('input', filterTable);
+            departmentFilter.addEventListener('change', filterTable);
+            
+            clearSearch.addEventListener('click', function() {
+                searchInput.value = '';
+                departmentFilter.value = '';
+                filterTable();
+            });
+
+            // Modal için öğrenci bilgilerini ayarla
+            var deactivateModal = document.getElementById('deactivateModal');
+            deactivateModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var studentId = button.getAttribute('data-student-id');
+                var studentName = button.getAttribute('data-student-name');
+                
+                document.getElementById('modalStudentId').value = studentId;
+                document.getElementById('modalStudentName').textContent = studentName;
+                document.getElementById('reason').value = '';
+            });
+
+            // Bootstrap Tooltip Aktivasyonu
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+}
