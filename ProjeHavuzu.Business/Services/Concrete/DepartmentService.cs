@@ -36,7 +36,12 @@ namespace ProjeHavuzu.Business.Services.Concrete
                 d => !d.IsDeleted,
                 d => d.Faculty);
             
-            return departments.Select(d => new DepartmentListDto
+            // Kullanıcının ekleme sırasına göre sırala (Fakülte eklenme sırası -> Bölüm eklenme sırası)
+            var sortedEntities = departments
+                .OrderBy(d => d.Faculty.CreatedDate)
+                .ThenBy(d => d.CreatedDate);
+
+            return sortedEntities.Select(d => new DepartmentListDto
             {
                 Id = d.Id,
                 DepartmentName = d.DepartmentName,
@@ -47,7 +52,27 @@ namespace ProjeHavuzu.Business.Services.Concrete
         public async Task<List<DepartmentFacultyDto>> GetDepartmentsByFacultyAsync()
         {
             var departments = _departmentRepository.GetDepartmentsByFacultyName();
-            return await Task.FromResult(departments);
+            var sortedDepartments = departments
+                .OrderBy(d => d.FacultyName)
+                .ThenBy(d => d.DepartmentName)
+                .ToList();
+            return await Task.FromResult(sortedDepartments);
+        }
+
+        public async Task<List<DepartmentListDto>> GetDepartmentsByFacultyIdAsync(Guid facultyId)
+        {
+            // Belirli bir fakülteye ait bölümleri getir
+            var departments = await _departmentRepository.GetAllAsync(
+                d => d.FacultyId == facultyId && !d.IsDeleted,
+                d => d.Faculty);
+
+            return departments.OrderBy(d => d.DepartmentName)
+                .Select(d => new DepartmentListDto
+                {
+                    Id = d.Id,
+                    DepartmentName = d.DepartmentName,
+                    FacultyName = d.Faculty?.FacultyName ?? "Bilinmiyor"
+                }).ToList();
         }
 
         public async Task<DepartmentListDto> GetDepartmentByIdAsync(Guid id)

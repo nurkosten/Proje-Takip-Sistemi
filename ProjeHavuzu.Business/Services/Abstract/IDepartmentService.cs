@@ -9,6 +9,7 @@ namespace ProjeHavuzu.Business.Services.Abstract
     {
         Task<List<DepartmentListDto>> GetAllDepartmentsAsync();
         Task<List<DepartmentFacultyDto>> GetDepartmentsByFacultyAsync();
+        Task<List<DepartmentListDto>> GetDepartmentsByFacultyIdAsync(Guid facultyId);
         Task<DepartmentListDto> GetDepartmentByIdAsync(Guid id);
         Task<bool> CreateDepartmentAsync(DepartmentListDto departmentDto);
         Task<bool> UpdateDepartmentAsync(Guid id, DepartmentListDto departmentDto);

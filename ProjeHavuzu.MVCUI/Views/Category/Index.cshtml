@@ -31,23 +31,21 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if (Model != null && Model.Any())
+                    @{ int index = 1; }
+                    @foreach (var item in Model ?? new List<CategoryListDto>())
                     {
-                        int index = 1;
-                        foreach (var item in Model)
-                        {
-                            <tr>
-                                <td>@index</td>
-                                <td>@item.CategoryName</td>
-                                <td>@item.CreatedDate.ToString("dd.MM.yyyy")</td>
-                                <td>@{
-                                    
-                                if (!string.IsNullOrEmpty(item.CreatedBy.ToString()))
+                        <tr>
+                            <td>@index</td>
+                            <td>@item.CategoryName</td>
+                            <td>@item.CreatedDate.ToString("dd.MM.yyyy")</td>
+                            <td>
+                                @{
+                                    if (!string.IsNullOrEmpty(item.CreatedBy.ToString()))
                                     {
                                         var user = await UserManager.FindByIdAsync(item.CreatedBy.ToString());
                                         if (user != null)
                                         {
-                                                @user.FirstName @user.LastName
+                                            @user.FirstName @user.LastName
                                         }
                                         else
                                         {
@@ -57,38 +55,24 @@
                                     else
                                     {
                                         @:Bilinmiyor
-                                    }       
-                                
-                                
-                                
-                                } </td>
+                                    }
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Edit"
+                                   asp-route-id="@item.Id"
+                                   class="btn btn-sm btn-warning me-1">
+                                    Düzenle
+                                </a>
 
-
-
-                                <td class="text-end">
-                                    <a asp-action="Edit"
-                                       asp-route-id="@item.Id"
-                                       class="btn btn-sm btn-warning me-1">
-                                        Düzenle
-                                    </a>
-
-                                    <a asp-action="Delete"
-                                       asp-route-id="@item.Id"
-                                       class="btn btn-sm btn-danger">
-                                        Sil
-                                    </a>
-                                </td>
-                            </tr>
-                            index++;
-                        }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="4" class="text-center text-muted py-4">
-                                Kayıt bulunamadı
+                                <a asp-action="Delete"
+                                   asp-route-id="@item.Id"
+                                   class="btn btn-sm btn-danger">
+                                    Sil
+                                </a>
                             </td>
                         </tr>
+                        index++;
                     }
                 </tbody>
             </table>

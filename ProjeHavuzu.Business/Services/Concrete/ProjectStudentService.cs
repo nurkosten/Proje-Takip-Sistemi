@@ -226,12 +226,13 @@ namespace ProjeHavuzu.Business.Services.Concrete
         public async Task<List<ProjectStudentAssignDto>> GetProjectsByStudentIdAsync(Guid studentId)
         {
             var assignments = await _projectStudentRepository.GetProjectStudentsByStudentIdAsync(studentId);
+            var allProjects = await _projectRepository.GetAllProjectsByCategoryAsync();
+            
             var result = new List<ProjectStudentAssignDto>();
 
             foreach (var assignment in assignments)
             {
-                var projects = await _projectRepository.GetAllProjectsByCategoryAsync();
-                var project = projects.FirstOrDefault(p => p.Id == assignment.ProjectId);
+                var project = allProjects.FirstOrDefault(p => p.Id == assignment.ProjectId);
 
                 if (project != null)
                 {
@@ -239,12 +240,17 @@ namespace ProjeHavuzu.Business.Services.Concrete
                     {
                         ProjectId = assignment.ProjectId,
                         ProjectTitle = project.ProjectTitle,
-                        StudentId = assignment.StudentId
+                        Description = project.Description,
+                        CompletionPercentage = project.CompletionPercentage,
+                        StudentId = assignment.StudentId,
+                        // CreatedDate ekleyelim ki sıralayabilelim
+                        ProjectCreatedDate = project.CreatedDate 
                     });
                 }
             }
 
-            return result;
+            // En son eklenen proje en üstte olacak şekilde sırala
+            return result.OrderByDescending(x => x.ProjectCreatedDate).ToList();
         }
     }
 }

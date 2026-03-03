@@ -11,7 +11,7 @@ namespace ProjeHavuzu.Data.Repository.Concrete
 {
     public class RepositoryBase<T> : IRepository<T> where T : BaseEntity
     {
-        private readonly ApplicationContext _context;
+        protected readonly ApplicationContext _context;
         protected readonly DbSet<T> _dbSet;
 
 
@@ -35,7 +35,7 @@ namespace ProjeHavuzu.Data.Repository.Concrete
 
         }
 
-        public async Task<T?> GetAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
+        public async Task<T> GetAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
         {
             return await _dbSet
              .AsNoTracking()
@@ -69,8 +69,8 @@ namespace ProjeHavuzu.Data.Repository.Concrete
 
 
         }
-        async Task SaveAsync()=> await _context.SaveChangesAsync();
-        void Save()=> _context.SaveChanges();
+        async Task SaveAsync() => await _context.SaveChangesAsync();
+        void Save() => _context.SaveChanges();
 
         public async Task<List<T>> GetAllAsync(Expression<Func<T, bool>>? predicate = null, params Expression<Func<T, object>>[] includes)
         {

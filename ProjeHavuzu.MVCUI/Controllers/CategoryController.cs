@@ -42,10 +42,86 @@ namespace ProjeHavuzu.MVCUI.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // GET: Category/Edit/{id}
+        [HttpGet]
+        public async Task<IActionResult> Edit(Guid id)
+        {
+            var category = await _categoryRepository.GetAsync(c => c.Id == id);
+            if (category == null)
+            {
+                TempData["ErrorMessage"] = "Kategori bulunamadı.";
+                return RedirectToAction(nameof(Index));
+            }
 
+            var dto = new CategoryAddDto
+            {
+                CategoryName = category.CategoryName
+            };
+            ViewBag.CategoryId = id;
+            return View(dto);
+        }
 
+        // POST: Category/Edit/{id}
+        [HttpPost]
+        public async Task<IActionResult> Edit(Guid id, CategoryAddDto categoryAddDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.CategoryId = id;
+                return View(categoryAddDto);
+            }
 
+            var category = await _categoryRepository.GetAsync(c => c.Id == id);
+            if (category == null)
+            {
+                TempData["ErrorMessage"] = "Kategori bulunamadı.";
+                return RedirectToAction(nameof(Index));
+            }
 
+            category.CategoryName = categoryAddDto.CategoryName;
+            _categoryRepository.Update(category);
 
+            TempData["SuccessMessage"] = "Kategori başarıyla güncellendi.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // GET: Category/Delete/{id}
+        [HttpGet]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var category = await _categoryRepository.GetAsync(c => c.Id == id);
+            if (category == null)
+            {
+                TempData["ErrorMessage"] = "Kategori bulunamadı.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            return View(category);
+        }
+
+        // POST: Category/DeleteConfirmed/{id}
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(Guid id)
+        {
+            var category = await _categoryRepository.GetAsync(c => c.Id == id);
+            if (category == null)
+            {
+                TempData["ErrorMessage"] = "Kategori bulunamadı.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            try
+            {
+                _categoryRepository.Remove(category);
+                TempData["SuccessMessage"] = "Kategori başarıyla silindi.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Kategori silinirken hata oluştu: {ex.Message}";
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

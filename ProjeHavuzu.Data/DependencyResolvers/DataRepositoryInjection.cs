@@ -22,6 +22,9 @@ namespace ProjeHavuzu.Data.DependencyResolvers
             services.AddScoped<IDepartmentRepository, DepartmentRepository>();
             services.AddScoped<IProjectStudentRepository, ProjectStudentRepository>();
             services.AddScoped<ISystemLogRepository, SystemLogRepository>();
+            services.AddScoped<IProjectPhaseRepository, ProjectPhaseRepository>();
+            services.AddScoped<IProjectRequestRepository, ProjectRequestRepository>();
+            services.AddScoped<IProjectSubmissionRepository, ProjectSubmissionRepository>();
         }
     }
 }

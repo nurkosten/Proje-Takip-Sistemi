@@ -6,131 +6,195 @@
     ViewData["Title"] = "Profil Düzenle";
 }
 
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card shadow">
-                <div class="card-header">
-                    <h4 class="mb-0"><i class="bi bi-person-gear"></i> Profil Düzenle</h4>
-                </div>
-                <div class="card-body">
-                    @if (!ViewData.ModelState.IsValid)
-                    {
-                            <div class="alert alert-danger">
-                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-                            {
-                                        <div>@error.ErrorMessage</div>
-                            }
-                            </div>
-                    }
+<link rel="stylesheet" href="~/css/profile.css" />
 
-                    <form asp-action="EditProfile" asp-controller="Account" method="post">
-                        <input type="hidden" asp-for="Id" />
+<div class="profile-wrapper">
+    <div class="profile-card">
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="FirstName" class="form-label"></label>
-                                <input asp-for="FirstName" class="form-control" />
-                                <span asp-validation-for="FirstName" class="text-danger"></span>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="LastName" class="form-label"></label>
-                                <input asp-for="LastName" class="form-control" />
-                                <span asp-validation-for="LastName" class="text-danger"></span>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="Email" class="form-label"></label>
-                                <input asp-for="Email" class="form-control" type="email" />
-                                <span asp-validation-for="Email" class="text-danger"></span>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="PhoneNumber" class="form-label"></label>
-                                <input asp-for="PhoneNumber" class="form-control" type="tel" />
-                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
-                            </div>
-                        </div>
-
-                        @if (User.IsInRole("Student") || User.IsInRole("Teacher"))
-                        {
-                            <div class="mb-3">
-                                <label asp-for="StudentNumber" class="form-label">
-                                    @(User.IsInRole("Teacher") ? "Sicil Numarası" : "Öğrenci Numarası")
-                                </label>
-                                <input asp-for="StudentNumber" class="form-control" />
-                                <span asp-validation-for="StudentNumber" class="text-danger"></span>
-                            </div>
-                        }
-
-                        @if (User.IsInRole("Student") || User.IsInRole("Teacher"))
-                        {
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label asp-for="FacultyId" class="form-label"></label>
-                                    <select asp-for="FacultyId" class="form-select" id="facultyDropdown" 
-                                            asp-items="@(new SelectList(Model.Faculties, "Id", "FacultyName"))">
-                                        <option value="">-- Fakülte Seçin --</option>
-                                    </select>
-                                    <span asp-validation-for="FacultyId" class="text-danger"></span>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label asp-for="DepartmentId" class="form-label"></label>
-                                    <select asp-for="DepartmentId" class="form-select" id="departmentDropdown"
-                                            asp-items="@(new SelectList(Model.Departments, "Id", "DepartmentName"))">
-                                        <option value="">-- Bölüm Seçin --</option>
-                                    </select>
-                                    <span asp-validation-for="DepartmentId" class="text-danger"></span>
-                                </div>
-                            </div>
-                        }
-
-                        <div class="d-flex justify-content-between mt-4">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check-circle"></i> Güncelle
-                            </button>
-                            <a asp-action="AccountProfile" class="btn btn-secondary">
-                                <i class="bi bi-x-circle"></i> İptal
-                            </a>
-                        </div>
-                    </form>
-                </div>
+        @* ── Header ── *@
+        <div class="profile-header">
+            <div class="profile-header-icon">
+                <i class="bi bi-person-gear"></i>
+            </div>
+            <div>
+                <h4 class="profile-header-title">Profil Düzenle</h4>
+                <p class="profile-header-subtitle">Kişisel bilgilerinizi güncelleyin</p>
             </div>
         </div>
+
+        @* ── Body ── *@
+        <div class="profile-body">
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <div>@error.ErrorMessage</div>
+                    }
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
+                </div>
+            }
+
+            <form asp-action="EditProfile" asp-controller="Account" method="post">
+                <input type="hidden" asp-for="Id" />
+
+                @* Ad / Soyad *@
+                <div class="edit-form-row">
+                    <div class="edit-form-group">
+                        <label asp-for="FirstName" class="edit-form-label">
+                            <i class="bi bi-person"></i> Ad
+                        </label>
+                        <input asp-for="FirstName" class="form-control edit-form-input" placeholder="Adınız" />
+                        <span asp-validation-for="FirstName" class="text-danger edit-form-error"></span>
+                    </div>
+                    <div class="edit-form-group">
+                        <label asp-for="LastName" class="edit-form-label">
+                            <i class="bi bi-person"></i> Soyad
+                        </label>
+                        <input asp-for="LastName" class="form-control edit-form-input" placeholder="Soyadınız" />
+                        <span asp-validation-for="LastName" class="text-danger edit-form-error"></span>
+                    </div>
+                </div>
+
+                @* Email / Telefon *@
+                <div class="edit-form-row">
+                    <div class="edit-form-group">
+                        <label asp-for="Email" class="edit-form-label">
+                            <i class="bi bi-envelope"></i> Email
+                        </label>
+                        <input asp-for="Email" class="form-control edit-form-input" type="email" placeholder="ornek@mail.com" />
+                        <span asp-validation-for="Email" class="text-danger edit-form-error"></span>
+                    </div>
+                    <div class="edit-form-group">
+                        <label asp-for="PhoneNumber" class="edit-form-label">
+                            <i class="bi bi-telephone"></i> Telefon
+                        </label>
+                        <input asp-for="PhoneNumber" class="form-control edit-form-input" type="tel" placeholder="05xx xxx xx xx" />
+                        <span asp-validation-for="PhoneNumber" class="text-danger edit-form-error"></span>
+                    </div>
+                </div>
+
+                @* Öğrenci / Sicil Numarası *@
+                @if (User.IsInRole("Student") || User.IsInRole("Teacher"))
+                {
+                    <div class="edit-form-row edit-form-row--single">
+                        <div class="edit-form-group edit-form-group--full">
+                            <label asp-for="StudentNumber" class="edit-form-label">
+                                <i class="bi bi-hash"></i>
+                                @(User.IsInRole("Teacher") ? "Sicil Numarası" : "Öğrenci Numarası")
+                            </label>
+                            @if (User.IsInRole("Student"))
+                            {
+                                <input asp-for="StudentNumber" class="form-control edit-form-input edit-form-input--readonly" readonly />
+                                <small class="edit-form-hint">
+                                    <i class="bi bi-info-circle"></i>
+                                    Öğrenci numarası, e-posta adresinizden otomatik olarak oluşturulmaktadır.
+                                </small>
+                            }
+                            else
+                            {
+                                <input asp-for="StudentNumber" class="form-control edit-form-input" />
+                            }
+                            <span asp-validation-for="StudentNumber" class="text-danger edit-form-error"></span>
+                        </div>
+                    </div>
+                }
+
+                @* Fakülte / Bölüm *@
+                @if (User.IsInRole("Student") || User.IsInRole("Teacher"))
+                {
+                    <div class="edit-form-row">
+                        <div class="edit-form-group">
+                            <label asp-for="FacultyId" class="edit-form-label">
+                                <i class="bi bi-building"></i> Fakülte
+                            </label>
+                            <select asp-for="FacultyId" class="form-select edit-form-input" id="facultyDropdown"
+                                    asp-items="@(new SelectList(Model.Faculties, "Id", "FacultyName"))">
+                                <option value="">-- Fakülte Seçin --</option>
+                            </select>
+                            <span asp-validation-for="FacultyId" class="text-danger edit-form-error"></span>
+                        </div>
+                        <div class="edit-form-group">
+                            <label asp-for="DepartmentId" class="edit-form-label">
+                                <i class="bi bi-diagram-3"></i> Bölüm
+                            </label>
+                            <select asp-for="DepartmentId" class="form-select edit-form-input" id="departmentDropdown"
+                                    asp-items="@(new SelectList(Model.Departments, "Id", "DepartmentName"))">
+                                <option value="">-- Bölüm Seçin --</option>
+                            </select>
+                            <span asp-validation-for="DepartmentId" class="text-danger edit-form-error"></span>
+                        </div>
+                    </div>
+                }
+
+                @* ── Butonlar ── *@
+                <div class="profile-actions profile-actions--in-form">
+                    <a asp-action="AccountProfile" class="btn-profile-secondary">
+                        <i class="bi bi-x-circle"></i> İptal
+                    </a>
+                    <button type="submit" class="btn-profile-primary">
+                        <i class="bi bi-check-circle"></i> Güncelle
+                    </button>
+                </div>
+            </form>
+
+        </div>
+
     </div>
 </div>
 
 @section Scripts {
-        <partial name="_ValidationScriptsPartial" />
-        <script>
-            $(document).ready(function () {
-                $('#facultyDropdown').change(function () {
-                    var facultyId = $(this).val();
-                    var departmentDropdown = $('#departmentDropdown');
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+            // Email değiştikçe Öğrenci Numarasını güncelle (Sadece Öğrenciler için)
+            function updateStudentNumber() {
+                var email = $('#Email').val();
+                var studentNumberInput = $('#StudentNumber');
 
-                    // Bölüm dropdown'ını temizle
-                    departmentDropdown.empty();
-                    departmentDropdown.append('<option value="">-- Bölüm Seçin --</option>');
-
-                    if (facultyId) {
-                        $.ajax({
-                            url: '@Url.Action("GetDepartmentsByFaculty", "Account")',
-                            type: 'GET',
-                            data: { facultyId: facultyId },
-                            success: function (data) {
-                                $.each(data, function (index, item) {
-                                    departmentDropdown.append(
-                                        $('<option></option>').val(item.id).text(item.name)
-                                    );
-                                });
-                            },
-                            error: function () {
-                                console.log('Bölümler yüklenirken hata oluştu.');
-                            }
-                        });
+                if (studentNumberInput.prop('readonly')) {
+                    if (email && email.indexOf('@@') !== -1) {
+                        var derived = email.split('@@')[0];
+                        studentNumberInput.val(derived);
+                    } else {
+                        if (!email) studentNumberInput.val('');
                     }
-                });
+                }
+            }
+
+            updateStudentNumber();
+            $('#Email').on('input keyup paste', updateStudentNumber);
+
+            $('#facultyDropdown').change(function () {
+                var facultyId = $(this).val();
+                var departmentDropdown = $('#departmentDropdown');
+
+                departmentDropdown.empty();
+                departmentDropdown.append('<option value="">-- Bölüm Seçin --</option>');
+
+                if (facultyId) {
+                    $.ajax({
+                        url: '@Url.Action("GetDepartmentsByFaculty", "Account")',
+                        type: 'GET',
+                        data: { facultyId: facultyId },
+                        success: function (data) {
+                            $.each(data, function (index, item) {
+                                var id = item.id || item.Id;
+                                var name = item.name || item.Name;
+                                if (id && name) {
+                                    departmentDropdown.append(
+                                        $('<option></option>').val(id).text(name)
+                                    );
+                                }
+                            });
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Error loading departments:", error);
+                        }
+                    });
+                }
             });
-        </script>
+        });
+    </script>
 }

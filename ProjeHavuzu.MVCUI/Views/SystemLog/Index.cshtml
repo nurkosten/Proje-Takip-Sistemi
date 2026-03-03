@@ -22,15 +22,15 @@
                             <th>Action</th>
                             <th>Metod</th>
                             <th>URL</th>
+                            <th>Kullanıcı</th>
                             <th>Detay</th>
-                            <th>İşlem</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var item in Model)
                         {
                             <tr class="@(item.LogType == "Error" ? "table-danger" : (item.LogType == "Warning" ? "table-warning" : ""))">
-                                <td>@item.CreatedDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss")</td>
+                                <td data-order="@item.CreatedDate.Ticks">@item.CreatedDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss")</td>
                                 <td>@item.IpAddress</td>
                                 <td title="@item.UserAgent">
                                     @{
@@ -53,30 +53,8 @@
                                 <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="@item.Url">
                                     <a href="@item.Url" target="_blank">Link</a>
                                 </td>
+                                <td>@item.CreatedByUserName</td>
                                 <td>@item.Detail</td>
-                                <td>
-                                    @if(!string.IsNullOrEmpty(item.Exception))
-                                    {
-                                        <button type="button" class="btn btn-sm btn-danger py-0" data-toggle="modal" data-target="#errorModal_@item.Id">Hata</button>
-                                        
-                                        <!-- Hata Modal -->
-                                        <div class="modal fade" id="errorModal_@item.Id" tabindex="-1" role="dialog" aria-hidden="true">
-                                            <div class="modal-dialog modal-lg" role="document">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title">Hata Detayı</h5>
-                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
-                                                        </button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <pre>@item.Exception</pre>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    }
-                                </td>
                             </tr>
                         }
                     </tbody>
@@ -85,3 +63,13 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            var table = $('#dataTable').DataTable();
+            // Varsayılan sıralamayı Tarih sütununa (index 0) göre azalan (desc) yap
+            table.order([0, 'desc']).draw();
+        });
+    </script>
+}

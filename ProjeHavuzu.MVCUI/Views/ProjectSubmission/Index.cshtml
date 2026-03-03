@@ -1,0 +1,101 @@
+@using ProjeHavuzu.Data.Entites
+@using ProjeHavuzu.Data.Entites.Enums
+@model List<ProjectSubmission>
+
+@{
+    ViewData["Title"] = "Proje Yükleme";
+    Layout = "~/Views/Shared/_LayoutStudent.cshtml"; // Öğrenci Layout
+}
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0"><i class="bi bi-cloud-upload"></i> Proje Dosyası Yükleme</h4>
+        </div>
+        <div class="card-body">
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+            }
+
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> <strong>Bilgilendirme:</strong>
+                <ul class="mb-0">
+                    <li>Sadece <strong>.zip</strong> uzantılı dosyalar yükleyebilirsiniz.</li>
+                    <li>Maksimum dosya boyutu <strong>100 MB</strong>'dır.</li>
+                    <li>Dosya adınız sistemde benzersiz bir isimle saklanacaktır.</li>
+                </ul>
+            </div>
+
+            <form asp-action="Upload" method="post" enctype="multipart/form-data" class="mb-5">
+                @Html.AntiForgeryToken()
+                <div class="mb-3">
+                    <label for="projectFile" class="form-label fw-bold">Dosya Seçiniz (.zip)</label>
+                    <input type="file" name="projectFile" class="form-control" accept=".zip" required
+                        id="projectFile" />
+                    <div class="form-text text-dark">Lütfen projenizi tek bir zip dosyası haline getirip yükleyiniz.
+                    </div>
+                </div>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-success px-4 api-btn">
+                        <i class="bi bi-upload"></i> Dosyayı Yükle
+                    </button>
+                </div>
+            </form>
+
+            <hr />
+
+            <h5 class="mb-3"><i class="bi bi-clock-history"></i> Yükleme Geçmişi</h5>
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Tarih</th>
+                            <th>Dosya Adı</th>
+                            <th>Boyut</th>
+                            <th>Durum</th>
+                            <th>İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null)
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.UploadDate.ToString("g")</td>
+                                    <td>@item.FileName</td>
+                                    <td>@((item.FileSize / 1024.0 / 1024.0).ToString("F2")) MB</td>
+                                    <td>
+                                        @if (item.SubmissionStatus == SubmissionStatus.Approved)
+                                        {
+                                            <span class="badge bg-success">Onaylandı</span>
+                                        }
+                                        else if (item.SubmissionStatus == SubmissionStatus.Rejected)
+                                        {
+                                            <span class="badge bg-danger">Reddedildi</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark">Onay Bekliyor</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <a asp-action="Download" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-download"></i> İndir
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

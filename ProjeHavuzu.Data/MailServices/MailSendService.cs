@@ -18,18 +18,12 @@ namespace ProjeHavuzu.Data.MailServices
         {
             try
             {
-                // TEST MODU: Tüm mailler nurkosten@gmail.com adresine yönlendiriliyor
-                string originalReceiver = email;
-                email = "nurkosten@gmail.com";
-
-                // Mail içeriğine orijinal alıcı bilgisini ekle
-                htmlMessage = $"<div style='background-color: #fff3cd; color: #856404; padding: 10px; margin-bottom: 15px; border: 1px solid #ffeeba; border-radius: 5px; font-family: sans-serif;'>" +
-                              $"<strong>⚠️ TEST MODU AKTİF</strong><br>" +
-                              $"Bu e-posta aslında şu adrese gönderilecekti: <strong>{originalReceiver}</strong>" +
-                              $"</div>" + htmlMessage;
+                // TEST MODU KAPALI: Artık mailler gerçek alıcıya (öğrenciye) gidecek.
+                // string originalReceiver = email;
+                // email = "nurkosten@gmail.com";
 
                 var mailSettings = _configuration.GetSection("EmailSettings");
-                
+
                 var senderEmail = mailSettings["Mail"];
                 var senderPassword = mailSettings["Password"];
                 var senderHost = mailSettings["Host"];
@@ -37,16 +31,19 @@ namespace ProjeHavuzu.Data.MailServices
                 // Placeholder kontrolü
                 if (senderEmail == "your-email@gmail.com" || senderPassword == "your-app-password")
                 {
-                     throw new Exception("SMTP Ayarları Yapılmadı: Lütfen appsettings.json dosyasındaki EmailSettings bölümüne geçerli bir Gmail adresi ve Uygulama Şifresi giriniz.");
+                    throw new Exception("SMTP Ayarları Yapılmadı: Lütfen appsettings.json dosyasındaki EmailSettings bölümüne geçerli bir Gmail adresi ve Uygulama Şifresi giriniz.");
                 }
 
                 if (string.IsNullOrEmpty(senderEmail) || string.IsNullOrEmpty(senderPassword))
                 {
-                   throw new Exception("Email gönderimi için SMTP ayarları (Mail/Password) eksik.");
+                    throw new Exception("Email gönderimi için SMTP ayarları (Mail/Password) eksik.");
                 }
 
-                var senderPort = int.Parse(mailSettings["Port"]);
-                var displayName = mailSettings["DisplayName"];
+                if (!int.TryParse(mailSettings["Port"], out int senderPort))
+                {
+                    senderPort = 587; // Default fallback
+                }
+                var displayName = mailSettings["DisplayName"] ?? "Proje Takip Sistemi";
 
                 var smtpClient = new System.Net.Mail.SmtpClient(senderHost)
                 {

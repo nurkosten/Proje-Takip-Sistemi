@@ -8,8 +8,17 @@ using ProjeHavuzu.Data.Helpers;
 
 
 using Hangfire;
+using System.Net;
+using ProjeHavuzu.MVCUI.Controllers;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Türkçe Dil Desteği
+var cultureInfo = new CultureInfo("tr-TR");
+CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
 // Hangfire Servisleri
 var connectionString = builder.Configuration.GetConnectionString("DefaultServer");
@@ -30,7 +39,7 @@ builder.Services.AddHangfire(configuration => configuration
 builder.Services.AddHangfireServer();
 
 // Add services to the container.
-// Add services to the container.
+
 builder.Services.AddControllersWithViews(options =>
 {
     // Global Loglama Filtresi - Tüm controllerları loglar
@@ -66,6 +75,7 @@ using (var scope = app.Services.CreateScope())
     var roleManager = services.GetRequiredService<RoleManager<AppRole>>();
 
     await IdentitySeed.SeedAsync(userManager, roleManager);
+    await FacultyDepartmentSeed.SeedAsync(services);
 }
 
 
@@ -83,10 +93,18 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 app.UseHttpsRedirection();
 app.UseRouting();
 
+var localizationOptions = new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("tr-TR"),
+    SupportedCultures = new List<CultureInfo> { cultureInfo },
+    SupportedUICultures = new List<CultureInfo> { cultureInfo }
+};
+app.UseRequestLocalization(localizationOptions);
+
 app.UseAuthentication(); // ❗ MUTLAKA ÖNCE
 app.UseAuthorization();  // ❗ SONRA
 
-// Hangfire Dashboard (Panel) - İsteğe bağlı "/hangfire" adresinden erişilebilir
+
 app.UseHangfireDashboard("/hangfire");
 
 // Sistem Sağlık Kontrolü (Her Dakika)

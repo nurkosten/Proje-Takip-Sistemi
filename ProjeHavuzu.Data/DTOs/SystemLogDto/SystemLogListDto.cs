@@ -17,6 +17,6 @@ namespace ProjeHavuzu.Data.DTOs.SystemLogDto
         public string LogType { get; set; }
         public string Exception { get; set; }
         public DateTime CreatedDate { get; set; }
-        public string CreatedByUserName { get; set; } // Join ile alabiliriz veya CreatedBy
+        public string CreatedByUserName { get; set; } = null!; // Join ile alabiliriz veya CreatedBy
     }
 }

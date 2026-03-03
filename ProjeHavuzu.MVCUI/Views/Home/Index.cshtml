@@ -1,8 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Identity
-@using ProjeHavuzu.Data.DTOs.ProjectDto
-@using ProjeHavuzu.Data.Entites.Enums
 @using ProjeHavuzu.Data.Entites.Identity
-@model List<ProjectListDto>
 @inject UserManager<AppUser> UserManager
 
 @{
@@ -12,30 +9,31 @@
 <div class="row mb-4">
     <div class="col-12">
         <div class="welcome-section">
-            <h2>PROJE HAVUZU SİSTEMİ</h2>
-            <p>Projelerinizi sisteme yükleyebilir, mevcut projeleri inceleyebilir ve durumlarını takip edebilirsiniz.</p>
+            <h2>PROJE TAKİP SİSTEMİ</h2>
+            <p>Projelerinizi sisteme yükleyebilir, mevcut projeleri inceleyebilir ve durumlarını takip edebilirsiniz.
+            </p>
         </div>
     </div>
 </div>
 
-<div class="row mb-5" >
+<div class="row mb-5">
     <div class="col-md-4">
         <div class="card h-100">
             <div class="card-icon"><i class="fas fa-plus-circle"></i></div>
-            <a  href="~/Project/Create">
-               
+            <a href="~/Project/Create">
+
                 <h3>Yeni Proje Ekle</h3>
             </a>
-            
+
             <p>Aklınızdaki proje fikrini sisteme girin ve danışman onayına sunun.</p>
         </div>
     </div>
     <div class="col-md-4">
         <div class="card h-100">
             <div class="card-icon"><i class="fas fa-tasks"></i></div>
-                <a href="/Student/MyProjects">
-                    <h3>Projelerim & Durum</h3>
-                </a>
+            <a href="/Student/MyProjects">
+                <h3>Projelerim &amp; Durum</h3>
+            </a>
             <p>Mevcut projelerinizin onay durumunu ve görevleri takip edin.</p>
         </div>
     </div>
@@ -68,14 +66,14 @@
                 </h3>
             </div>
             <div class="card-body">
-
                 <div class="table-responsive">
-                    <table class="table table-hover table-striped align-middle">
+                    <table id="projectsTable" class="table table-hover table-striped align-middle" style="width:100%">
                         <thead class="table-light">
                             <tr>
                                 <th>Proje</th>
                                 <th>Kategori</th>
                                 <th>Zorluk</th>
+                                <th>İlerleme</th>
                                 <th>Bitiş Tarihi</th>
                                 <th>Ekleyen</th>
                                 <th>Durum</th>
@@ -83,44 +81,109 @@
                             </tr>
                         </thead>
                         <tbody>
-
-                            @foreach (var projectItem in Model)
-                            {
-
-
-                                <tr>
-                                    <td>@projectItem.ProjectTitle</td>
-                                    <td>@projectItem.CategoryName</td>
-                                    <td><span class="badge bg-info">@projectItem.DifficultyLevel</span></td>
-                                    <td>@projectItem.EndDate.ToShortDateString()</td>
-                                    <td>@projectItem.CreatedByFullName </td>
-                                    <td>
-                                        @if (!projectItem.IsActive)
-                                        {
-                                            <span class="badge bg-success">Aktif</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-warning text-dark">Pasif</span>
-                                        }
-                                    </td>
-
-                                    <td>
-                                        <div class="d-grid gap-2">
-                                            <a asp-action="ProjectDetails" asp-route-id="@projectItem.Id" class="btn btn-primary btn-sm">
-                                                <i class="bi bi-eye"></i> Detay
-                                            </a>
-                                            <!-- Silme butonu kaldırıldı. Yalnızca detay görüntülenebilir. -->
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
+                            @* Server-side: Veriler AJAX ile doldurulacak *@
                         </tbody>
                     </table>
                 </div>
-
             </div>
         </div>
     </div>
 </div>
-<!-- Modal ve Script kaldırıldı -->
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#projectsTable').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "ajax": {
+                    "url": "@Url.Action("GetProjectsData", "Home")",
+                    "type": "POST",
+                    "error": function (xhr, error, thrown) {
+                        console.error('DataTables AJAX error:', error, thrown);
+                    }
+                },
+                "order": [[0, "asc"]],
+                "pageLength": 50,
+                "lengthMenu": [10, 25, 50, 100, 250],
+                "columns": [
+                    { "data": "projectTitle" },
+                    { "data": "categoryName" },
+                    {
+                        "data": "difficultyLevel",
+                        "render": function (data) {
+                            switch (data) {
+                                case "Easy": case "Kolay":
+                                    return '<span class="badge bg-success">Kolay</span>';
+                                case "Medium": case "Orta":
+                                    return '<span class="badge bg-warning text-dark">Orta</span>';
+                                case "Hard": case "Zor":
+                                    return '<span class="badge bg-danger">Zor</span>';
+                                default:
+                                    return '<span class="badge bg-info">' + data + '</span>';
+                            }
+                        }
+                    },
+                    {
+                        "data": "completionPercentage",
+                        "render": function (data) {
+                            var color = data < 30 ? "bg-danger" : data < 70 ? "bg-warning" : "bg-success";
+                            return '<div class="d-flex align-items-center">' +
+                                '<div class="progress flex-grow-1" style="height: 8px; min-width: 60px;">' +
+                                '<div class="progress-bar ' + color + '" role="progressbar" style="width: ' + data + '%;" aria-valuenow="' + data + '" aria-valuemin="0" aria-valuemax="100"></div>' +
+                                '</div>' +
+                                '<span class="badge ' + color + ' ms-2">%' + data + '</span>' +
+                                '</div>';
+                        }
+                    },
+                    { "data": "endDate" },
+                    { "data": "createdByFullName" },
+                    {
+                        "data": "isActive",
+                        "render": function (data) {
+                            if (!data) {
+                                return '<span class="badge bg-success">Aktif</span>';
+                            } else {
+                                return '<span class="badge bg-warning text-dark">Pasif</span>';
+                            }
+                        }
+                    },
+                    {
+                        "data": "id",
+                        "orderable": false,
+                        "searchable": false,
+                        "render": function (data) {
+                            return '<div class="d-grid gap-2">' +
+                                '<a href="/Home/ProjectDetails/' + data + '" class="btn btn-primary btn-sm">' +
+                                '<i class="bi bi-eye"></i> Detay</a></div>';
+                        }
+                    }
+                ],
+                "language": {
+                    "decimal": "",
+                    "emptyTable": "Tabloda herhangi bir veri mevcut değil",
+                    "info": "_TOTAL_ kayıttan _START_ - _END_ arasındaki kayıtlar gösteriliyor",
+                    "infoEmpty": "Kayıt yok",
+                    "infoFiltered": "(_MAX_ kayıt içerisinden bulunan)",
+                    "infoPostFix": "",
+                    "thousands": ".",
+                    "lengthMenu": "Sayfada _MENU_ kayıt göster",
+                    "loadingRecords": "Yükleniyor...",
+                    "processing": '<div class="d-flex justify-content-center align-items-center"><div class="spinner-border text-primary me-2" role="status"></div> İşleniyor...</div>',
+                    "search": "Ara:",
+                    "zeroRecords": "Eşleşen kayıt bulunamadı",
+                    "paginate": {
+                        "first": "İlk",
+                        "last": "Son",
+                        "next": "Sonraki",
+                        "previous": "Önceki"
+                    },
+                    "aria": {
+                        "sortAscending": ": artan sütun sıralamasını aktifleştir",
+                        "sortDescending": ": azalan sütun sıralamasını aktifleştir"
+                    }
+                }
+            });
+        });
+    </script>
+}

@@ -63,7 +63,26 @@ namespace ProjeHavuzu.Data.Helpers
                 // var token = await userManager.GeneratePasswordResetTokenAsync(adminUser);
                 // await userManager.ResetPasswordAsync(adminUser, token, adminPassword);
             }
+
+            // 🔹 Teacher Rolü
+            if (!await roleManager.RoleExistsAsync("Teacher"))
+            {
+                await roleManager.CreateAsync(new AppRole
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Teacher"
+                });
+            }
+
+            // 🔹 Student Rolü
+            if (!await roleManager.RoleExistsAsync("Student"))
+            {
+                await roleManager.CreateAsync(new AppRole
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Student"
+                });
+            }
         }
     }
-
 }

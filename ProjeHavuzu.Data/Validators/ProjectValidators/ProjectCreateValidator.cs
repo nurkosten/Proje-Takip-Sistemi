@@ -11,37 +11,45 @@ namespace ProjeHavuzu.Data.Validators.ProjectValidators
         public ProjectCreateValidator()
         {
             RuleFor(x => x.ProjectTitle)
-                .NotEmpty().WithMessage("Proje başlığı boş olamaz.")
-                .NotNull().WithMessage("Proje başlığı boş olamaz.")
+                .NotEmpty().WithMessage("Proje başlığı alanı zorunludur.")
+                .NotNull().WithMessage("Proje başlığı alanı zorunludur.")
                 .MinimumLength(3).WithMessage("Proje başlığı en az 3 karakter olmalıdır.")
                 .MaximumLength(200).WithMessage("Proje başlığı en fazla 200 karakter olabilir.");
 
             RuleFor(x => x.Description)
-                .NotEmpty().WithMessage("Proje açıklaması boş olamaz.")
-                .NotNull().WithMessage("Proje açıklaması boş olamaz.")
+                .NotEmpty().WithMessage("Proje açıklaması alanı zorunludur.")
+                .NotNull().WithMessage("Proje açıklaması alanı zorunludur.")
                 .MinimumLength(10).WithMessage("Proje açıklaması en az 10 karakter olmalıdır.")
                 .MaximumLength(2000).WithMessage("Proje açıklaması en fazla 2000 karakter olabilir.");
 
-            RuleFor(x => x.CategoryId)
-                .NotEmpty().WithMessage("Kategori seçimi zorunludur.")
-                .NotEqual(Guid.Empty).WithMessage("Geçerli bir kategori seçmelisiniz.");
+            // Kategori veya Özel Kategori'den en az biri dolu olmalı (Gerçi serviste Genel'e düşüyor ama formda zorunlu yapalım)
+            RuleFor(x => x.CustomCategory)
+                .NotEmpty().When(x => !x.CategoryId.HasValue || x.CategoryId == Guid.Empty)
+                .WithMessage("Lütfen bir kategori adı giriniz.");
+
+            RuleFor(x => x.ConsultantId)
+                .NotEmpty().WithMessage("Lütfen bir danışman seçiniz.")
+                .NotEqual(Guid.Empty).WithMessage("Lütfen listeden geçerli bir danışman seçiniz.");
 
             RuleFor(x => x.DifficultyLevel)
-                .IsInEnum().WithMessage("Geçersiz zorluk seviyesi seçildi.");
+                .NotNull().WithMessage("Lütfen bir zorluk seviyesi seçiniz.")
+                .IsInEnum().WithMessage("Geçersiz zorluk seviyesi.");
 
             RuleFor(x => x.StartDate)
-                .NotEmpty().WithMessage("Başlangıç tarihi boş olamaz.");
+                .NotEmpty().WithMessage("Başlangıç tarihi zorunludur.");
 
             RuleFor(x => x.EndDate)
-                .NotEmpty().WithMessage("Bitiş tarihi boş olamaz.")
-                .GreaterThan(x => x.StartDate).WithMessage("Bitiş tarihi başlangıç tarihinden sonra olmalıdır.")
-                .GreaterThanOrEqualTo(new DateTime(2026, 1, 1)).WithMessage("Bitiş tarihi 2026 yılından önce olamaz.");
+                .NotEmpty().WithMessage("Bitiş tarihi zorunludur.")
+                .GreaterThan(x => x.StartDate).WithMessage("Bitiş tarihi, başlangıç tarihinden sonraki bir tarih olmalıdır.")
+                .GreaterThanOrEqualTo(new DateTime(2025, 1, 1)).WithMessage("Bitiş tarihi geçerli bir yıl olmalıdır.");
 
             RuleFor(x => x.ProjectLink)
-                .NotEmpty().WithMessage("Proje linki boş olamaz.")
-                .NotNull().WithMessage("Proje linki boş olamaz.")
                 .MaximumLength(500).WithMessage("Proje linki en fazla 500 karakter olabilir.")
-                .Must(BeValidUrl).WithMessage("Geçerli bir URL formatı giriniz.");
+                .Must(url => string.IsNullOrEmpty(url) || BeValidUrl(url)).WithMessage("Geçerli bir web adresi (http/https) giriniz.");
+
+            RuleFor(x => x.PhaseNames)
+                .Must(x => x != null && x.Count > 0 && x.Any(n => !string.IsNullOrWhiteSpace(n)))
+                .WithMessage("Proje yol haritası (fazlar) boş olamaz. En az bir aşama eklemelisiniz.");
         }
 
         private bool BeValidUrl(string url)
@@ -49,7 +57,7 @@ namespace ProjeHavuzu.Data.Validators.ProjectValidators
             if (string.IsNullOrWhiteSpace(url))
                 return false;
 
-            return Uri.TryCreate(url, UriKind.Absolute, out Uri result) &&
+            return Uri.TryCreate(url, UriKind.Absolute, out Uri? result) &&
                    (result.Scheme == Uri.UriSchemeHttp || result.Scheme == Uri.UriSchemeHttps);
         }
     }

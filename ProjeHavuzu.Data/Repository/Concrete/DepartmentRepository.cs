@@ -23,13 +23,16 @@ namespace ProjeHavuzu.Data.Repository.Concrete
                 .Join(_context.Faculties,
                       d => d.FacultyId,
                       f => f.Id,
-                      (d, f) => new DepartmentFacultyDto
-                      {
-                          
-                          FacultyName = f.FacultyName,
-                          DepartmentName = d.DepartmentName
-                      })
-                .OrderBy(x=>x.FacultyName).OrderBy(x=>x.DepartmentName).ToList();
+                      (d, f) => new { D = d, F = f })
+                .OrderBy(x => x.F.CreatedDate)
+                .ThenBy(x => x.D.CreatedDate)
+                .Select(x => new DepartmentFacultyDto
+                {
+                    Id = x.D.Id,
+                    FacultyName = x.F.FacultyName,
+                    DepartmentName = x.D.DepartmentName
+                })
+                .ToList();
 
             return result;
         }

@@ -1,82 +1,84 @@
-﻿
-@model LoginViewModel
-
-
+﻿@model LoginViewModel
 
 @{
     ViewData["Title"] = "Giriş Yap";
     Layout = "_LoginLayout";
 }
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-4">
-            <div class="card shadow">
-                <div class="card-header text-center py-4">
-                    <img src="~/images/mtu-logo.png" alt="MTU Logo" class="img-fluid mb-3" style="max-height: 100px;">
-                    <h4 class="mb-0">Proje Havuz Sistemi</h4>
-                    <p class="text-muted mt-2 mb-0" style="font-size: 0.9rem; font-weight: 500;">Giriş Yap</p>
-                </div>
-                <div class="card-body">
+<div class="auth-container">
+    <!-- Sol Panel: İllüstrasyon + Branding -->
+    <div class="auth-left">
+        <img src="~/images/auth-illustration.png" alt="Proje Takip" class="auth-left-illustration" />
+        <img src="~/images/mtu-logo.png" alt="MTU Logo" class="auth-left-logo" />
+        <h2 class="auth-left-title">Proje Takip Sistemi</h2>
+        <p class="auth-left-subtitle">Geleceği Birlikte İnşa Ediyoruz</p>
+    </div>
 
-                    <!-- Genel Hata Mesajları -->
-                    @if (!ViewData.ModelState.IsValid)
-                    {
-                        <div class="alert alert-danger">
-                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-                            {
-                                <div>@error.ErrorMessage</div>
-                            }
-                        </div>
-                    }
+    <!-- Sağ Panel: Giriş Formu -->
+    <div class="auth-right">
+        <h3 class="auth-right-title">Giriş Yap</h3>
 
-                    <form asp-action="Login" method="post">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
 
-                        <!-- Email -->
-                        <div class="mb-3">
-                            <label asp-for="Email" class="form-label"></label>
-                            <input asp-for="Email" class="form-control" />
-                            <span asp-validation-for="Email" class="text-danger"></span>
-                        </div>
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-circle-fill me-2"></i> @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
 
-                        <!-- Password -->
-                        <div class="mb-3">
-                            <label asp-for="Password" class="form-label"></label>
-                            <input asp-for="Password" type="password" class="form-control" />
-                            <span asp-validation-for="Password" class="text-danger"></span>
-                        </div>
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <div>@error.ErrorMessage</div>
+                }
+            </div>
+        }
 
-                        <!-- Remember Me -->
-                        <div class="form-check mb-3">
-                            <input asp-for="RememberMe" class="form-check-input" />
-                            <label asp-for="RememberMe" class="form-check-label">Beni Hatırla</label>
-                        </div>
+        <form asp-action="Login" method="post" class="auth-form">
 
-                        <a asp-controller="Account"
-                           asp-action="ForgotPassword">
-                            Şifremi Unuttum
-                        </a>
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label">E-posta</label>
+                <input asp-for="Email" class="form-control" placeholder="hesabx@ozal.edu.tr" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
 
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label">Şifre</label>
+                <input asp-for="Password" type="password" class="form-control" placeholder="Parolayı girin..." />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
 
-                        
-
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">
-                                Giriş Yap
-                            </button>
-                        </div>
-
-                    </form>
-
-                </div>
-                <div class="card-footer text-center">
-                    <small>
-                        Hesabın yok mu?
-                        <a asp-action="Register">Kayıt Ol</a>
-                    </small>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="form-check">
+                    <input asp-for="RememberMe" class="form-check-input" />
+                    <label asp-for="RememberMe" class="form-check-label">Beni Hatırla</label>
                 </div>
             </div>
-        </div>
+
+            <button type="submit" class="btn-auth-primary">
+                Giriş Yap
+            </button>
+
+            <div class="auth-footer-text" style="margin-top: 0.75rem;">
+                <a asp-controller="Account" asp-action="ForgotPassword" class="auth-forgot-link">Şifremi Unuttum?</a>
+            </div>
+
+            <div class="auth-footer-text">
+                Hesabın yok mu? <a asp-action="Register">Kayıt Ol</a>
+            </div>
+
+        </form>
+
     </div>
 </div>
 

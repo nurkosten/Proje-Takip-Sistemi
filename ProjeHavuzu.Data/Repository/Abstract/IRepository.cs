@@ -9,7 +9,7 @@ namespace ProjeHavuzu.Data.Repository.Abstract
     public interface IRepository<T> where T : BaseEntity
     {
         //Read 
-        Task<T?> GetAsync(
+        Task<T> GetAsync(
           Expression<Func<T, bool>> predicate,
           CancellationToken cancellationToken = default);
         Task<List<T>> ListAsync(

@@ -9,7 +9,7 @@ namespace ProjeHavuzu.Data.Repository.Abstract
     {
         Task<List<ProjectStudent>> GetProjectStudentsByProjectIdAsync(Guid projectId);
         Task<List<ProjectStudent>> GetProjectStudentsByStudentIdAsync(Guid studentId);
-        Task<ProjectStudent> GetProjectStudentAsync(Guid projectId, Guid studentId);
+        Task<ProjectStudent?> GetProjectStudentAsync(Guid projectId, Guid studentId);
         Task<bool> IsStudentAssignedToProjectAsync(Guid projectId, Guid studentId);
     }
 }

@@ -3,78 +3,78 @@
 @using ProjeHavuzu.MVCUI.Models.AccountModels
 @model RegisterViewModel
 @{
-    Layout = "_loginlayout";
-}
-@{
+    Layout = "_LoginLayout";
     ViewData["Title"] = "Kayıt Ol";
 }
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-5">
-            <div class="card shadow">
-                <div class="card-header text-center py-4">
-                    <img src="~/images/mtu-logo.png" alt="MTU Logo" class="img-fluid mb-3" style="max-height: 100px;">
-                    <h4 class="mb-0">Proje Havuz Sistemi</h4>
-                    <p class="text-muted mt-2 mb-0" style="font-size: 0.9rem; font-weight: 500;">Kayıt Ol</p>
+<div class="auth-container">
+    <!-- Sol Panel: İllüstrasyon + Branding -->
+    <div class="auth-left">
+        <img src="~/images/auth-illustration.png" alt="Proje Takip" class="auth-left-illustration" />
+        <img src="~/images/mtu-logo.png" alt="MTU Logo" class="auth-left-logo" />
+        <h2 class="auth-left-title">Proje Takip Sistemi</h2>
+        <p class="auth-left-subtitle">Geleceği Birlikte İnşa Ediyoruz</p>
+    </div>
+
+    <!-- Sağ Panel: Kayıt Formu -->
+    <div class="auth-right">
+        <h3 class="auth-right-title">Kayıt Ol</h3>
+
+        <form asp-action="Register" asp-controller="Account" method="post" class="auth-form">
+
+            <div class="row mb-3">
+                <div class="col-6">
+                    <label asp-for="FirstName" class="form-label">Ad</label>
+                    <input asp-for="FirstName" class="form-control" placeholder="Ad" />
+                    <span asp-validation-for="FirstName" class="text-danger"></span>
                 </div>
-                <div class="card-body">
-
-                    <form asp-action="Register" asp-controller="Account" method="post">
-
-                        <!-- First Name -->
-                        <div class="mb-3">
-                            <label asp-for="FirstName" class="form-label"></label>
-                            <input asp-for="FirstName" class="form-control" />
-                            <span asp-validation-for="FirstName" class="text-danger"></span>
-                        </div>
-
-                        <!-- Last Name -->
-                        <div class="mb-3">
-                            <label asp-for="LastName" class="form-label"></label>
-                            <input asp-for="LastName" class="form-control" />
-                            <span asp-validation-for="LastName" class="text-danger"></span>
-                        </div>
-
-                        <!-- Email -->
-                        <div class="mb-3">
-                            <label asp-for="Email" class="form-label"></label>
-                            <input asp-for="Email" class="form-control" />
-                            <span asp-validation-for="Email" class="text-danger"></span>
-                        </div>
-                     
-
-                        <!-- Password -->
-                        <div class="mb-3">
-                            <label asp-for="Password" class="form-label"></label>
-                            <input asp-for="Password" type="password" class="form-control" />
-                            <span asp-validation-for="Password" class="text-danger"></span>
-                        </div>
-                       
-                        <!-- Confirm Password -->
-                        <div class="mb-3">
-                            <label asp-for="ConfirmPassword" class="form-label"></label>
-                            <input asp-for="ConfirmPassword" type="password" class="form-control" />
-                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-                        </div>
-
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">
-                                Kayıt Ol
-                            </button>
-                        </div>
-
-                    </form>
-
-                </div>
-                <div class="card-footer text-center">
-                    <small>
-                        Zaten hesabın var mı?
-                        <a asp-action="Login">Giriş Yap</a>
-                    </small>
+                <div class="col-6">
+                    <label asp-for="LastName" class="form-label">Soyad</label>
+                    <input asp-for="LastName" class="form-control" placeholder="Soyad" />
+                    <span asp-validation-for="LastName" class="text-danger"></span>
                 </div>
             </div>
-        </div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label">E-posta</label>
+                <input asp-for="Email" class="form-control" placeholder="ogrencino@ozal.edu.tr" />
+                <div class="form-check mt-2">
+                    <input class="form-check-input" type="checkbox" id="emailInfoCheck" checked disabled />
+                    <label class="form-check-label" for="emailInfoCheck" style="font-size: 0.78rem; color: #6b7c93;">
+                        Sadece <strong>@@ozal.edu.tr</strong> uzantılı okul mailinizle kayıt olabilirsiniz.
+                    </label>
+                </div>
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label">Şifre</label>
+                <input asp-for="Password" type="password" class="form-control" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="ConfirmPassword" class="form-label">Şifre Tekrar</label>
+                <input asp-for="ConfirmPassword" type="password" class="form-control" />
+                <div class="form-check mt-2">
+                    <input class="form-check-input" type="checkbox" id="pwInfoCheck" checked disabled />
+                    <label class="form-check-label" for="pwInfoCheck" style="font-size: 0.78rem; color: #6b7c93;">
+                        Şifre en az 8 karakter uzunluğunda, sayı ve özel karakter içermelidir.
+                    </label>
+                </div>
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn-auth-primary">
+                Kayıt Ol
+            </button>
+
+            <div class="auth-footer-text">
+                Hesabın var mı? <a asp-action="Login">Giriş Yap</a>
+            </div>
+
+        </form>
+
     </div>
 </div>
 

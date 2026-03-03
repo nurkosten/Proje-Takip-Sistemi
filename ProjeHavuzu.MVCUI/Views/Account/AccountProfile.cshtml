@@ -6,103 +6,174 @@
     ViewData["Title"] = "Kullanıcı Profili";
 }
 
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card shadow">
-                <div class="card-header">
-                    <h4 class="mb-0"><i class="bi bi-person-circle"></i> Kullanıcı Profili</h4>
-                </div>
-                <div class="card-body">
-                    @if (TempData["SuccessMessage"] != null)
-                    {
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            @TempData["SuccessMessage"]
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                    }
+<link rel="stylesheet" href="~/css/profile.css" />
 
-                    @if (TempData["ErrorMessage"] != null)
-                    {
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            @TempData["ErrorMessage"]
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                    }
+<div class="profile-wrapper">
+    <div class="profile-card">
 
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Ad Soyad:</div>
-                        <div class="col-md-8">@Model.FullName</div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Email:</div>
-                        <div class="col-md-8">@Model.Email</div>
-                    </div>
-
-                    @if (User.IsInRole("Student"))
-                    {
-                        <div class="row mb-3">
-                            <div class="col-md-4 fw-bold">Öğrenci Numarası:</div>
-                            <div class="col-md-8">@(Model.StudentNumber ?? "-")</div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-4 fw-bold">Fakülte:</div>
-                            <div class="col-md-8">@(Model.Faculty?.FacultyName ?? "-")</div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-4 fw-bold">Bölüm:</div>
-                            <div class="col-md-8">@(Model.Department?.DepartmentName ?? "-")</div>
-                        </div>
-                    }
-                    else if (User.IsInRole("Teacher"))
-                    {
-                        <div class="row mb-3">
-                            <div class="col-md-4 fw-bold">Unvan:</div>
-                            <div class="col-md-8">Öğretim Üyesi</div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-4 fw-bold">Fakülte:</div>
-                            <div class="col-md-8">@(Model.Faculty?.FacultyName ?? "-")</div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-4 fw-bold">Bölüm:</div>
-                            <div class="col-md-8">@(Model.Department?.DepartmentName ?? "-")</div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-4 fw-bold">Görev:</div>
-                            <div class="col-md-8">Akademisyen</div>
-                        </div>
-                    }
-                    else if (User.IsInRole("Admin"))
-                    {
-                        <div class="row mb-3">
-                            <div class="col-md-4 fw-bold">Rol:</div>
-                            <div class="col-md-8"><span class="badge bg-danger">Sistem Yöneticisi</span></div>
-                        </div>
-                    }
-
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Telefon:</div>
-                        <div class="col-md-8">@(Model.PhoneNumber ?? "-")</div>
-                    </div>
-                </div>
-
-                <div class="card-footer text-end">
-                    <a asp-action="Index" asp-controller="Home" class="btn btn-secondary">
-                        <i class="bi bi-arrow-left"></i> Ana Sayfa
-                    </a>
-                    <a asp-action="EditProfile" class="btn btn-primary">
-                        <i class="bi bi-pencil"></i> Düzenle
-                    </a>
-                </div>
+        @* ── Header ── *@
+        <div class="profile-header">
+            <div class="profile-header-icon">
+                <i class="bi bi-person-fill"></i>
+            </div>
+            <div>
+                <h4 class="profile-header-title">Kullanıcı Profili</h4>
+                <p class="profile-header-subtitle">Kişisel bilgileriniz</p>
             </div>
         </div>
+
+        @* ── Body ── *@
+        <div class="profile-body">
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
+                </div>
+            }
+
+            @* Ad Soyad *@
+            <div class="profile-row">
+                <div class="profile-label">
+                    <i class="bi bi-person"></i> Ad Soyad
+                </div>
+                <div class="profile-value">@Model.FullName</div>
+            </div>
+
+            @* Email *@
+            <div class="profile-row">
+                <div class="profile-label">
+                    <i class="bi bi-envelope"></i> Email
+                </div>
+                <div class="profile-value">@Model.Email</div>
+            </div>
+
+            @* ── Öğrenci Bilgileri ── *@
+            @if (User.IsInRole("Student"))
+            {
+                <div class="profile-row">
+                    <div class="profile-label">
+                        <i class="bi bi-hash"></i> Öğrenci Numarası
+                    </div>
+                    <div class="profile-value">
+                        @if (!string.IsNullOrEmpty(Model.StudentNumber))
+                        {
+                            @Model.StudentNumber
+                        }
+                        else if (!string.IsNullOrEmpty(Model.Email) && Model.Email.Contains("@"))
+                        {
+                            @(Model.Email.Split('@')[0])
+                        }
+                        else
+                        {
+                            <span class="profile-value-muted">–</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="profile-row">
+                    <div class="profile-label">
+                        <i class="bi bi-building"></i> Fakülte
+                    </div>
+                    <div class="profile-value">
+                        @(Model.Faculty?.FacultyName ?? "–")
+                    </div>
+                </div>
+
+                <div class="profile-row">
+                    <div class="profile-label">
+                        <i class="bi bi-diagram-3"></i> Bölüm
+                    </div>
+                    <div class="profile-value">
+                        @(Model.Department?.DepartmentName ?? "–")
+                    </div>
+                </div>
+            }
+            @* ── Öğretim Üyesi Bilgileri ── *@
+            else if (User.IsInRole("Teacher"))
+            {
+                <div class="profile-row">
+                    <div class="profile-label">
+                        <i class="bi bi-mortarboard"></i> Unvan
+                    </div>
+                    <div class="profile-value">Öğretim Üyesi</div>
+                </div>
+
+                <div class="profile-row">
+                    <div class="profile-label">
+                        <i class="bi bi-building"></i> Fakülte
+                    </div>
+                    <div class="profile-value">
+                        @(Model.Faculty?.FacultyName ?? "–")
+                    </div>
+                </div>
+
+                <div class="profile-row">
+                    <div class="profile-label">
+                        <i class="bi bi-diagram-3"></i> Bölüm
+                    </div>
+                    <div class="profile-value">
+                        @(Model.Department?.DepartmentName ?? "–")
+                    </div>
+                </div>
+
+                <div class="profile-row">
+                    <div class="profile-label">
+                        <i class="bi bi-briefcase"></i> Görev
+                    </div>
+                    <div class="profile-value">Akademisyen</div>
+                </div>
+            }
+            @* ── Admin Bilgileri ── *@
+            else if (User.IsInRole("Admin"))
+            {
+                <div class="profile-row">
+                    <div class="profile-label">
+                        <i class="bi bi-shield-lock"></i> Rol
+                    </div>
+                    <div class="profile-value">
+                        <span class="badge bg-danger">Sistem Yöneticisi</span>
+                    </div>
+                </div>
+            }
+
+            @* Telefon *@
+            <div class="profile-row">
+                <div class="profile-label">
+                    <i class="bi bi-telephone"></i> Telefon
+                </div>
+                <div class="profile-value">
+                    @if (!string.IsNullOrEmpty(Model.PhoneNumber))
+                    {
+                        @Model.PhoneNumber
+                    }
+                    else
+                    {
+                        <span class="profile-value-muted">–</span>
+                    }
+                </div>
+            </div>
+
+        </div>
+
+        @* ── Butonlar ── *@
+        <div class="profile-actions">
+            <a asp-action="Index" asp-controller="Home" class="btn-profile-secondary">
+                <i class="bi bi-arrow-left"></i> Ana Sayfa
+            </a>
+            <a asp-action="EditProfile" class="btn-profile-primary">
+                <i class="bi bi-pencil-square"></i> Düzenle
+            </a>
+        </div>
+
     </div>
 </div>
-

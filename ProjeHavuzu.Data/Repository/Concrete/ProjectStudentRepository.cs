@@ -25,6 +25,7 @@ namespace ProjeHavuzu.Data.Repository.Concrete
             return await _context.ProjectStudents
                 .Where(ps => ps.ProjectId == projectId && !ps.IsDeleted)
                 .Include(ps => ps.AspNetUsers)
+                .OrderByDescending(ps => ps.CreatedDate)
                 .ToListAsync();
         }
 
@@ -33,10 +34,11 @@ namespace ProjeHavuzu.Data.Repository.Concrete
             return await _context.ProjectStudents
                 .Where(ps => ps.StudentId == studentId && !ps.IsDeleted)
                 .Include(ps => ps.Projects)
+                .OrderByDescending(ps => ps.CreatedDate)
                 .ToListAsync();
         }
 
-        public async Task<ProjectStudent> GetProjectStudentAsync(Guid projectId, Guid studentId)
+        public async Task<ProjectStudent?> GetProjectStudentAsync(Guid projectId, Guid studentId)
         {
             return await _context.ProjectStudents
                 .FirstOrDefaultAsync(ps => ps.ProjectId == projectId && ps.StudentId == studentId && !ps.IsDeleted);

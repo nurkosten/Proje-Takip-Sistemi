@@ -5,6 +5,7 @@ using ProjeHavuzu.Business.Services.Abstract;
 using ProjeHavuzu.Data.Context;
 using ProjeHavuzu.Data.Entites.Identity;
 using ProjeHavuzu.Data.MailService;
+using ProjeHavuzu.Data.MailServices;
 using ProjeHavuzu.MVCUI.Models.AccountModels;
 using ProjeHavuzu.MVCUI.Models.LoginModels;
 using System.Security.Claims;
@@ -19,6 +20,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
         private readonly SignInManager<AppUser> _signInManager;
         private readonly RoleManager<AppRole> _roleManager;
         private readonly IMailSender _emailSender;
+        private readonly IBackgroundEmailService _backgroundEmailService;
         private readonly IFacultyService _facultyService;
         private readonly IDepartmentService _departmentService;
         private readonly ApplicationContext _context;
@@ -26,6 +28,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
         public AccountController(
             UserManager<AppUser> userManager,
             IMailSender emailSender,
+            IBackgroundEmailService backgroundEmailService,
             SignInManager<AppUser> signInManager = null,
             RoleManager<AppRole> roleManager = null,
             ApplicationContext context = null,
@@ -34,6 +37,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
         {
             _userManager = userManager;
             _emailSender = emailSender;
+            _backgroundEmailService = backgroundEmailService;
             _signInManager = signInManager;
             _roleManager = roleManager;
             _context = context;
@@ -68,19 +72,9 @@ namespace ProjeHavuzu.MVCUI.Controllers
                 new { token = token, email = model.Email },
                 Request.Scheme);
 
-            try
-            {
-                await _emailSender.SendEmailAsync(
-                    model.Email,
-                    "Şifre Sıfırlama",
-                    $"Şifrenizi sıfırlamak için <a href='{resetLink}'>tıklayın</a>");
-            }
-            catch (Exception ex)
-            {
-                // Mail gönderim hatasını yakala ve kullanıcıya göster
-                ModelState.AddModelError("", $"Mail gönderilemedi: {ex.Message}");
-                return View(model);
-            }
+            // Mail gönderimini Hangfire ile arka plana at
+            // Kullanıcı bekletilmeden mail kuyruğa eklenir
+            _backgroundEmailService.EnqueuePasswordReset(model.Email, resetLink);
 
             return RedirectToAction("ForgotPasswordConfirmation");
 
@@ -124,6 +118,18 @@ namespace ProjeHavuzu.MVCUI.Controllers
 
 
 
+        [HttpGet]
+        public IActionResult ForgotPasswordConfirmation()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult ResetPasswordConfirmation()
+        {
+            return View();
+        }
+
         public async Task<IActionResult> Register()
         {
             return View("Register");
@@ -133,6 +139,13 @@ namespace ProjeHavuzu.MVCUI.Controllers
         {
             if (!ModelState.IsValid)
                 return View(model);
+
+            // Domain Kontrolü: Sadece okul mailleri
+            if (!model.Email.Trim().EndsWith("ozal.edu.tr", StringComparison.OrdinalIgnoreCase))
+            {
+                ModelState.AddModelError("Email", "Sadece kurumsal üniversite e-postanız ile (@ozal.edu.tr vb.) kayıt olabilirsiniz.");
+                return View(model);
+            }
 
             var user = new AppUser
             {
@@ -153,24 +166,16 @@ namespace ProjeHavuzu.MVCUI.Controllers
                 // Rolün varlığını kontrol etmek iyi bir pratik olsa da, SeedData ile oluşturulduğunu varsayıyoruz
                 await _userManager.AddToRoleAsync(user, "Student");
 
-                try
-                {
-                    // Email Doğrulama Maili Gönder
-                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    var confirmationLink = Url.Action("ConfirmEmail", "Account", new { token, email = user.Email }, Request.Scheme);
-                    await _emailSender.SendEmailAsync(user.Email, "Email Doğrulama", 
-                        $"<h2>Proje Havuz Sistemi Hoşgeldiniz!</h2>" +
-                        $"<p>Hesabınızı oluşturduğunuz için teşekkürler.</p>" +
-                        $"<p>Hesabınızı aktif etmek için lütfen aşağıdaki linke tıklayın:</p>" +
-                        $"<a href='{confirmationLink}' style='background-color:#A41F35; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;'>Hesabımı Doğrula</a>");
+                // Email Doğrulama Maili Gönder - Hangfire ile arka planda
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var confirmationLink = Url.Action("ConfirmEmail", "Account", new { token, email = user.Email }, Request.Scheme);
 
-                    TempData["SuccessMessage"] = "Kayıt başarılı! Lütfen e-postanıza gönderilen doğrulama linkine tıklayınız.";
-                }
-                catch (Exception ex)
-                {
-                    TempData["ErrorMessage"] = $"Kayıt tamamlandı ANCAK mail gönderilemedi: {ex.Message}";
-                }
-                
+                // Mail gönderimini Hangfire ile arka plana at
+                // Kullanıcı bekletilmeden mail kuyruğa eklenir
+                _backgroundEmailService.EnqueueEmailConfirmation(user.Email, confirmationLink);
+
+                TempData["SuccessMessage"] = "Kayıt başarılı! Lütfen e-postanıza gönderilen doğrulama linkine tıklayınız.";
+
                 return RedirectToAction("Login", "Account");
             }
 
@@ -196,7 +201,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
                 TempData["SuccessMessage"] = "Hesabınız başarıyla doğrulandı. Giriş yapabilirsiniz.";
                 return RedirectToAction("Login", "Account");
             }
-            
+
             TempData["ErrorMessage"] = "Email doğrulama başarısız oldu.";
             return RedirectToAction("Login", "Account");
         }
@@ -216,6 +221,12 @@ namespace ProjeHavuzu.MVCUI.Controllers
             if (user == null)
             {
                 ModelState.AddModelError("", "Email veya şifre hatalı");
+                return View(model);
+            }
+
+            if (!await _userManager.IsEmailConfirmedAsync(user))
+            {
+                ModelState.AddModelError("", "Giriş yapabilmek için lütfen E-posta adresinizi doğrulayınız. Mail kutunuzu (Spam dahil) kontrol ediniz.");
                 return View(model);
             }
 
@@ -286,18 +297,8 @@ namespace ProjeHavuzu.MVCUI.Controllers
 
             var faculties = await _facultyService.GetAllFacultiesAsync();
             var departments = user.FacultyId.HasValue
-                ? await _departmentService.GetAllDepartmentsAsync()
+                ? await _departmentService.GetDepartmentsByFacultyIdAsync(user.FacultyId.Value)
                 : new List<Data.DTOs.DepartmentDto.DepartmentListDto>();
-
-            // Fakülteye göre bölümleri filtrele
-            if (user.FacultyId.HasValue)
-            {
-                var faculty = faculties.FirstOrDefault(f => f.Id == user.FacultyId);
-                if (faculty != null)
-                {
-                    departments = departments.Where(d => d.FacultyName == faculty.FacultyName).ToList();
-                }
-            }
 
             var model = new UserProfileEditViewModel
             {
@@ -313,6 +314,12 @@ namespace ProjeHavuzu.MVCUI.Controllers
                 Departments = departments
             };
 
+            // Öğrenci ise numarayı email'den türetip göster (Veritabanında kayıtlı olmasa bile anlık gösterim)
+            if (User.IsInRole("Student") && !string.IsNullOrEmpty(user.Email) && user.Email.Contains("@"))
+            {
+                model.StudentNumber = user.Email.Split('@')[0];
+            }
+
             return View(model);
         }
 
@@ -323,12 +330,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
             {
                 model.Faculties = await _facultyService.GetAllFacultiesAsync();
                 model.Departments = model.FacultyId.HasValue
-                    ? (await _departmentService.GetAllDepartmentsAsync())
-                        .Where(d =>
-                        {
-                            var faculty = model.Faculties.FirstOrDefault(f => f.Id == model.FacultyId);
-                            return faculty != null && d.FacultyName == faculty.FacultyName;
-                        }).ToList()
+                    ? await _departmentService.GetDepartmentsByFacultyIdAsync(model.FacultyId.Value)
                     : new List<Data.DTOs.DepartmentDto.DepartmentListDto>();
                 return View(model);
             }
@@ -346,7 +348,18 @@ namespace ProjeHavuzu.MVCUI.Controllers
                 user.LastName = model.LastName;
                 user.Email = model.Email;
                 user.UserName = model.Email;
-                user.StudentNumber = model.StudentNumber;
+                // Öğrenci numarasını email adresinden türet (backend validation) - Sadece Öğrenciler İçin
+                if (User.IsInRole("Student"))
+                {
+                    if (!string.IsNullOrEmpty(model.Email) && model.Email.Contains("@"))
+                    {
+                        user.StudentNumber = model.Email.Split('@')[0];
+                    }
+                }
+                else
+                {
+                    user.StudentNumber = model.StudentNumber;
+                }
                 user.PhoneNumber = model.PhoneNumber;
                 user.FacultyId = model.FacultyId;
                 user.DepartmentId = model.DepartmentId;
@@ -377,21 +390,17 @@ namespace ProjeHavuzu.MVCUI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetDepartmentsByFaculty(Guid facultyId)
         {
-            var faculties = await _facultyService.GetAllFacultiesAsync();
-            var faculty = faculties.FirstOrDefault(f => f.Id == facultyId);
-
-            if (faculty == null)
-            {
-                return Json(new List<object>());
-            }
-
-            var allDepartments = await _departmentService.GetAllDepartmentsAsync();
-            var departments = allDepartments
-                .Where(d => d.FacultyName == faculty.FacultyName)
+            var departments = await _departmentService.GetDepartmentsByFacultyIdAsync(facultyId);
+            var result = departments
                 .Select(d => new { id = d.Id, name = d.DepartmentName })
                 .ToList();
 
-            return Json(departments);
+            return Json(result);
+        }
+        [HttpGet]
+        public IActionResult AccessDenied()
+        {
+            return View();
         }
     }
 }

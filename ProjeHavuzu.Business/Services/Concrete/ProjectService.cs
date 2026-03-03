@@ -1,6 +1,7 @@
 using AutoMapper;
 using FluentValidation;
 using ProjeHavuzu.Business.Services.Abstract;
+using ProjeHavuzu.Data.DTOs.Common;
 using ProjeHavuzu.Data.DTOs.ProjectDto;
 using ProjeHavuzu.Data.Entites;
 using ProjeHavuzu.Data.Repository.Abstract;
@@ -20,19 +21,22 @@ namespace ProjeHavuzu.Business.Services.Concrete
         private readonly IMapper _mapper;
         private readonly IValidator<ProjectCreateDto> _validator;
         private readonly IProjectStudentRepository _projectStudentRepository;
+        private readonly IProjectPhaseRepository _projectPhaseRepository;
 
         public ProjectService(
             IProjectRepository projectRepository,
             ICategoryRepository categoryRepository,
             IMapper mapper,
             IValidator<ProjectCreateDto> validator,
-            IProjectStudentRepository projectStudentRepository)
+            IProjectStudentRepository projectStudentRepository,
+            IProjectPhaseRepository projectPhaseRepository)
         {
             _projectRepository = projectRepository;
             _categoryRepository = categoryRepository;
             _mapper = mapper;
             _validator = validator;
             _projectStudentRepository = projectStudentRepository;
+            _projectPhaseRepository = projectPhaseRepository;
         }
 
         public async Task<List<ProjectListDto>> GetAllProjectsAsync()
@@ -62,6 +66,11 @@ namespace ProjeHavuzu.Business.Services.Concrete
 
         public async Task<bool> CreateProjectAsync(ProjectCreateDto projectCreateDto)
         {
+            // 1. Kategori Belirleme
+            Guid finalCategoryId = await GetOrCreateCategoryIdAsync(projectCreateDto.CustomCategory, projectCreateDto.CategoryId);
+
+            projectCreateDto.CategoryId = finalCategoryId;
+
             // Validation
             var validationResult = await _validator.ValidateAsync(projectCreateDto);
             if (!validationResult.IsValid)
@@ -70,15 +79,54 @@ namespace ProjeHavuzu.Business.Services.Concrete
                 throw new ArgumentException(errors);
             }
 
-            // Category kontrolü
-            var category = await _categoryRepository.GetAsync(c => c.Id == projectCreateDto.CategoryId && !c.IsDeleted);
-            if (category == null)
-            {
-                throw new ArgumentException("Geçersiz kategori seçildi.");
-            }
+            // Kategori kontrolü (Zaten yukarıda hallettik, ID geçerli)
 
             // Entity mapping
             var project = _mapper.Map<Project>(projectCreateDto);
+
+            // Yeni Alanların Elle Eşlenmesi (AutoMapper güncellenene kadar)
+            project.InitialCode = projectCreateDto.InitialCode;
+            project.ProjectArea = projectCreateDto.ProjectArea;
+            project.ConsultantId = projectCreateDto.ConsultantId;
+
+            // Fazların Eklenmesi
+            if (projectCreateDto.PhaseNames != null && projectCreateDto.PhaseNames.Any())
+            {
+                project.Phases = new List<ProjectPhase>();
+                for (int i = 0; i < projectCreateDto.PhaseNames.Count; i++)
+                {
+                    if (!string.IsNullOrWhiteSpace(projectCreateDto.PhaseNames[i]))
+                    {
+                        var description = "";
+                        if (projectCreateDto.PhaseDescriptions != null && i < projectCreateDto.PhaseDescriptions.Count)
+                        {
+                            description = projectCreateDto.PhaseDescriptions[i] ?? "";
+                        }
+
+                        project.Phases.Add(new ProjectPhase
+                        {
+                            PhaseName = projectCreateDto.PhaseNames[i],
+                            Description = description,
+                            Order = i + 1
+                        });
+                    }
+                }
+            }
+
+            // Dillerin Eklenmesi (Virgülle ayrılmış string'den)
+            if (!string.IsNullOrEmpty(projectCreateDto.SelectedLanguagesJson))
+            {
+                project.Languages = new List<ProjectLanguage>();
+                var langs = projectCreateDto.SelectedLanguagesJson.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                foreach (var lang in langs)
+                {
+                    project.Languages.Add(new ProjectLanguage
+                    {
+                        LanguageName = lang.Trim()
+                    });
+                }
+            }
+
             await _projectRepository.AddAsync(project);
             return true;
         }
@@ -91,6 +139,11 @@ namespace ProjeHavuzu.Business.Services.Concrete
                 throw new ArgumentException("Proje bulunamadı.");
             }
 
+            // 1. Kategori Belirleme
+            Guid finalCategoryId = await GetOrCreateCategoryIdAsync(projectCreateDto.CustomCategory, projectCreateDto.CategoryId);
+
+            projectCreateDto.CategoryId = finalCategoryId;
+
             // Validation
             var validationResult = await _validator.ValidateAsync(projectCreateDto);
             if (!validationResult.IsValid)
@@ -99,22 +152,16 @@ namespace ProjeHavuzu.Business.Services.Concrete
                 throw new ArgumentException(errors);
             }
 
-            // Category kontrolü
-            var category = await _categoryRepository.GetAsync(c => c.Id == projectCreateDto.CategoryId && !c.IsDeleted);
-            if (category == null)
-            {
-                throw new ArgumentException("Geçersiz kategori seçildi.");
-            }
-
             // Update mapping
-            existingProject.ProjectTitle = projectCreateDto.ProjectTitle;
-            existingProject.Description = projectCreateDto.Description;
-            existingProject.CategoryId = projectCreateDto.CategoryId;
-            existingProject.DifficultyLevel = projectCreateDto.DifficultyLevel.Value;
-            existingProject.StartDate = projectCreateDto.StartDate;
-            existingProject.EndDate = projectCreateDto.EndDate;
+            existingProject.ProjectTitle = projectCreateDto.ProjectTitle ?? "";
+            existingProject.Description = projectCreateDto.Description ?? "";
+            existingProject.CategoryId = projectCreateDto.CategoryId ?? Guid.Empty;
+            existingProject.DifficultyLevel = projectCreateDto.DifficultyLevel.GetValueOrDefault(Data.Entites.Enums.DifficultStatus.Kolay);
+            existingProject.StartDate = projectCreateDto.StartDate.GetValueOrDefault(DateTime.Now);
+            existingProject.EndDate = projectCreateDto.EndDate.GetValueOrDefault(DateTime.Now);
             existingProject.ProjectLink = projectCreateDto.ProjectLink;
             existingProject.AppUserId = projectCreateDto.AppUserId;
+            existingProject.ConsultantId = projectCreateDto.ConsultantId;
 
             _projectRepository.Update(existingProject);
             return true;
@@ -125,19 +172,19 @@ namespace ProjeHavuzu.Business.Services.Concrete
         {
             // Silinmiş olmayan projeyi bul (Geri Dönüşüm kutusunda değilse)
             var project = await _projectRepository.GetAsync(p => p.Id == id && !p.IsDeleted);
-            
+
             // Eğer "SİLİNMİŞ" olanı bulup hard delete yapacaksak, onu aşağıda HardDelete'de yapacağız.
             // Ama kullanıcı "Sil" dediğinde önce soft delete mi istiyor? Evet "Çöp Kutusuna Gönder".
-            
+
             if (project == null)
             {
-               // Belki zaten silinmiştir? Kontrol edelim.
-               var deletedProject = await _projectRepository.GetAsync(p => p.Id == id && p.IsDeleted);
-               if(deletedProject != null)
-               {
-                   throw new ArgumentException("Proje zaten çöp kutusunda.");
-               }
-               throw new ArgumentException("Proje bulunamadı.");
+                // Belki zaten silinmiştir? Kontrol edelim.
+                var deletedProject = await _projectRepository.GetAsync(p => p.Id == id && p.IsDeleted);
+                if (deletedProject != null)
+                {
+                    throw new ArgumentException("Proje zaten çöp kutusunda.");
+                }
+                throw new ArgumentException("Proje bulunamadı.");
             }
 
             project.IsDeleted = true;
@@ -164,7 +211,7 @@ namespace ProjeHavuzu.Business.Services.Concrete
             var project = await _projectRepository.GetAsync(p => p.Id == id && p.IsDeleted);
             if (project == null)
             {
-                 throw new ArgumentException("Geri yüklenecek proje bulunamadı.");
+                throw new ArgumentException("Geri yüklenecek proje bulunamadı.");
             }
 
             project.IsDeleted = false;
@@ -176,7 +223,7 @@ namespace ProjeHavuzu.Business.Services.Concrete
         // BU METOD "KALICI OLARAK SİL" İŞLEMİDİR (HARD DELETE)
         public async Task<bool> HardDeleteProjectAsync(Guid id)
         {
-             var project = await _projectRepository.GetAsync(p => p.Id == id); // Silinmiş veya silinmemiş fark etmez
+            var project = await _projectRepository.GetAsync(p => p.Id == id); // Silinmiş veya silinmemiş fark etmez
             if (project == null)
             {
                 throw new ArgumentException("Proje bulunamadı.");
@@ -188,13 +235,102 @@ namespace ProjeHavuzu.Business.Services.Concrete
             {
                 foreach (var ps in projectStudents)
                 {
-                   _projectStudentRepository.Remove(ps);
+                    _projectStudentRepository.Remove(ps);
                 }
             }
 
             _projectRepository.Remove(project);
             return true;
         }
+        #endregion
+
+        #region Phase Management
+
+        public async Task<ProjectDetailDto> GetProjectDetailAsync(Guid id)
+        {
+            return await _projectRepository.GetProjectDetailWithPhasesAsync(id);
+        }
+
+        public async Task<List<ProjectPhaseDto>> GetProjectPhasesAsync(Guid projectId)
+        {
+            var phases = await _projectPhaseRepository.GetPhasesByProjectIdAsync(projectId);
+            return phases.Select(p => new ProjectPhaseDto
+            {
+                Id = p.Id,
+                ProjectId = p.ProjectId,
+                PhaseName = p.PhaseName,
+                Description = p.Description,
+                Order = p.Order,
+                IsCompleted = p.IsCompleted,
+                CompletedDate = p.CompletedDate
+            }).ToList();
+        }
+
+        public async Task<bool> TogglePhaseCompletionAsync(Guid phaseId)
+        {
+            var phase = await _projectPhaseRepository.GetPhaseByIdAsync(phaseId);
+            if (phase == null)
+            {
+                throw new ArgumentException("Aşama bulunamadı.");
+            }
+
+            phase.IsCompleted = !phase.IsCompleted;
+            phase.CompletedDate = phase.IsCompleted ? DateTime.Now : null;
+
+            _projectPhaseRepository.Update(phase);
+            return true;
+        }
+
+        #endregion
+
+        #region Server-side DataTables
+
+        public async Task<DataTableResponse<ProjectListDto>> GetProjectsServerSideAsync(DataTableRequest request)
+        {
+            return await _projectRepository.GetProjectsServerSideAsync(request);
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private async Task<Guid> GetOrCreateCategoryIdAsync(string? customCategory, Guid? existingCategoryId)
+        {
+            if (!string.IsNullOrWhiteSpace(customCategory))
+            {
+                var existingCategory = await _categoryRepository.GetAsync(c => c.CategoryName.ToLower() == customCategory.ToLower());
+                if (existingCategory != null) return existingCategory.Id;
+
+                var newCategory = new Category
+                {
+                    Id = Guid.NewGuid(),
+                    CategoryName = customCategory,
+                    IsActive = true,
+                    IsDeleted = false
+                };
+                await _categoryRepository.AddAsync(newCategory);
+                return newCategory.Id;
+            }
+
+            if (existingCategoryId.HasValue && existingCategoryId.Value != Guid.Empty)
+            {
+                return existingCategoryId.Value;
+            }
+
+            var generalCat = await _categoryRepository.GetAsync(c => c.CategoryName == "Genel");
+            if (generalCat != null) return generalCat.Id;
+
+            var defaultCategory = new Category
+            {
+                Id = Guid.NewGuid(),
+                CategoryName = "Genel",
+                IsActive = true,
+                IsDeleted = false
+            };
+            await _categoryRepository.AddAsync(defaultCategory);
+            return defaultCategory.Id;
+        }
+
         #endregion
     }
 }

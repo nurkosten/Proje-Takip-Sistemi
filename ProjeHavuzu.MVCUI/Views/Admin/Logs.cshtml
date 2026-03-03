@@ -1,0 +1,192 @@
+@model ProjeHavuzu.Data.DTOs.LogDto.LogPageViewModel
+@{
+    ViewData["Title"] = "Sistem Logları";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="container-fluid">
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+    }
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Sistem Logları</h6>
+            <div class="dropdown no-arrow">
+                 <!-- Clear logs button -->
+                 <form asp-action="ClearOldLogs" method="post" onsubmit="return confirm('30 günden eski tüm logları silmek istediğinize emin misiniz?');" style="display:inline;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="olderThanDays" value="30" />
+                    <button type="submit" class="btn btn-danger btn-sm">
+                        <i class="fas fa-trash"></i> Eski Logları Temizle
+                    </button>
+                 </form>
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- Filtreleme Alanı -->
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <label>Log Kaynağı</label>
+                    <select id="logTypeFilter" class="form-control">
+                        <option value="">Tümü</option>
+                        <option value="System">Sistem</option>
+                        <option value="User">Kullanıcı</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label>Log Seviyesi</label>
+                    <select id="logLevelFilter" class="form-control">
+                        <option value="">Tümü</option>
+                        <option value="Info">Info</option>
+                        <option value="Warning">Warning</option>
+                        <option value="Error">Error</option>
+                    </select>
+                </div>
+                 <div class="col-md-3">
+                    <label>Kullanıcı</label>
+                    <select id="userIdFilter" class="form-control">
+                        <option value="">Tümü</option>
+                        @if (Model != null && Model.Users != null)
+                        {
+                            foreach (var user in Model.Users)
+                            {
+                                        <option value="@user.Id">@user.DisplayName</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button id="btnFilter" class="btn btn-primary w-100">
+                        <i class="fas fa-filter"></i> Filtrele
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover" id="logsTable" width="100%" cellspacing="0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Tarih</th>
+                            <th>Seviye</th>
+                            <th>Kaynak</th>
+                            <th>Kullanıcı</th>
+                            <th>Controller/Action</th>
+                            <th>Detay</th>
+                            <th>IP</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+        <script>
+            $(document).ready(function() {
+                var table = $('#logsTable').DataTable({
+                    "processing": true,
+                    "serverSide": true,
+                    "ajax": {
+                        "url": "@Url.Action("GetLogsData", "Admin")",
+                        "type": "POST",
+                        "data": function(d) {
+                            d.LogTypeFilter = $('#logTypeFilter').val();
+                            d.LogLevelFilter = $('#logLevelFilter').val();
+                            d.UserId = $('#userIdFilter').val();
+                        },
+                        "error": function (xhr, error, thrown) {
+                            console.error('DataTables AJAX error:', error, thrown);
+                        }
+                    },
+                    "order": [[0, "desc"]],
+                    "pageLength": 25,
+                    "lengthMenu": [10, 25, 50, 100],
+                    "columns": [
+                        { 
+                            "data": "createdDate",
+                            "render": function(data) {
+                                if (!data) return '';
+                                var date = new Date(data);
+                                return date.toLocaleString('tr-TR');
+                            }
+                        },
+                        { 
+                            "data": "logLevel",
+                            "render": function(data) {
+                                var badgeClass = 'secondary';
+                                if(data === 'Error') badgeClass = 'danger';
+                                else if(data === 'Warning') badgeClass = 'warning text-dark';
+                                else if(data === 'Info') badgeClass = 'info text-dark';
+                                return '<span class="badge badge-' + badgeClass + ' bg-' + badgeClass + '">' + (data || '-') + '</span>';
+                            }
+                        },
+                        { 
+                            "data": "logSource",
+                             "render": function(data) {
+                                return data === 'System' ? '<span class="badge bg-secondary">Sistem</span>' : '<span class="badge bg-primary">Kullanıcı</span>';
+                            }
+                        },
+                        { "data": "userName" },
+                        { 
+                            "data": null,
+                            "render": function(data, type, row) {
+                                if(row.controller || row.action)
+                                    return (row.controller || '') + ' / ' + (row.action || '');
+                                return '-';
+                            }
+                        },
+                        { 
+                            "data": "detail",
+                            "render": function(data, type, row) {
+                                var text = data || '';
+                                if(text.length > 50) text = text.substr(0, 50) + '...';
+                                if(row.exception) return '<span class="text-danger" title="' + (row.exception || '').replace(/"/g, '&quot;') + '">' + text + ' <i class="bi bi-exclamation-circle"></i></span>';
+                                return '<span title="' + (data || '').replace(/"/g, '&quot;') + '">' + text + '</span>';
+                            }
+                        },
+                        { "data": "ipAddress" }
+                    ],
+                    "language": {
+                        "decimal": "",
+                        "emptyTable": "Tabloda herhangi bir veri mevcut değil",
+                        "info": "_TOTAL_ kayıttan _START_ - _END_ arasındaki kayıtlar gösteriliyor",
+                        "infoEmpty": "Kayıt yok",
+                        "infoFiltered": "(_MAX_ kayıt içerisinden bulunan)",
+                        "infoPostFix": "",
+                        "thousands": ".",
+                        "lengthMenu": "Sayfada _MENU_ kayıt göster",
+                        "loadingRecords": "Yükleniyor...",
+                        "processing": '<div class="d-flex justify-content-center align-items-center"><div class="spinner-border text-primary me-2" role="status"></div> İşleniyor...</div>',
+                        "search": "Ara:",
+                        "zeroRecords": "Eşleşen kayıt bulunamadı",
+                        "paginate": {
+                            "first": "İlk",
+                            "last": "Son",
+                            "next": "Sonraki",
+                            "previous": "Önceki"
+                        },
+                        "aria": {
+                            "sortAscending": ": artan sütun sıralamasını aktifleştir",
+                            "sortDescending": ": azalan sütun sıralamasını aktifleştir"
+                        }
+                    }
+                });
+
+                $('#btnFilter').click(function() {
+                    table.draw();
+                });
+
+                // Filtreleri değiştirince otomatik yenilemek isterseniz:
+                // $('#logTypeFilter, #logLevelFilter, #userIdFilter').change(function() { table.draw(); });
+            });
+        </script>
+}

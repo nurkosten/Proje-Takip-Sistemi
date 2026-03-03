@@ -1,0 +1,105 @@
+@using ProjeHavuzu.Data.Entites
+@model List<ProjectRequest>
+
+@{
+    ViewData["Title"] = "İsteklerim";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3><i class="bi bi-inbox"></i> Proje İsteklerim</h3>
+        <a asp-action="ProjectPool" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Proje Havuzuna Dön
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover table-bordered">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Proje Adı</th>
+                                <th>İstek Tarihi</th>
+                                <th>Mesajım</th>
+                                <th>Durum</th>
+                                <th>Yanıt Tarihi</th>
+                                <th>Danışman Yanıtı</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var request in Model)
+                            {
+                                <tr>
+                                    <td class="fw-bold">@request.Project?.ProjectTitle</td>
+                                    <td>@request.RequestDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                    <td>@(string.IsNullOrEmpty(request.Message) ? "-" : request.Message)</td>
+                                    <td>
+                                        @switch (request.RequestStatus)
+                                        {
+                                            case ProjectRequestStatus.Pending:
+                                                <span class="badge bg-warning text-dark">
+                                                    <i class="bi bi-clock-history"></i> Beklemede
+                                                </span>
+                                                break;
+                                            case ProjectRequestStatus.Approved:
+                                                <span class="badge bg-success">
+                                                    <i class="bi bi-check-circle"></i> Onaylandı
+                                                </span>
+                                                break;
+                                            case ProjectRequestStatus.Rejected:
+                                                <span class="badge bg-danger">
+                                                    <i class="bi bi-x-circle"></i> Reddedildi
+                                                </span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (request.ResponseDate.HasValue)
+                                        {
+                                            @request.ResponseDate.Value.ToString("dd.MM.yyyy HH:mm")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>@(string.IsNullOrEmpty(request.ResponseMessage) ? "-" : request.ResponseMessage)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle fs-3 d-block mb-2"></i>
+                    <h5>Henüz proje isteğiniz bulunmuyor.</h5>
+                    <p class="mb-0">Proje havuzundan beğendiğiniz projelere katılım isteği gönderebilirsiniz.</p>
+                    <a asp-action="ProjectPool" class="btn btn-primary mt-3">
+                        <i class="bi bi-collection"></i> Proje Havuzuna Git
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

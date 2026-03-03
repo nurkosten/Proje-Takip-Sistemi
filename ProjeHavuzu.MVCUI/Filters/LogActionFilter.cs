@@ -37,15 +37,29 @@ namespace ProjeHavuzu.MVCUI.Filters
                 // Ajax isteklerini veya gereksizleri filtrelemek istersek buraya ekleyebiliriz.
                 if (controllerName != "SystemLog")
                 {
+                    // Kullanıcı bilgilerini detaylı al
+                    var user = context.HttpContext.User;
+                    var userEmail = user.Identity?.IsAuthenticated == true ? user.Identity.Name : "Misafir";
+                    var fullNameClaim = user.FindFirst("FullName")?.Value;
+                    var roles = string.Join(", ", user.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value));
+                    
+                    var userDisplay = string.IsNullOrEmpty(fullNameClaim) ? userEmail : $"{fullNameClaim} ({userEmail})";
+                    if (!string.IsNullOrEmpty(roles)) userDisplay += $" [{roles}]";
+
+                    // URL ve QueryString
+                    var path = context.HttpContext.Request?.Path ?? "N/A";
+                    var query = context.HttpContext.Request?.QueryString.ToString() ?? "";
+                    var fullUrl = path + query;
+
                     // HttpContext verilerini burada topla (Background Job'da erişilemez)
                     var logDto = new ProjeHavuzu.Data.DTOs.SystemLogDto.SystemLogCreateDto
                     {
                         Controller = controllerName,
                         Action = actionName,
-                        Detail = "Kullanıcı işlem gerçekleştirdi.",
+                        Detail = $"{userDisplay} kullanıcısı {controllerName}/{actionName} işlemini gerçekleştirdi.",
                         LogType = "Info",
                         IpAddress = GetIpAddress(context.HttpContext),
-                        Url = context.HttpContext.Request?.Path ?? "N/A",
+                        Url = fullUrl,
                         HttpMethod = context.HttpContext.Request?.Method ?? "N/A",
                         UserAgent = context.HttpContext.Request?.Headers["User-Agent"].ToString() ?? "N/A"
                     };

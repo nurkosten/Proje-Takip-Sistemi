@@ -307,7 +307,7 @@ body {
 .page-content {
     flex: 1;
     padding: 2rem;
-    background-color: var(--white);
+    background-color: #0000000a;
 }
 
 /* Ana Sayfa Özel Stiller */

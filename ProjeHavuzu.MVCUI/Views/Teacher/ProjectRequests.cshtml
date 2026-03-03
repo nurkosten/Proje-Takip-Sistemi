@@ -1,0 +1,172 @@
+@using ProjeHavuzu.Data.Entites
+@model List<ProjectRequest>
+
+@{
+    ViewData["Title"] = "Gelen Proje İstekleri";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3><i class="bi bi-inbox-fill"></i> Gelen Proje İstekleri</h3>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Panel Ana Sayfası
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover table-bordered">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Öğrenci</th>
+                                <th>Proje</th>
+                                <th>İstek Tarihi</th>
+                                <th>Öğrenci Mesajı</th>
+                                <th class="text-center">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var request in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@request.Student?.FullName</strong><br />
+                                        <small class="text-dark">@request.Student?.Email</small>
+                                    </td>
+                                    <td>@request.Project?.ProjectTitle</td>
+                                    <td>@request.RequestDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                    <td>@(string.IsNullOrEmpty(request.Message) ? "-" : request.Message)</td>
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-success btn-sm" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#approveModal"
+                                                    data-request-id="@request.Id"
+                                                    data-student-name="@request.Student?.FullName"
+                                                    data-project-title="@request.Project?.ProjectTitle">
+                                                <i class="bi bi-check-lg"></i> Onayla
+                                            </button>
+                                            <button type="button" class="btn btn-danger btn-sm"
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#rejectModal"
+                                                    data-request-id="@request.Id"
+                                                    data-student-name="@request.Student?.FullName"
+                                                    data-project-title="@request.Project?.ProjectTitle">
+                                                <i class="bi bi-x-lg"></i> Reddet
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-envelope-open fs-1 text-muted mb-3 d-block"></i>
+                    <h5>Bekleyen istek bulunmuyor.</h5>
+                    <p class="text-muted">Şu an için projenize katılmak isteyen yeni bir öğrenci isteği yok.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Onaylama Modalı -->
+<div class="modal fade" id="approveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="ApproveRequest" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="requestId" id="approveRequestId" />
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">İsteği Onayla</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong id="approveStudentName"></strong> isimli öğrencinin <strong id="approveProjectTitle"></strong> projesine katılım isteğini onaylıyor musunuz?</p>
+                    <div class="mb-3">
+                        <label for="approveMessage" class="form-label">Öğrenciye Yanıtınız (İsteğe Bağlı)</label>
+                        <textarea class="form-control" id="approveMessage" name="responseMessage" rows="3"></textarea>
+                    </div>
+                    <div class="alert alert-warning small">
+                        <i class="bi bi-exclamation-triangle"></i> Onayladığınızda öğrenci otomatik olarak projeye atanacaktır.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-success">Onayla ve Ata</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reddetme Modalı -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="RejectRequest" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="requestId" id="rejectRequestId" />
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">İsteği Reddet</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong id="rejectStudentName"></strong> isimli öğrencinin <strong id="rejectProjectTitle"></strong> projesine katılım isteğini reddetmek istediğinize emin misiniz?</p>
+                    <div class="mb-3">
+                        <label for="rejectMessage" class="form-label">Reddetme Nedeni / Mesajınız</label>
+                        <textarea class="form-control" id="rejectMessage" name="responseMessage" rows="3" required placeholder="Lütfen bir neden belirtiniz..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-danger">İsteği Reddet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Modal veri aktarımı
+        var approveModal = document.getElementById('approveModal');
+        approveModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            document.getElementById('approveRequestId').value = button.getAttribute('data-request-id');
+            document.getElementById('approveStudentName').textContent = button.getAttribute('data-student-name');
+            document.getElementById('approveProjectTitle').textContent = button.getAttribute('data-project-title');
+        });
+
+        var rejectModal = document.getElementById('rejectModal');
+        rejectModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            document.getElementById('rejectRequestId').value = button.getAttribute('data-request-id');
+            document.getElementById('rejectStudentName').textContent = button.getAttribute('data-student-name');
+            document.getElementById('rejectProjectTitle').textContent = button.getAttribute('data-project-title');
+        });
+    </script>
+}

@@ -18,7 +18,7 @@ namespace ProjeHavuzu.Data.Context
     {
         private readonly ICurrentUserService _currentUser;
 
-        public ApplicationContext(DbContextOptions<ApplicationContext> options, ICurrentUserService currentUserService = null) : base(options)
+        public ApplicationContext(DbContextOptions<ApplicationContext> options, ICurrentUserService currentUserService) : base(options)
         {
             _currentUser = currentUserService;
         }
@@ -29,26 +29,35 @@ namespace ProjeHavuzu.Data.Context
         public DbSet<Department> Departments { get; set; }
         public DbSet<ProjectStudent> ProjectStudents { get; set; }
         public DbSet<SystemLog> SystemLogs { get; set; }
+        public DbSet<ProjectPhase> ProjectPhases { get; set; }
+        public DbSet<ProjectLanguage> ProjectLanguages { get; set; }
+        public DbSet<ProjectRequest> ProjectRequests { get; set; }
+        public DbSet<ProjectSubmission> ProjectSubmissions { get; set; }
 
 
 
         public override int SaveChanges()
         {
             var entries = ChangeTracker.Entries<BaseEntity>();
+            var currentUserId = _currentUser?.UserId;
 
             foreach (var entry in entries)
             {
                 if (entry.State == EntityState.Added)
                 {
                     entry.Entity.CreatedDate = DateTime.UtcNow;
-                    entry.Entity.CreatedBy = _currentUser.UserId;
+                    // Eğer CreatedBy daha önce atanmadıysa (veya boşsa) mevcut kullanıcıyı ata
+                    if (!entry.Entity.CreatedBy.HasValue || entry.Entity.CreatedBy == Guid.Empty)
+                    {
+                        entry.Entity.CreatedBy = currentUserId;
+                    }
                     entry.Entity.Status = DataStatus.Inserted;
                 }
 
                 if (entry.State == EntityState.Modified)
                 {
                     entry.Entity.UpdatedDate = DateTime.UtcNow;
-                    entry.Entity.UpdatedBy = _currentUser.UserId;
+                    entry.Entity.UpdatedBy = currentUserId;
                     entry.Entity.Status = DataStatus.Updated;
                 }
             }
@@ -59,32 +68,30 @@ namespace ProjeHavuzu.Data.Context
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             var entries = ChangeTracker.Entries<BaseEntity>();
-            if (_currentUser == null)
-            {
-                _currentUser.UserId = Guid.Empty;
-            }
+            var currentUserId = _currentUser?.UserId;
 
             foreach (var entry in entries)
             {
                 if (entry.State == EntityState.Added)
                 {
                     entry.Entity.CreatedDate = DateTime.UtcNow;
-                    entry.Entity.CreatedBy = _currentUser.UserId;
+                    // Eğer CreatedBy daha önce atanmadıysa (veya boşsa) mevcut kullanıcıyı ata
+                    if (!entry.Entity.CreatedBy.HasValue || entry.Entity.CreatedBy == Guid.Empty)
+                    {
+                        entry.Entity.CreatedBy = currentUserId;
+                    }
                     entry.Entity.Status = DataStatus.Inserted;
                 }
 
                 if (entry.State == EntityState.Modified)
                 {
                     entry.Entity.UpdatedDate = DateTime.UtcNow;
-                    entry.Entity.UpdatedBy = _currentUser.UserId;
+                    entry.Entity.UpdatedBy = currentUserId;
                     entry.Entity.Status = DataStatus.Updated;
                 }
             }
 
             return await base.SaveChangesAsync(cancellationToken);
-
-
-
         }
 
         protected override void OnModelCreating(ModelBuilder builder)

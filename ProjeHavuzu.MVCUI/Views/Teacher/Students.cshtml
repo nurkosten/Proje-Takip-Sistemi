@@ -95,9 +95,21 @@
                                 </td>
                                 <td>
                                     <div class="btn-group" role="group">
-                                        <a asp-action="AssignProjectsToStudent" asp-route-studentId="@student.Id" class="btn btn-sm btn-success">
-                                            <i class="bi bi-folder-plus"></i> Proje Ata
-                                        </a>
+                                        @if (student.IsActive)
+                                        {
+                                            <a asp-action="AssignProjectsToStudent" asp-route-studentId="@student.Id" class="btn btn-sm btn-success">
+                                                <i class="bi bi-folder-plus"></i> Proje Ata
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="btn btn-sm btn-secondary" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#passiveWarningModal"
+                                                    data-student-name="@student.FullName">
+                                                <i class="bi bi-folder-plus"></i> Proje Ata
+                                            </button>
+                                        }
                                         @if (student.IsActive)
                                         {
                                             <button type="button" class="btn btn-sm btn-warning" 
@@ -110,12 +122,13 @@
                                         }
                                         else
                                         {
-                                            <form asp-action="ActivateStudent" asp-route-studentId="@student.Id" method="post" class="d-inline">
-                                                <button type="submit" class="btn btn-sm btn-info" 
-                                                        onclick="return confirm('@student.FullName öğrencisini aktifleştirmek istediğinize emin misiniz?');">
-                                                    <i class="bi bi-play-circle"></i> Aktifleştir
-                                                </button>
-                                            </form>
+                                            <button type="button" class="btn btn-sm btn-info" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#activateModal"
+                                                    data-student-id="@student.Id"
+                                                    data-student-name="@student.FullName">
+                                                <i class="bi bi-play-circle"></i> Aktifleştir
+                                            </button>
                                         }
                                     </div>
                                 </td>
@@ -168,6 +181,71 @@
             </form>
         </div>
     </div>
+
+<!-- Aktifleştirme Modal -->
+<div class="modal fade" id="activateModal" tabindex="-1" aria-labelledby="activateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="ActivateStudent" method="post">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title" id="activateModalLabel">
+                        <i class="bi bi-play-circle"></i> Öğrenci Aktifleştir
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="studentId" id="activateModalStudentId" />
+                    <div class="text-center mb-3">
+                         <i class="bi bi-person-check-fill text-info" style="font-size: 3rem;"></i>
+                    </div>
+                    <p class="text-center fs-5">
+                       <strong id="activateModalStudentName"></strong><br />
+                       öğrencisinin hesabını aktifleştirmek üzeresiniz.
+                    </p>
+                    <p class="text-center text-muted small">
+                        Bu işlem sonrası öğrenci sisteme tekrar giriş yapabilecek ve proje seçebilecektir.
+                        Onaylıyor musunuz?
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> İptal
+                    </button>
+                    <button type="submit" class="btn btn-info text-white">
+                        <i class="bi bi-check-lg"></i> Evet, Aktifleştir
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Pasif Öğrenci Uyarı Modalı -->
+<div class="modal fade" id="passiveWarningModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill"></i> İşlem Yapılamaz</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-3">
+                    <i class="bi bi-person-x-fill text-warning" style="font-size: 4rem;"></i>
+                </div>
+                <h4 id="passiveWarningName" class="fw-bold mb-3"></h4>
+                <p class="fs-5">
+                    Bu öğrenci <strong>PASİF</strong> durumdadır.
+                </p>
+                <p class="text-muted">
+                    Pasif durumdaki öğrencilere proje ataması yapılamaz.<br>
+                    İşlem yapmak için önce öğrenciyi <strong>aktifleştirmeniz</strong> gerekmektedir.
+                </p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Tamam</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
@@ -179,6 +257,11 @@
             const resultCount = document.getElementById('resultCount');
             const tableBody = document.querySelector('table tbody');
             const rows = tableBody ? tableBody.querySelectorAll('tr') : [];
+
+            // Modalları body'ye taşı (Z-index/Backdrop sorununu önlemek için)
+            document.body.appendChild(document.getElementById('deactivateModal'));
+            document.body.appendChild(document.getElementById('activateModal'));
+            document.body.appendChild(document.getElementById('passiveWarningModal'));
 
             function filterTable() {
                 const searchTerm = searchInput.value.toLowerCase().trim();
@@ -234,6 +317,26 @@
                 document.getElementById('modalStudentId').value = studentId;
                 document.getElementById('modalStudentName').textContent = studentName;
                 document.getElementById('reason').value = '';
+            });
+
+            // Modal için aktifleştirme bilgilerini ayarla
+            var activateModal = document.getElementById('activateModal');
+            activateModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var studentId = button.getAttribute('data-student-id');
+                var studentName = button.getAttribute('data-student-name');
+                
+                document.getElementById('activateModalStudentId').value = studentId;
+                document.getElementById('activateModalStudentName').textContent = studentName;
+            });
+
+            // Pasif Uyarı Modalı için isim ayarla
+            var passiveWarningModal = document.getElementById('passiveWarningModal');
+            passiveWarningModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var studentName = button.getAttribute('data-student-name');
+                
+                document.getElementById('passiveWarningName').textContent = studentName;
             });
 
             // Bootstrap Tooltip Aktivasyonu

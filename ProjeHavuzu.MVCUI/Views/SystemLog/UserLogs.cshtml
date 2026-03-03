@@ -1,0 +1,77 @@
+@model List<ProjeHavuzu.Data.DTOs.SystemLogDto.SystemLogListDto>
+
+@{
+    ViewData["Title"] = "Kullanıcı Logları";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    string userName = ViewBag.UserName as string;
+    string userEmail = ViewBag.UserEmail as string;
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Log Detayı</h1>
+        <a asp-action="Users" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Kullanıcı Listesine Dön
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                @userName (@userEmail) Kullanıcısının İşlem Geçmişi
+            </h6>
+        </div>
+        <div class="card-body">
+            @if (Model != null && Model.Count > 0)
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm" id="logTable" width="100%" cellspacing="0">
+                        <thead class="thead-light">
+                            <tr>
+                                <th style="width: 140px;">Tarih</th>
+                                <th>İşlem (Controller/Action)</th>
+                                <th>Metod</th>
+                                <th>Detay</th>
+                                <th>IP</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr class="@(item.LogType == "Error" ? "table-danger" : (item.LogType == "Warning" ? "table-warning" : ""))">
+                                    <td data-order="@item.CreatedDate.Ticks">@item.CreatedDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss")</td>
+                                    <td>
+                                        <span class="font-weight-bold">@item.Controller</span> / @item.Action
+                                    </td>
+                                    <td>@item.HttpMethod</td>
+                                    <td>@item.Detail</td>
+                                    <td>@item.IpAddress</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    Bu kullanıcıya ait herhangi bir log kaydı bulunamadı.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#logTable').DataTable({
+                "destroy": true,
+                "order": [[ 0, "desc" ]], // Tarihe göre azalan sırala
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Turkish.json"
+                }
+            });
+        });
+    </script>
+}

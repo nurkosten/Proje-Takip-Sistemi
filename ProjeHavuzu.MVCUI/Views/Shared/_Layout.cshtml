@@ -7,7 +7,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Proje Havuz Sistemi</title>
+    <title>@ViewData["Title"] - Proje Takip Sistemi</title>
 
     <link href="~/images/oik_favicon.png" rel="icon" />
 
@@ -17,8 +17,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
     <link rel="stylesheet" href="~/css/home.css" />
+    <link rel="stylesheet" href="~/css/responsive.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" />
+    <link rel="stylesheet" href="~/css/datatable-theme.css" />
 
     <style>
         /* Template'den gelen özel stiller */
@@ -28,7 +30,8 @@
 
         .sidebar-logo {
             max-width: 100px !important;
-            margin-bottom: 1.5rem !important;
+            margin: 0 auto 1.5rem auto !important;
+            display: block;
         }
 
         .sidebar-header {
@@ -60,7 +63,7 @@
         <aside id="sidebar" class="sidebar">
             <div class="sidebar-header text-center p-3">
                 <img src="~/images/mtu-logo.png" alt="Logo" class="sidebar-logo mb-2" />
-                <h3 class="h5 mb-1">Proje Havuz Sistemi</h3>
+                <h3 class="h5 mb-1">Proje Takip Sistemi</h3>
                 <small style="font-weight:bold;" class="text-muted">Yönetim Paneli</small>
             </div>
             <nav class="sidebar-nav">
@@ -97,7 +100,32 @@
                                     <span>Bölümler</span>
                                 </a>
                             </li>
+
+                            <!-- Hangfire Dashboard - Sadece Admin -->
+                            <li class="nav-item">
+                                <a class="nav-link" href="/hangfire" target="_blank">
+                                    <i class="bi bi-gear-wide-connected"></i>
+                                    <span>Hangfire Jobs</span>
+                                </a>
+                            </li>
                         }
+                    }
+
+
+                    @if (User.IsInRole("Student"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Student/ProjectPool">
+                                <i class="bi bi-collection"></i>
+                                <span>Proje Havuzu</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Student/MyRequests">
+                                <i class="bi bi-inbox"></i>
+                                <span>İsteklerim</span>
+                            </a>
+                        </li>
                     }
 
                     <li class="accordion-item">
@@ -119,6 +147,15 @@
                                     <span>Projelerim</span>
                                 </a>
                             </li>
+                            @if (User.IsInRole("Teacher") || User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" href="/Teacher/ProjectRequests">
+                                        <i class="bi bi-envelope-plus"></i>
+                                        <span>Gelen İstekler</span>
+                                    </a>
+                                </li>
+                            }
                         </ul>
                     </li>
 
@@ -182,13 +219,35 @@
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
     <script>
-        $(document).ready(function() {
-            $('.table').each(function() {
+        $(document).ready(function () {
+            $('.table').not('#projectsTable').each(function () {
                 if (!$.fn.DataTable.isDataTable(this)) {
                     $(this).DataTable({
+                        "order": [], // 👈 Sunucudan gelen sıralamayı bozma
                         "pageLength": 50,
                         "language": {
-                            "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json"
+                            "decimal": "",
+                            "emptyTable": "Tabloda herhangi bir veri mevcut değil",
+                            "info": "_TOTAL_ kayıttan _START_ - _END_ arasındaki kayıtlar gösteriliyor",
+                            "infoEmpty": "Kayıt yok",
+                            "infoFiltered": "(_MAX_ kayıt içerisinden bulunan)",
+                            "infoPostFix": "",
+                            "thousands": ".",
+                            "lengthMenu": "Sayfada _MENU_ kayıt göster",
+                            "loadingRecords": "Yükleniyor...",
+                            "processing": "İşleniyor...",
+                            "search": "Ara:",
+                            "zeroRecords": "Eşleşen kayıt bulunamadı",
+                            "paginate": {
+                                "first": "İlk",
+                                "last": "Son",
+                                "next": "Sonraki",
+                                "previous": "Önceki"
+                            },
+                            "aria": {
+                                "sortAscending": ": artan sütun sıralamasını aktifleştir",
+                                "sortDescending": ": azalan sütun sıralamasını aktifleştir"
+                            }
                         },
                         "columnDefs": [
                             { "orderable": false, "targets": "no-sort" }

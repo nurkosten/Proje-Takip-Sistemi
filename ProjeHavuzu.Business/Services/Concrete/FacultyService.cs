@@ -39,7 +39,8 @@ namespace ProjeHavuzu.Business.Services.Concrete
         public async Task<List<FacultyListDto>> GetAllFacultiesAsync()
         {
             var faculties = await _facultyRepository.ListAsync(f => !f.IsDeleted);
-            return _mapper.Map<List<FacultyListDto>>(faculties);
+            var sortedFaculties = faculties.OrderBy(f => f.CreatedDate).ToList();
+            return _mapper.Map<List<FacultyListDto>>(sortedFaculties);
         }
 
         public async Task<FacultyListDto> GetFacultyByIdAsync(Guid id)

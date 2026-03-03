@@ -12,7 +12,14 @@ namespace ProjeHavuzu.Data.DependencyResolvers
     {
         public static void AddMailService(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddScoped<IMailSender,MailSendService>();
+            // Mevcut SMTP mail servisi (doğrudan gönderim için)
+            services.AddScoped<IMailSender, MailSendService>();
+
+            // Hangfire job servisi (arka planda mail gönderen)
+            services.AddScoped<IEmailJobService, EmailJobService>();
+
+            // Background mail servisi (Hangfire kuyruğuna ekleyen)
+            services.AddScoped<IBackgroundEmailService, BackgroundEmailService>();
         }
     }
 }

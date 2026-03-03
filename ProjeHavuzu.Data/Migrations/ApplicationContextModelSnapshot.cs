@@ -385,6 +385,9 @@ namespace ProjeHavuzu.Data.Migrations
                     b.Property<Guid>("CategoryId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("ConsultantId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
 
@@ -404,7 +407,13 @@ namespace ProjeHavuzu.Data.Migrations
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("InitialCode")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsApprovedByConsultant")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
@@ -412,6 +421,9 @@ namespace ProjeHavuzu.Data.Migrations
 
                     b.Property<int?>("Percentile")
                         .HasColumnType("int");
+
+                    b.Property<string>("ProjectArea")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ProjectLink")
                         .HasColumnType("nvarchar(max)");
@@ -439,9 +451,172 @@ namespace ProjeHavuzu.Data.Migrations
 
                     b.HasIndex("AppUserId");
 
+                    b.HasIndex("ConsultantId");
+
                     b.HasIndex("ProjectStudentId");
 
                     b.ToTable("Projects");
+                });
+
+            modelBuilder.Entity("ProjeHavuzu.Data.Entites.ProjectLanguage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Descripiton")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LanguageName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("ProjectLanguages");
+                });
+
+            modelBuilder.Entity("ProjeHavuzu.Data.Entites.ProjectPhase", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CompletedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Descripiton")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PhaseName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("ProjectPhases");
+                });
+
+            modelBuilder.Entity("ProjeHavuzu.Data.Entites.ProjectRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Descripiton")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("RequestDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("RequestStatus")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ResponseDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ResponseMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("ProjectRequests");
                 });
 
             modelBuilder.Entity("ProjeHavuzu.Data.Entites.ProjectStudent", b =>
@@ -483,6 +658,67 @@ namespace ProjeHavuzu.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ProjectStudents");
+                });
+
+            modelBuilder.Entity("ProjeHavuzu.Data.Entites.ProjectSubmission", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Descripiton")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StoredFileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("SubmissionStatus")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("UploadDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProjectSubmissions");
                 });
 
             modelBuilder.Entity("ProjeHavuzu.Data.Entites.SystemLog", b =>
@@ -643,11 +879,58 @@ namespace ProjeHavuzu.Data.Migrations
                         .WithMany()
                         .HasForeignKey("AppUserId");
 
+                    b.HasOne("ProjeHavuzu.Data.Entites.Identity.AppUser", "Consultant")
+                        .WithMany()
+                        .HasForeignKey("ConsultantId");
+
                     b.HasOne("ProjeHavuzu.Data.Entites.ProjectStudent", null)
                         .WithMany("Projects")
                         .HasForeignKey("ProjectStudentId");
 
                     b.Navigation("AppUser");
+
+                    b.Navigation("Consultant");
+                });
+
+            modelBuilder.Entity("ProjeHavuzu.Data.Entites.ProjectLanguage", b =>
+                {
+                    b.HasOne("ProjeHavuzu.Data.Entites.Project", "Project")
+                        .WithMany("Languages")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("ProjeHavuzu.Data.Entites.ProjectPhase", b =>
+                {
+                    b.HasOne("ProjeHavuzu.Data.Entites.Project", "Project")
+                        .WithMany("Phases")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("ProjeHavuzu.Data.Entites.ProjectRequest", b =>
+                {
+                    b.HasOne("ProjeHavuzu.Data.Entites.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjeHavuzu.Data.Entites.Identity.AppUser", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Project");
+
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("ProjeHavuzu.Data.Entites.Department", b =>
@@ -660,6 +943,13 @@ namespace ProjeHavuzu.Data.Migrations
                     b.Navigation("AppUsers");
 
                     b.Navigation("Departments");
+                });
+
+            modelBuilder.Entity("ProjeHavuzu.Data.Entites.Project", b =>
+                {
+                    b.Navigation("Languages");
+
+                    b.Navigation("Phases");
                 });
 
             modelBuilder.Entity("ProjeHavuzu.Data.Entites.ProjectStudent", b =>

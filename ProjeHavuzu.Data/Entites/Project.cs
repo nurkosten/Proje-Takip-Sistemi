@@ -19,10 +19,18 @@ namespace ProjeHavuzu.Data.Entites
         public DateTime EndDate { get; set; }
         public string? ProjectLink { get; set; } //
         public Guid? AppUserId { get; set; }
+        public Guid? ConsultantId { get; set; } // Danışman ID
         public int? Percentile { get; set; }
 
         // Navigation property
+        public string? InitialCode { get; set; } // Başlangıç kodları / snippetler
+        public string? ProjectArea { get; set; } // Alan/Domain (Örn: Finans, Sağlık)
+
+        // Navigation property
         public virtual AppUser AppUser { get; set; }
+        public virtual AppUser Consultant { get; set; } // Danışman Navigation
+        public virtual ICollection<ProjectPhase> Phases { get; set; }
+        public virtual ICollection<ProjectLanguage> Languages { get; set; }
 
 
     }
