@@ -1,229 +1,271 @@
 /* =============================================================
-   DataTable Theme — Professional
+   DataTable Theme — Premium Professional v2
    =============================================================
    Global CSS overlay for DataTables + Bootstrap 5.
-   Hedefler: .dataTables_wrapper, thead.table-dark,
-   .table-striped, .table-hover, pagination, search, length.
-   Mevcut Bootstrap sınıflarını (badge, btn-group, progress) 
-   bozmadan üzerine yazar.
+   Tamamen responsive, modern ve profesyonel tablo teması.
    ============================================================= */
 
+
 /* ─────────────────────────────────────────────────────────────
-   1  THEAD — table-dark override
+   1  WRAPPER — Genel tablo konteyneri
    ───────────────────────────────────────────────────────────── */
 
-table.dataTable>thead.table-dark>tr>th,
-.table>thead.table-dark>tr>th {
-    background: #003366 !important;
-    color: #e6edf5 !important;
+.dataTables_wrapper {
+    font-family: 'Poppins', sans-serif;
+    padding: 1rem 1.25rem;
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   2  THEAD — Başlık satırı
+   ───────────────────────────────────────────────────────────── */
+
+table.dataTable>thead>tr>th,
+.table>thead>tr>th {
+    background: linear-gradient(135deg, #003366 0%, #004080 100%) !important;
+    color: #e8eef5 !important;
     font-weight: 600;
     font-size: .78rem;
     text-transform: uppercase;
-    letter-spacing: .045em;
-    padding: .7rem .85rem !important;
-    border-bottom: 2px solid #002244 !important;
-    border-color: rgba(255, 255, 255, .08) !important;
+    letter-spacing: .06em;
+    padding: .75rem 1rem !important;
+    border-bottom: none !important;
+    border-color: rgba(255, 255, 255, .06) !important;
     white-space: nowrap;
     vertical-align: middle;
+    position: relative;
 }
 
-/* Sort icon renkleri */
+/* İlk ve son sütun borderRadius */
+table.dataTable>thead>tr>th:first-child {
+    border-radius: 8px 0 0 0;
+}
+
+table.dataTable>thead>tr>th:last-child {
+    border-radius: 0 8px 0 0;
+}
+
+/* Sort ikonları */
 table.dataTable>thead .sorting_asc::after,
 table.dataTable>thead .sorting_desc::after {
     opacity: 1 !important;
-    color: #8ec5fc !important;
+    color: #5fb8ff !important;
 }
 
 table.dataTable>thead .sorting::before,
 table.dataTable>thead .sorting::after {
-    opacity: .25;
+    opacity: .3;
 }
 
 
 /* ─────────────────────────────────────────────────────────────
-   2  TBODY — Satırlar
+   3  TBODY — Satırlar
    ───────────────────────────────────────────────────────────── */
 
 table.dataTable>tbody>tr>td,
 .table>tbody>tr>td {
     vertical-align: middle;
-    padding: .6rem .85rem !important;
-    font-size: .83rem;
-    color: #2c3e50;
-    border-color: #edf0f5 !important;
-    transition: background .15s ease;
+    padding: .7rem 1rem !important;
+    font-size: .84rem;
+    color: #334155;
+    border-color: #f1f3f7 !important;
+    transition: all .2s ease;
+    font-weight: 400;
 }
 
-/* Zebra — çok hafif */
+/* Zebra striping — çok hafif */
+table.dataTable>tbody>tr:nth-of-type(odd)>td,
 .table-striped>tbody>tr:nth-of-type(odd)>td {
-    background-color: rgba(0, 51, 102, .015) !important;
+    background-color: #fafbfe !important;
 }
 
-/* Hover — satır belirginleştirme */
+table.dataTable>tbody>tr:nth-of-type(even)>td {
+    background-color: #ffffff !important;
+}
+
+/* Hover — belirgin ama zarif */
 .table-hover>tbody>tr:hover>td,
 table.dataTable>tbody>tr:hover>td {
-    background-color: rgba(0, 51, 102, .045) !important;
+    background-color: #e8f0fe !important;
+    color: #1a365d;
 }
 
 /* Seçili satır */
 table.dataTable>tbody>tr.selected>td {
-    background-color: rgba(0, 51, 102, .08) !important;
+    background-color: #dbeafe !important;
     color: #003366;
 }
 
+/* Son satır alt kenarlık */
+table.dataTable>tbody>tr:last-child>td {
+    border-bottom: none !important;
+}
+
 
 /* ─────────────────────────────────────────────────────────────
-   3  BORDER & SPACING
+   4  TABLE BORDER & CONTAINER
    ───────────────────────────────────────────────────────────── */
 
+table.dataTable {
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    border: 1px solid #e5e9f0 !important;
+    border-radius: 10px !important;
+    overflow: hidden;
+    width: 100% !important;
+}
+
 table.dataTable.table-bordered {
-    border: 1px solid #e3e8ef !important;
-    border-collapse: collapse !important;
-}
-
-table.dataTable.table-bordered>thead>tr>th {
-    border-color: rgba(255, 255, 255, .1) !important;
-}
-
-table.dataTable.table-bordered>tbody>tr>td {
-    border-color: #edf0f5 !important;
+    border: 1px solid #e5e9f0 !important;
 }
 
 
 /* ─────────────────────────────────────────────────────────────
-   4  TOOLBAR — Length & Search
+   5  TOOLBAR — Length & Search
    ───────────────────────────────────────────────────────────── */
 
 .dataTables_wrapper .dataTables_length,
 .dataTables_wrapper .dataTables_filter {
-    margin-bottom: .65rem;
+    margin-bottom: .85rem;
     font-size: .82rem;
-    color: #5d6b7e;
+    color: #64748b;
 }
 
 .dataTables_wrapper .dataTables_length label,
 .dataTables_wrapper .dataTables_filter label {
     display: flex;
     align-items: center;
-    gap: .35rem;
+    gap: .45rem;
     font-weight: 500;
     margin-bottom: 0;
 }
 
 /* Select dropdown */
 .dataTables_wrapper .dataTables_length select {
-    border: 1px solid #d1d9e6;
-    border-radius: 6px;
-    padding: .35rem .5rem;
-    padding-right: 1.5rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    padding: .4rem .6rem;
+    padding-right: 1.8rem;
     font-size: .82rem;
-    color: #2c3e50;
+    color: #334155;
     background-color: #fff;
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235d6b7e'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2364748b'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right .5rem center;
+    background-position: right .6rem center;
     background-size: 10px 6px;
     cursor: pointer;
-    transition: border-color .15s, box-shadow .15s;
+    transition: all .2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .04);
 }
 
 .dataTables_wrapper .dataTables_length select:focus {
-    border-color: #336699;
-    box-shadow: 0 0 0 3px rgba(0, 51, 102, .08);
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, .12);
     outline: none;
 }
 
 /* Search input */
 .dataTables_wrapper .dataTables_filter input {
-    border: 1px solid #d1d9e6;
-    border-radius: 6px;
-    padding: .4rem .75rem;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    padding: .45rem .85rem;
+    padding-left: 2.2rem;
     font-size: .82rem;
-    color: #2c3e50;
-    background: #fff;
-    min-width: 200px;
-    transition: border-color .15s, box-shadow .15s;
+    color: #334155;
+    background-color: #fff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242.656a5 5 0 1 1 0-10 5 5 0 0 1 0 10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: .7rem center;
+    background-size: 14px;
+    min-width: 220px;
+    transition: all .25s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .04);
 }
 
 .dataTables_wrapper .dataTables_filter input:focus {
-    border-color: #336699;
-    box-shadow: 0 0 0 3px rgba(0, 51, 102, .08);
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, .12),
+        0 1px 3px rgba(0, 0, 0, .06);
     outline: none;
+    width: 280px !important;
 }
 
 .dataTables_wrapper .dataTables_filter input::placeholder {
-    color: #a0aec0;
+    color: #94a3b8;
 }
 
 
 /* ─────────────────────────────────────────────────────────────
-   5  PAGINATION
+   6  PAGINATION — Modern pill style
    ───────────────────────────────────────────────────────────── */
 
 .dataTables_wrapper .dataTables_paginate {
-    padding-top: .5rem;
+    padding-top: .75rem;
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button {
-    border: 1px solid transparent !important;
-    border-radius: 6px !important;
-    padding: .3rem .6rem !important;
-    margin: 0 2px !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: .35rem .7rem !important;
+    margin: 0 3px !important;
     font-size: .78rem;
     font-weight: 500;
-    color: #5d6b7e !important;
+    color: #64748b !important;
     background: transparent !important;
-    transition: all .15s ease;
+    transition: all .2s cubic-bezier(.22, 1, .36, 1);
+    min-width: 32px;
+    text-align: center;
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
-    background: rgba(0, 51, 102, .06) !important;
+    background: #f1f5f9 !important;
     color: #003366 !important;
-    border-color: rgba(0, 51, 102, .15) !important;
     box-shadow: none !important;
+    transform: translateY(-1px);
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button.current,
 .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
-    background: #003366 !important;
+    background: linear-gradient(135deg, #003366 0%, #004080 100%) !important;
     color: #fff !important;
-    border-color: #003366 !important;
+    border: none !important;
     font-weight: 600;
-    box-shadow: 0 2px 6px rgba(0, 51, 102, .2) !important;
+    box-shadow: 0 2px 8px rgba(0, 51, 102, .25) !important;
 }
 
 .dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
 .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover {
-    opacity: .3;
+    opacity: .35;
     cursor: default;
     background: transparent !important;
-    border-color: transparent !important;
     box-shadow: none !important;
+    transform: none;
 }
 
 
 /* ─────────────────────────────────────────────────────────────
-   6  INFO
+   7  INFO — Alt bilgi
    ───────────────────────────────────────────────────────────── */
 
 .dataTables_wrapper .dataTables_info {
     font-size: .78rem;
-    color: #8d9baa;
-    padding-top: .5rem;
+    color: #94a3b8;
+    padding-top: .75rem;
+    font-weight: 400;
 }
 
 
 /* ─────────────────────────────────────────────────────────────
-   7  PROCESSING
+   8  PROCESSING — Yükleniyor
    ───────────────────────────────────────────────────────────── */
 
 .dataTables_wrapper .dataTables_processing {
-    background: rgba(255, 255, 255, .92) !important;
+    background: rgba(255, 255, 255, .95) !important;
     border: none !important;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, .08);
-    border-radius: 8px;
-    padding: .85rem 2rem !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, .08);
+    border-radius: 10px;
+    padding: 1rem 2rem !important;
     color: #003366;
     font-weight: 600;
     font-size: .85rem;
@@ -232,97 +274,143 @@ table.dataTable.table-bordered>tbody>tr>td {
 
 
 /* ─────────────────────────────────────────────────────────────
-   8  EMPTY TABLE
+   9  EMPTY TABLE
    ───────────────────────────────────────────────────────────── */
 
 .dataTables_wrapper .dataTables_empty,
 table.dataTable td.dataTables_empty {
     text-align: center;
-    padding: 2rem 1rem !important;
-    color: #8d9baa;
-    font-size: .85rem;
-    font-style: italic;
+    padding: 2.5rem 1rem !important;
+    color: #94a3b8;
+    font-size: .88rem;
+    font-style: normal;
+    font-weight: 400;
 }
 
 
 /* ─────────────────────────────────────────────────────────────
-   9  BADGE POLISH (Bootstrap üzerine)
+   10  BADGES
    ───────────────────────────────────────────────────────────── */
 
 table.dataTable .badge {
-    font-size: .7rem;
+    font-size: .72rem;
     font-weight: 600;
-    padding: .25rem .55rem;
-    border-radius: 4px;
-    letter-spacing: .01em;
+    padding: .3rem .65rem;
+    border-radius: 6px;
+    letter-spacing: .02em;
+}
+
+/* Specific badge color refinements */
+table.dataTable .badge.bg-success {
+    background: linear-gradient(135deg, #059669, #10b981) !important;
+}
+
+table.dataTable .badge.bg-danger {
+    background: linear-gradient(135deg, #dc2626, #ef4444) !important;
+}
+
+table.dataTable .badge.bg-warning {
+    background: linear-gradient(135deg, #d97706, #f59e0b) !important;
+    color: #fff !important;
+}
+
+table.dataTable .badge.bg-info {
+    background: linear-gradient(135deg, #0284c7, #38bdf8) !important;
+}
+
+table.dataTable .badge.bg-primary {
+    background: linear-gradient(135deg, #003366, #336699) !important;
 }
 
 
 /* ─────────────────────────────────────────────────────────────
-   10  ACTION BUTTONS (btn-group içindekiler)
+   11  ACTION BUTTONS
    ───────────────────────────────────────────────────────────── */
 
 table.dataTable .btn-group .btn-sm,
 table.dataTable .btn-sm {
-    font-size: .75rem;
-    padding: .3rem .55rem;
-    border-radius: 5px;
+    font-size: .76rem;
+    padding: .35rem .6rem;
+    border-radius: 6px;
     font-weight: 500;
+    transition: all .2s ease;
 }
 
 table.dataTable .btn-group {
-    gap: 3px;
+    gap: 4px;
+}
+
+table.dataTable .btn-outline-primary {
+    border-color: #cbd5e1;
+    color: #475569;
+}
+
+table.dataTable .btn-outline-primary:hover {
+    background: #003366;
+    border-color: #003366;
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(0, 51, 102, .2);
 }
 
 
 /* ─────────────────────────────────────────────────────────────
-   11  PROGRESS BAR (tablo içi)
+   12  PROGRESS BAR
    ───────────────────────────────────────────────────────────── */
 
 table.dataTable .progress {
-    border-radius: 4px;
-    background-color: #edf0f5;
-    height: 6px !important;
+    border-radius: 6px;
+    background-color: #f1f5f9;
+    height: 8px !important;
+    overflow: hidden;
 }
 
 table.dataTable .progress-bar {
-    border-radius: 4px;
-    transition: width .4s ease;
+    border-radius: 6px;
+    transition: width .6s cubic-bezier(.22, 1, .36, 1);
 }
 
 
 /* ─────────────────────────────────────────────────────────────
-   12  CARD WRAPPER — Tablonun etrafındaki .card
+   13  CARD WRAPPER
    ───────────────────────────────────────────────────────────── */
 
 .card:has(table.dataTable),
 .card:has(.dataTables_wrapper) {
-    border: 1px solid #e3e8ef;
-    border-radius: 10px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, .04), 0 1px 2px rgba(0, 0, 0, .02);
+    border: 1px solid #e5e9f0;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .04),
+        0 1px 2px rgba(0, 0, 0, .02);
     overflow: hidden;
 }
 
 .card:has(table.dataTable)>.card-header,
 .card:has(.dataTables_wrapper)>.card-header {
-    background: #fafbfd;
-    border-bottom: 1px solid #e3e8ef;
-    padding: .65rem 1rem;
+    background: linear-gradient(135deg, #003366 0%, #004080 100%);
+    border-bottom: none;
+    padding: .75rem 1.25rem;
 }
 
+.card:has(table.dataTable)>.card-header h4,
+.card:has(table.dataTable)>.card-header h5,
 .card:has(table.dataTable)>.card-header h6,
+.card:has(.dataTables_wrapper)>.card-header h4,
+.card:has(.dataTables_wrapper)>.card-header h5,
 .card:has(.dataTables_wrapper)>.card-header h6 {
-    color: #003366;
+    color: #fff;
     font-weight: 600;
-    font-size: .88rem;
+    font-size: .92rem;
 }
 
 
 /* ─────────────────────────────────────────────────────────────
-   13  RESPONSIVE
+   14  RESPONSIVE
    ───────────────────────────────────────────────────────────── */
 
 @media (max-width: 768px) {
+
+    .dataTables_wrapper {
+        padding: .5rem .75rem;
+    }
 
     .dataTables_wrapper .dataTables_length,
     .dataTables_wrapper .dataTables_filter {
@@ -343,43 +431,73 @@ table.dataTable .progress-bar {
     }
 
     table.dataTable>thead>tr>th {
-        font-size: .68rem !important;
-        padding: .5rem .5rem !important;
+        font-size: .7rem !important;
+        padding: .55rem .5rem !important;
     }
 
     table.dataTable>tbody>tr>td {
-        font-size: .76rem !important;
-        padding: .45rem .5rem !important;
+        font-size: .78rem !important;
+        padding: .5rem .5rem !important;
     }
 
     .dataTables_wrapper .dataTables_paginate .paginate_button {
-        padding: .25rem .45rem !important;
+        padding: .25rem .5rem !important;
         font-size: .72rem;
+        min-width: 28px;
     }
 }
 
 
 /* ─────────────────────────────────────────────────────────────
-   14  SCROLLBAR
+   15  SCROLLBAR
    ───────────────────────────────────────────────────────────── */
 
 .table-responsive::-webkit-scrollbar,
 .dataTables_scrollBody::-webkit-scrollbar {
-    height: 5px;
+    height: 6px;
 }
 
 .table-responsive::-webkit-scrollbar-track,
 .dataTables_scrollBody::-webkit-scrollbar-track {
-    background: #f0f2f5;
+    background: #f8fafc;
+    border-radius: 10px;
 }
 
 .table-responsive::-webkit-scrollbar-thumb,
 .dataTables_scrollBody::-webkit-scrollbar-thumb {
-    background: #c8d1dc;
-    border-radius: 4px;
+    background: #cbd5e1;
+    border-radius: 10px;
 }
 
 .table-responsive::-webkit-scrollbar-thumb:hover,
 .dataTables_scrollBody::-webkit-scrollbar-thumb:hover {
-    background: #a0aec0;
+    background: #94a3b8;
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   16  TABLE-SPECIFIC OVERRIDES
+   ───────────────────────────────────────────────────────────── */
+
+/* Table-light thead fallback (non-dark) */
+table.dataTable>thead.table-light>tr>th {
+    background: linear-gradient(135deg, #003366 0%, #004080 100%) !important;
+    color: #e8eef5 !important;
+    border-bottom: none !important;
+}
+
+/* Ensure table has no border artifacts */
+table.dataTable>thead>tr>th:first-child,
+table.dataTable>tbody>tr>td:first-child {
+    padding-left: 1.25rem !important;
+}
+
+table.dataTable>thead>tr>th:last-child,
+table.dataTable>tbody>tr>td:last-child {
+    padding-right: 1.25rem !important;
+}
+
+/* Row first-child consistency */
+table.dataTable>tbody>tr:first-child>td {
+    border-top: none !important;
 }

@@ -14,6 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/home.css" />
     <link rel="stylesheet" href="~/css/responsive.css" />
+    <link rel="stylesheet" href="~/css/animations.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" />
     <link rel="stylesheet" href="~/css/datatable-theme.css" />
@@ -177,6 +178,20 @@
         document.querySelector('.sidebar-toggle').addEventListener('click', function () {
             document.getElementById('sidebar').classList.toggle('active');
         });
+    </script>
+    <script>
+        (function() {
+            var targets = document.querySelectorAll('.card, .info-cards > *, .welcome-section, .benefits-section, .table-responsive');
+            targets.forEach(function(el) { el.classList.add('anim-reveal'); });
+            if ('IntersectionObserver' in window) {
+                var observer = new IntersectionObserver(function(entries) {
+                    entries.forEach(function(entry) {
+                        if (entry.isIntersecting) { entry.target.classList.add('revealed'); observer.unobserve(entry.target); }
+                    });
+                }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+                targets.forEach(function(el) { observer.observe(el); });
+            } else { targets.forEach(function(el) { el.classList.add('revealed'); }); }
+        })();
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
