@@ -15,6 +15,12 @@
     to   { opacity: 1; transform: translateY(0); }
 }
 
+/* fade-only version that does NOT create a stacking context */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
 @keyframes fadeSlideLeft {
     from { opacity: 0; transform: translateX(-20px); }
     to   { opacity: 1; transform: translateX(0); }
@@ -59,6 +65,11 @@
     to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes fadeSlideDown {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
 @keyframes ripple {
     0%   { transform: scale(0); opacity: .5; }
     100% { transform: scale(4); opacity: 0; }
@@ -69,12 +80,14 @@
    2  PAGE LOAD — Smooth entrance
    ───────────────────────────────────────────────────────────── */
 
+/* Use fade-only animations for containers that hold modals
+   to avoid creating a stacking context with transform */
 .page-content {
-    animation: fadeSlideUp .5s cubic-bezier(.22, 1, .36, 1) both;
+    animation: fadeIn .5s cubic-bezier(.22, 1, .36, 1) both;
 }
 
 .main-header {
-    animation: slideDown .4s cubic-bezier(.22, 1, .36, 1) both;
+    animation: fadeSlideDown .4s cubic-bezier(.22, 1, .36, 1) both;
 }
 
 
@@ -198,12 +211,12 @@
    5  CARDS — Lift & glow on hover
    ───────────────────────────────────────────────────────────── */
 
-.card {
+.card:not(.modal-content) {
     transition: transform .3s cubic-bezier(.22, 1, .36, 1),
                 box-shadow .3s cubic-bezier(.22, 1, .36, 1) !important;
 }
 
-.card:hover {
+.card:not(.modal-content):hover {
     transform: translateY(-4px) !important;
     box-shadow: 0 12px 28px rgba(0, 51, 102, .08),
                 0 4px 10px rgba(0, 0, 0, .04) !important;
@@ -430,6 +443,15 @@ table tbody tr td {
 /* ─────────────────────────────────────────────────────────────
    14  MODAL & SWEETALERT — Enhanced entrance
    ───────────────────────────────────────────────────────────── */
+
+/* Modal z-index fix: prevent stacking context issues */
+.modal {
+    z-index: 1055 !important;
+}
+
+.modal-backdrop {
+    z-index: 1050 !important;
+}
 
 .modal.show .modal-dialog {
     animation: scaleIn .3s cubic-bezier(.22, 1, .36, 1) both;
