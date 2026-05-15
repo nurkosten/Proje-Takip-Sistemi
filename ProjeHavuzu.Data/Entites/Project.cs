@@ -1,4 +1,4 @@
-﻿using ProjeHavuzu.Data.Entites.Common;
+using ProjeHavuzu.Data.Entites.Common;
 using ProjeHavuzu.Data.Entites.Enums;
 using ProjeHavuzu.Data.Entites.Identity;
 using System;

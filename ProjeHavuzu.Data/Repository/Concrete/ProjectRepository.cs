@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ProjeHavuzu.Data.Context;
 using ProjeHavuzu.Data.DTOs.Common;
 using ProjeHavuzu.Data.DTOs.ProjectDto;

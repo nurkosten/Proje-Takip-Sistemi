@@ -1,4 +1,4 @@
-﻿using ProjeHavuzu.Data.DTOs.Common;
+using ProjeHavuzu.Data.DTOs.Common;
 using ProjeHavuzu.Data.DTOs.ProjectDto;
 using ProjeHavuzu.Data.Entites;
 using System;

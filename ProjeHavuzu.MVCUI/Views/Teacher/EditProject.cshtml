@@ -13,7 +13,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h2 class="fw-bold mb-0"><i class="bi bi-pencil-square me-2"></i>Proje Düzenle</h2>
-                <p class="text-muted">Proje bilgilerini güncelleyin.</p>
+                <p class="text-dark">Proje bilgilerini güncelleyin.</p>
             </div>
             <div>
                  <a asp-action="AllProjects" class="btn btn-outline-secondary me-2">İptal</a>
@@ -107,7 +107,7 @@
                         <button type="button" class="btn btn-sm btn-outline-primary" id="addPhaseBtn"><i class="bi bi-plus-lg"></i> Aşama Ekle</button>
                     </div>
                     <div class="card-body p-4">
-                        <p class="text-muted small">Projenizi yönetilebilir parçalara bölün (Fazlar).</p>
+                        <p class="text-dark small">Projenizi yönetilebilir parçalara bölün (Fazlar).</p>
                         
                         <div id="phasesContainer">
                             @if (Model.ExistingPhases != null && Model.ExistingPhases.Any())
@@ -178,11 +178,11 @@
                             <label class="form-label fw-bold">Zaman Çizelgesi</label>
                             <div class="row g-2">
                                 <div class="col-6">
-                                    <small class="text-muted d-block">Başlangıç</small>
+                                    <small class="text-dark d-block">Başlangıç</small>
                                     <input asp-for="StartDate" type="date" class="form-control form-control-sm" />
                                 </div>
                                 <div class="col-6">
-                                    <small class="text-muted d-block">Bitiş</small>
+                                    <small class="text-dark d-block">Bitiş</small>
                                     <input asp-for="EndDate" type="date" class="form-control form-control-sm" />
                                 </div>
                             </div>
