@@ -27,6 +27,10 @@ namespace ProjeHavuzu.Data.DTOs.ProjectDto
         public bool IsActive { get; set; }
         public string? ConsultantFullName { get; set; }
         public Guid? ConsultantId { get; set; }
+        public ProjectApprovalStatus ApprovalStatus { get; set; }
+        public string? RejectionReason { get; set; }
+        public DateTime? ApprovedAt { get; set; }
+        public DateTime? RejectedAt { get; set; }
 
         // İlerleme Takibi
         public int TotalPhasesCount { get; set; }

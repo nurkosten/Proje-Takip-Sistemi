@@ -47,9 +47,70 @@ namespace ProjeHavuzu.MVCUI.Controllers
         [HttpGet]
         public async Task<IActionResult> MyProjects()
         {
-            // Akademisyenler için şimdilik tüm projeler sayfasına yönlendirelim
-            // İleride sadece kendi oluşturdukları projeleri getirecek şekilde ayrılabilir
-            return RedirectToAction("AllProjects");
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var projects = await _projectService.GetProjectsByConsultantIdAsync(user.Id);
+            return View(projects);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApproveProject(Guid id)
+        {
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                var isAdmin = User.IsInRole("Admin");
+                await _projectService.ApproveProjectAsync(id, user.Id, isAdmin);
+                TempData["SuccessMessage"] = "Proje başarıyla onaylandı.";
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+
+            return RedirectToAction(nameof(MyProjects));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectProject(Guid id, string rejectionReason)
+        {
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                var isAdmin = User.IsInRole("Admin");
+                await _projectService.RejectProjectAsync(id, user.Id, rejectionReason, isAdmin);
+                TempData["SuccessMessage"] = "Proje reddedildi.";
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+
+            return RedirectToAction(nameof(MyProjects));
         }
 
         [HttpGet]

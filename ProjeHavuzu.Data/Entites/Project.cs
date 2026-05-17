@@ -20,6 +20,10 @@ namespace ProjeHavuzu.Data.Entites
         public string? ProjectLink { get; set; } //
         public Guid? AppUserId { get; set; }
         public Guid? ConsultantId { get; set; } // Danışman ID
+        public ProjectApprovalStatus ApprovalStatus { get; set; } = ProjectApprovalStatus.Pending;
+        public string? RejectionReason { get; set; }
+        public DateTime? ApprovedAt { get; set; }
+        public DateTime? RejectedAt { get; set; }
         public int? Percentile { get; set; }
 
         // Navigation property

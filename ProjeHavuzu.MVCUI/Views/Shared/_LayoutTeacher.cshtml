@@ -88,9 +88,15 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/Student/MyProjects">
+                        <a class="nav-link" href="/Teacher/MyProjects">
                             <i class="bi bi-folder-check"></i>
-                            <span>Projelerim & Durum</span>
+                            <span>Danışman Projeleri</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Teacher/ProjectRequests">
+                            <i class="bi bi-inbox"></i>
+                            <span>Proje İstekleri</span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -143,7 +149,7 @@
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
     <script>
         $(document).ready(function () {
-            $('.table').not('#projectsTable').each(function () {
+            $('.table').not('#projectsTable, #advisorProjectsTable').each(function () {
                 if (!$.fn.DataTable.isDataTable(this)) {
                     $(this).DataTable({
                         "pageLength": 50,

@@ -4,6 +4,7 @@ using ProjeHavuzu.Business.Services.Abstract;
 using ProjeHavuzu.Data.DTOs.Common;
 using ProjeHavuzu.Data.DTOs.ProjectDto;
 using ProjeHavuzu.Data.Entites;
+using ProjeHavuzu.Data.Entites.Enums;
 using ProjeHavuzu.Data.Repository.Abstract;
 using ProjeHavuzu.Data.Validators.ProjectValidators;
 using System;
@@ -88,6 +89,10 @@ namespace ProjeHavuzu.Business.Services.Concrete
             project.InitialCode = projectCreateDto.InitialCode;
             project.ProjectArea = projectCreateDto.ProjectArea;
             project.ConsultantId = projectCreateDto.ConsultantId;
+            project.ApprovalStatus = ProjectApprovalStatus.Pending;
+            project.RejectionReason = null;
+            project.ApprovedAt = null;
+            project.RejectedAt = null;
 
             // Fazların Eklenmesi
             if (projectCreateDto.PhaseNames != null && projectCreateDto.PhaseNames.Any())
@@ -128,6 +133,20 @@ namespace ProjeHavuzu.Business.Services.Concrete
             }
 
             await _projectRepository.AddAsync(project);
+
+            if (projectCreateDto.AppUserId.HasValue && projectCreateDto.AppUserId != Guid.Empty)
+            {
+                var existingAssignment = await _projectStudentRepository.GetProjectStudentAsync(project.Id, projectCreateDto.AppUserId.Value);
+                if (existingAssignment == null)
+                {
+                    await _projectStudentRepository.AddAsync(new ProjectStudent
+                    {
+                        ProjectId = project.Id,
+                        StudentId = projectCreateDto.AppUserId.Value
+                    });
+                }
+            }
+
             return true;
         }
 
@@ -288,6 +307,54 @@ namespace ProjeHavuzu.Business.Services.Concrete
         public async Task<DataTableResponse<ProjectListDto>> GetProjectsServerSideAsync(DataTableRequest request)
         {
             return await _projectRepository.GetProjectsServerSideAsync(request);
+        }
+
+        public async Task<List<ProjectListDto>> GetProjectsByConsultantIdAsync(Guid consultantId)
+        {
+            return await _projectRepository.GetProjectsByConsultantIdAsync(consultantId);
+        }
+
+        public async Task ApproveProjectAsync(Guid projectId, Guid advisorId, bool isAdmin = false)
+        {
+            var project = await _projectRepository.GetAsync(p => p.Id == projectId && !p.IsDeleted);
+            if (project == null)
+                throw new ArgumentException("Proje bulunamadı.");
+
+            if (!isAdmin && project.ConsultantId != advisorId)
+                throw new UnauthorizedAccessException("Bu projeyi onaylama yetkiniz yok.");
+
+            if (project.ApprovalStatus != ProjectApprovalStatus.Pending)
+                throw new InvalidOperationException("Bu proje zaten işleme alınmış.");
+
+            project.ApprovalStatus = ProjectApprovalStatus.Approved;
+            project.ApprovedAt = DateTime.UtcNow;
+            project.RejectedAt = null;
+            project.RejectionReason = null;
+
+            _projectRepository.Update(project);
+        }
+
+        public async Task RejectProjectAsync(Guid projectId, Guid advisorId, string rejectionReason, bool isAdmin = false)
+        {
+            if (string.IsNullOrWhiteSpace(rejectionReason))
+                throw new ArgumentException("Red açıklaması zorunludur.");
+
+            var project = await _projectRepository.GetAsync(p => p.Id == projectId && !p.IsDeleted);
+            if (project == null)
+                throw new ArgumentException("Proje bulunamadı.");
+
+            if (!isAdmin && project.ConsultantId != advisorId)
+                throw new UnauthorizedAccessException("Bu projeyi reddetme yetkiniz yok.");
+
+            if (project.ApprovalStatus != ProjectApprovalStatus.Pending)
+                throw new InvalidOperationException("Bu proje zaten işleme alınmış.");
+
+            project.ApprovalStatus = ProjectApprovalStatus.Rejected;
+            project.RejectedAt = DateTime.UtcNow;
+            project.RejectionReason = rejectionReason.Trim();
+            project.ApprovedAt = null;
+
+            _projectRepository.Update(project);
         }
 
         #endregion

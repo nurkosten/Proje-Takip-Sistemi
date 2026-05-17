@@ -1,5 +1,5 @@
+using ProjeHavuzu.Data.Entites.Enums;
 using System;
-using System.Collections.Generic;
 
 namespace ProjeHavuzu.Data.DTOs.ProjectStudentDto
 {
@@ -8,6 +8,10 @@ namespace ProjeHavuzu.Data.DTOs.ProjectStudentDto
         public Guid ProjectId { get; set; }
         public string? ProjectTitle { get; set; }
         public string? Description { get; set; }
+        public string? CategoryName { get; set; }
+        public string? ConsultantFullName { get; set; }
+        public ProjectApprovalStatus ApprovalStatus { get; set; }
+        public string? RejectionReason { get; set; }
         public int CompletionPercentage { get; set; }
         public Guid StudentId { get; set; }
         public string? StudentFullName { get; set; }

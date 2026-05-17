@@ -3,6 +3,7 @@ using ProjeHavuzu.Data.Context;
 using ProjeHavuzu.Data.DTOs.Common;
 using ProjeHavuzu.Data.DTOs.ProjectDto;
 using ProjeHavuzu.Data.Entites;
+using ProjeHavuzu.Data.Entites.Enums;
 using ProjeHavuzu.Data.Repository.Abstract;
 using System;
 using System.Collections.Generic;
@@ -189,6 +190,79 @@ namespace ProjeHavuzu.Data.Repository.Concrete
                 RecordsFiltered = filteredRecords,
                 Data = data
             };
+        }
+
+        public async Task<List<ProjectListDto>> GetProjectsByConsultantIdAsync(Guid consultantId)
+        {
+            return await BuildProjectListQuery()
+                .Where(p => p.ConsultantId == consultantId)
+                .OrderByDescending(p => p.CreatedDate)
+                .ToListAsync();
+        }
+
+        public async Task<List<ProjectListDto>> GetProjectsForStudentAsync(Guid studentId)
+        {
+            var assignedProjectIds = await _context.ProjectStudents
+                .AsNoTracking()
+                .Where(ps => ps.StudentId == studentId && !ps.IsDeleted)
+                .Select(ps => ps.ProjectId)
+                .ToListAsync();
+
+            var studentProjectIds = await _context.Projects.AsNoTracking()
+                .Where(p => !p.IsDeleted && (p.CreatedBy == studentId || p.AppUserId == studentId))
+                .Select(p => p.Id)
+                .ToListAsync();
+
+            var allProjectIds = assignedProjectIds.Union(studentProjectIds).Distinct().ToList();
+
+            return await BuildProjectListQuery()
+                .Where(p => allProjectIds.Contains(p.Id))
+                .OrderByDescending(p => p.CreatedDate)
+                .ToListAsync();
+        }
+
+        private IQueryable<ProjectListDto> BuildProjectListQuery()
+        {
+            return
+                from p in _context.Projects.AsNoTracking()
+                where !p.IsDeleted
+                join c in _context.Categories.AsNoTracking()
+                    on p.CategoryId equals c.Id
+                where !c.IsDeleted
+                join creator in _context.Users.AsNoTracking()
+                    on p.CreatedBy equals creator.Id into creatorGroup
+                from creator in creatorGroup.DefaultIfEmpty()
+                join consultant in _context.Users.AsNoTracking()
+                    on p.ConsultantId equals consultant.Id into consultantGroup
+                from consultant in consultantGroup.DefaultIfEmpty()
+                select new ProjectListDto
+                {
+                    Id = p.Id,
+                    ProjectTitle = p.ProjectTitle,
+                    Description = p.Description,
+                    CreatedDate = p.CreatedDate,
+                    DifficultyLevel = p.DifficultyLevel,
+                    StartDate = p.StartDate,
+                    EndDate = p.EndDate,
+                    ProjectLink = p.ProjectLink,
+                    CategoryId = c.Id,
+                    CategoryName = c.CategoryName,
+                    CreatedByFullName = creator != null
+                        ? creator.FirstName + " " + creator.LastName
+                        : "Bilinmiyor",
+                    ConsultantId = p.ConsultantId,
+                    ConsultantFullName = consultant != null
+                        ? consultant.FirstName + " " + consultant.LastName
+                        : null,
+                    ApprovalStatus = p.ApprovalStatus,
+                    RejectionReason = p.RejectionReason,
+                    ApprovedAt = p.ApprovedAt,
+                    RejectedAt = p.RejectedAt,
+                    IsDeleted = p.IsDeleted,
+                    IsActive = p.IsActive,
+                    TotalPhasesCount = p.Phases != null ? p.Phases.Count(ph => !ph.IsDeleted) : 0,
+                    CompletedPhasesCount = p.Phases != null ? p.Phases.Count(ph => !ph.IsDeleted && ph.IsCompleted) : 0
+                };
         }
 
         public async Task<ProjectDetailDto> GetProjectDetailWithPhasesAsync(Guid projectId)

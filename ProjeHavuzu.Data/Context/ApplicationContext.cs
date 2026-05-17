@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 using Microsoft.EntityFrameworkCore;
@@ -102,6 +102,12 @@ namespace ProjeHavuzu.Data.Context
                 .HasOne(u => u.Faculty)
                 .WithMany(f => f.AppUsers)
                 .HasForeignKey(u => u.FacultyId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Project>()
+                .HasOne(p => p.Consultant)
+                .WithMany()
+                .HasForeignKey(p => p.ConsultantId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
 

@@ -28,5 +28,9 @@ namespace ProjeHavuzu.Business.Services.Abstract
 
         // Server-side DataTables
         Task<DataTableResponse<ProjectListDto>> GetProjectsServerSideAsync(DataTableRequest request);
+
+        Task<List<ProjectListDto>> GetProjectsByConsultantIdAsync(Guid consultantId);
+        Task ApproveProjectAsync(Guid projectId, Guid advisorId, bool isAdmin = false);
+        Task RejectProjectAsync(Guid projectId, Guid advisorId, string rejectionReason, bool isAdmin = false);
     }
 }

@@ -133,7 +133,13 @@ namespace ProjeHavuzu.MVCUI.Controllers
                 }
 
                 await _projectService.CreateProjectAsync(projectCreateDto);
-                TempData["SuccessMessage"] = "Proje başarıyla oluşturuldu.";
+                TempData["SuccessMessage"] = "Proje başarıyla oluşturuldu ve danışman onayına gönderildi.";
+
+                if (User.IsInRole("Student"))
+                {
+                    return RedirectToAction("MyProjects", "Student");
+                }
+
                 return RedirectToAction("Index");
             }
             catch (Exception ex)

@@ -17,6 +17,14 @@
     </div>
 
     <div class="mb-3">
+        <label asp-for="ConsultantId" class="form-label">Danışman Seçiniz</label>
+        <select asp-for="ConsultantId" asp-items="@(new SelectList(Model.Academicians ?? new List<ProjeHavuzu.Data.DTOs.AccountDto.UserListDto>(), "Id", "FullName"))" class="form-select">
+            <option value="">Danışman Seçiniz</option>
+        </select>
+        <span asp-validation-for="ConsultantId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
         <label asp-for="CategoryId" class="form-label"></label>
         <select asp-for="CategoryId" asp-items="ViewBag.Categories" class="form-select">
             <option value="">Kategori Seçiniz</option>

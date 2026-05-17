@@ -225,32 +225,21 @@ namespace ProjeHavuzu.Business.Services.Concrete
 
         public async Task<List<ProjectStudentAssignDto>> GetProjectsByStudentIdAsync(Guid studentId)
         {
-            var assignments = await _projectStudentRepository.GetProjectStudentsByStudentIdAsync(studentId);
-            var allProjects = await _projectRepository.GetAllProjectsByCategoryAsync();
-            
-            var result = new List<ProjectStudentAssignDto>();
+            var projects = await _projectRepository.GetProjectsForStudentAsync(studentId);
 
-            foreach (var assignment in assignments)
+            return projects.Select(project => new ProjectStudentAssignDto
             {
-                var project = allProjects.FirstOrDefault(p => p.Id == assignment.ProjectId);
-
-                if (project != null)
-                {
-                    result.Add(new ProjectStudentAssignDto
-                    {
-                        ProjectId = assignment.ProjectId,
-                        ProjectTitle = project.ProjectTitle,
-                        Description = project.Description,
-                        CompletionPercentage = project.CompletionPercentage,
-                        StudentId = assignment.StudentId,
-                        // CreatedDate ekleyelim ki sıralayabilelim
-                        ProjectCreatedDate = project.CreatedDate 
-                    });
-                }
-            }
-
-            // En son eklenen proje en üstte olacak şekilde sırala
-            return result.OrderByDescending(x => x.ProjectCreatedDate).ToList();
+                ProjectId = project.Id,
+                ProjectTitle = project.ProjectTitle,
+                Description = project.Description,
+                CategoryName = project.CategoryName,
+                ConsultantFullName = project.ConsultantFullName,
+                ApprovalStatus = project.ApprovalStatus,
+                RejectionReason = project.RejectionReason,
+                CompletionPercentage = project.CompletionPercentage,
+                StudentId = studentId,
+                ProjectCreatedDate = project.CreatedDate
+            }).ToList();
         }
     }
 }
