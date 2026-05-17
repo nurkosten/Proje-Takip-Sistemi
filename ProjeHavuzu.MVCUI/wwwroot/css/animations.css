@@ -81,9 +81,13 @@
    ───────────────────────────────────────────────────────────── */
 
 /* Use fade-only animations for containers that hold modals
-   to avoid creating a stacking context with transform */
+   to avoid creating a stacking context with transform.
+   Do NOT use 'both' or 'forwards' fill-mode — they keep
+   the element in a composited layer → new stacking context
+   that traps modals behind the backdrop. */
 .page-content {
-    animation: fadeIn .5s cubic-bezier(.22, 1, .36, 1) both;
+    animation: fadeIn .5s cubic-bezier(.22, 1, .36, 1);
+    /* No fill-mode: element returns to normal flow after anim */
 }
 
 .main-header {

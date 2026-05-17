@@ -294,6 +294,18 @@
             } else { targets.forEach(function(el) { el.classList.add('revealed'); }); }
         })();
     </script>
+    <script>
+        /* ── Modal Stacking Context Fix ──
+           CSS animations/transforms on .page-content or .card create
+           new stacking contexts that trap modals behind the backdrop.
+           Solution: move every .modal to <body> so they live outside
+           any nested stacking context. */
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.modal').forEach(function (modal) {
+                document.body.appendChild(modal);
+            });
+        });
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 
