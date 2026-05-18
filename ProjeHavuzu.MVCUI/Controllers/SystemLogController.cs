@@ -10,8 +10,7 @@ using System.Threading.Tasks;
 
 namespace ProjeHavuzu.MVCUI.Controllers
 {
-   // [Authorize(Roles = "Admin")] 
-    // Rol kontrolünü şimdilik yorum satırı yapıyorum, projenizdeki rol yapısına göre açabilirsiniz.
+    [Authorize(Roles = "Admin")]
     public class SystemLogController : Controller
     {
         private readonly ISystemLogService _systemLogService;

@@ -1,9 +1,5 @@
 using Microsoft.AspNetCore.Identity;
 using ProjeHavuzu.Data.Entites.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace ProjeHavuzu.Data.Helpers
 {
@@ -13,17 +9,40 @@ namespace ProjeHavuzu.Data.Helpers
             UserManager<AppUser> userManager,
             RoleManager<AppRole> roleManager)
         {
-            // 🔹 Admin Rolü
-            if (!await roleManager.RoleExistsAsync("Admin"))
-            {
-                await roleManager.CreateAsync(new AppRole
-                {
-                    Id = Guid.NewGuid(),
-                    Name = "Admin"
-                });
-            }
+            await CreateRolesAsync(roleManager);
 
-            // 🔹 Admin Kullanıcı
+            await CreateAdminUserAsync(userManager);
+            await CreateTeacherUserAsync(userManager);
+            await CreateStudentUserAsync(userManager);
+        }
+
+        private static async Task CreateRolesAsync(RoleManager<AppRole> roleManager)
+        {
+            string[] roles = { "Admin", "Teacher", "Student" };
+
+            foreach (var roleName in roles)
+            {
+                if (!await roleManager.RoleExistsAsync(roleName))
+                {
+                    var role = new AppRole
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = roleName
+                    };
+
+                    var result = await roleManager.CreateAsync(role);
+
+                    if (!result.Succeeded)
+                    {
+                        var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                        throw new Exception($"{roleName} rolü oluşturulamadı: {errors}");
+                    }
+                }
+            }
+        }
+
+        private static async Task CreateAdminUserAsync(UserManager<AppUser> userManager)
+        {
             var adminEmail = "admin@admin.com";
             var adminPassword = "Admin123+";
 
@@ -34,7 +53,7 @@ namespace ProjeHavuzu.Data.Helpers
                 adminUser = new AppUser
                 {
                     Id = Guid.NewGuid(),
-                    UserName = adminEmail,   // 🔥 ZORUNLU
+                    UserName = adminEmail,
                     Email = adminEmail,
                     FirstName = "System",
                     LastName = "Administrator",
@@ -42,46 +61,94 @@ namespace ProjeHavuzu.Data.Helpers
                 };
 
                 var createResult = await userManager.CreateAsync(adminUser, adminPassword);
+
                 if (!createResult.Succeeded)
                 {
-                    // Hata loglama için
                     var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
                     throw new Exception($"Admin kullanıcı oluşturulamadı: {errors}");
                 }
+            }
 
-                var roleResult = await userManager.AddToRoleAsync(adminUser, "Admin");
+            await AddRoleIfMissingAsync(userManager, adminUser, "Admin");
+        }
+
+        private static async Task CreateTeacherUserAsync(UserManager<AppUser> userManager)
+        {
+            var teacherEmail = "teacher@ozal.edu.tr";
+            var teacherPassword = "Teacher123+";
+
+            var teacherUser = await userManager.FindByEmailAsync(teacherEmail);
+
+            if (teacherUser == null)
+            {
+                teacherUser = new AppUser
+                {
+                    Id = Guid.NewGuid(),
+                    UserName = teacherEmail,
+                    Email = teacherEmail,
+                    FirstName = "Test",
+                    LastName = "Teacher",
+                    EmailConfirmed = true
+                };
+
+                var createResult = await userManager.CreateAsync(teacherUser, teacherPassword);
+
+                if (!createResult.Succeeded)
+                {
+                    var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
+                    throw new Exception($"Teacher kullanıcı oluşturulamadı: {errors}");
+                }
+            }
+
+            await AddRoleIfMissingAsync(userManager, teacherUser, "Teacher");
+        }
+
+        private static async Task CreateStudentUserAsync(UserManager<AppUser> userManager)
+        {
+            var studentEmail = "student@ozal.edu.tr";
+            var studentPassword = "Student123+";
+
+            var studentUser = await userManager.FindByEmailAsync(studentEmail);
+
+            if (studentUser == null)
+            {
+                studentUser = new AppUser
+                {
+                    Id = Guid.NewGuid(),
+                    UserName = studentEmail,
+                    Email = studentEmail,
+                    FirstName = "Test",
+                    LastName = "Student",
+                    StudentNumber = "20260001",
+                    EmailConfirmed = true
+                };
+
+                var createResult = await userManager.CreateAsync(studentUser, studentPassword);
+
+                if (!createResult.Succeeded)
+                {
+                    var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
+                    throw new Exception($"Student kullanıcı oluşturulamadı: {errors}");
+                }
+            }
+
+            await AddRoleIfMissingAsync(userManager, studentUser, "Student");
+        }
+
+        private static async Task AddRoleIfMissingAsync(
+            UserManager<AppUser> userManager,
+            AppUser user,
+            string roleName)
+        {
+            if (!await userManager.IsInRoleAsync(user, roleName))
+            {
+                var roleResult = await userManager.AddToRoleAsync(user, roleName);
+
                 if (!roleResult.Succeeded)
                 {
                     var errors = string.Join(", ", roleResult.Errors.Select(e => e.Description));
-                    throw new Exception($"Admin rolü atanamadı: {errors}");
+                    throw new Exception($"{user.Email} kullanıcısına {roleName} rolü atanamadı: {errors}");
                 }
-            }
-            else
-            {
-                // Kullanıcı varsa şifresini güncelle (isteğe bağlı - sadece şifre yanlışsa)
-                // Bu kısmı yorum satırına alabilirsiniz
-                // var token = await userManager.GeneratePasswordResetTokenAsync(adminUser);
-                // await userManager.ResetPasswordAsync(adminUser, token, adminPassword);
-            }
-
-            // 🔹 Teacher Rolü
-            if (!await roleManager.RoleExistsAsync("Teacher"))
-            {
-                await roleManager.CreateAsync(new AppRole
-                {
-                    Id = Guid.NewGuid(),
-                    Name = "Teacher"
-                });
-            }
-
-            // 🔹 Student Rolü
-            if (!await roleManager.RoleExistsAsync("Student"))
-            {
-                await roleManager.CreateAsync(new AppRole
-                {
-                    Id = Guid.NewGuid(),
-                    Name = "Student"
-                });
             }
         }
     }

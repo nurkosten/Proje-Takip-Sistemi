@@ -107,6 +107,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ProjectCreateDto projectCreateDto)
         {
             var validationResult = await _validator.ValidateAsync(projectCreateDto);
@@ -140,7 +141,12 @@ namespace ProjeHavuzu.MVCUI.Controllers
                     return RedirectToAction("MyProjects", "Student");
                 }
 
-                return RedirectToAction("Index");
+                if (User.IsInRole("Teacher"))
+                {
+                    return RedirectToAction("AllProjects", "Teacher");
+                }
+
+                return RedirectToAction("Index", "Project");
             }
             catch (Exception ex)
             {

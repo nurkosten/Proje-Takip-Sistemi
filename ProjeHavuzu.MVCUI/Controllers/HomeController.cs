@@ -31,6 +31,15 @@ namespace ProjeHavuzu.MVCUI.Controllers
         }
 
         /// <summary>
+        /// Eski/alternatif URL: proje oluşturma tek kaynak olarak Project/Create üzerinden yürütülür.
+        /// </summary>
+        [HttpGet]
+        public IActionResult Create()
+        {
+            return RedirectToAction(nameof(Create), "Project");
+        }
+
+        /// <summary>
         /// DataTables server-side processing AJAX endpoint (Home/Ana Sayfa).
         /// </summary>
         [HttpPost]
