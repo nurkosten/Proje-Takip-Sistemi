@@ -103,9 +103,16 @@
             {
                 <div class="profile-row">
                     <div class="profile-label">
+                        <i class="bi bi-hash"></i> Sicil No
+                    </div>
+                    <div class="profile-value">@(Model.StaffNumber ?? "–")</div>
+                </div>
+
+                <div class="profile-row">
+                    <div class="profile-label">
                         <i class="bi bi-mortarboard"></i> Unvan
                     </div>
-                    <div class="profile-value">Öğretim Üyesi</div>
+                    <div class="profile-value">@(Model.AcademicTitle ?? "–")</div>
                 </div>
 
                 <div class="profile-row">

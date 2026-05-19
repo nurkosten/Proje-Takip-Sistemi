@@ -15,9 +15,13 @@ namespace ProjeHavuzu.MVCUI.Models.AccountModels
         [System.ComponentModel.DataAnnotations.Display(Name = "Soyad")]
         public string LastName { get; set; }
 
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Öğrenci numarası zorunludur.")]
+        [System.ComponentModel.DataAnnotations.Display(Name = "Öğrenci Numarası")]
+        public string StudentNumber { get; set; }
+
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "E-posta alanı zorunludur.")]
         [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Geçerli bir e-posta adresi giriniz.")]
-        [System.ComponentModel.DataAnnotations.Display(Name = "E-posta")]
+        [System.ComponentModel.DataAnnotations.Display(Name = "Kurumsal E-posta")]
         public string Email { get; set; }
 
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Şifre alanı zorunludur.")]

@@ -10,9 +10,14 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3><i class="bi bi-people-fill"></i> Akademisyenler</h3>
-        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Ana Sayfa
-        </a>
+        <div>
+            <a asp-controller="Admin" asp-action="AddAcademician" class="btn btn-primary me-2">
+                <i class="bi bi-person-plus"></i> Akademisyen Ekle
+            </a>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Ana Sayfa
+            </a>
+        </div>
     </div>
 
     @if (TempData["SuccessMessage"] != null)
@@ -39,7 +44,8 @@
                         <thead class="table-light">
                             <tr>
                                 <th>Ad Soyad</th>
-                                <th>Kullanıcı Adı</th>
+                                <th>Sicil No</th>
+                                <th>Unvan</th>
                                 <th>E-posta</th>
                                 <th>Telefon</th>
                                 <th>Roller</th>
@@ -56,6 +62,8 @@
                                     <td>
                                         <strong>@teacher.FullName</strong>
                                     </td>
+                                    <td>@(teacher.StaffNumber ?? "-")</td>
+                                    <td>@(teacher.AcademicTitle ?? "-")</td>
                                     <td>@teacher.UserName</td>
                                     <td>
                                         <a href="mailto:@teacher.Email" class="text-decoration-none">

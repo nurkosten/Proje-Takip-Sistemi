@@ -108,6 +108,8 @@ namespace ProjeHavuzu.Data.Helpers
                     Email = teacherEmail,
                     FirstName = "Test",
                     LastName = "Teacher",
+                    StaffNumber = "10001",
+                    AcademicTitle = "Dr. Öğretim Üyesi",
                     EmailConfirmed = true,
                     IsActive = true
                 };

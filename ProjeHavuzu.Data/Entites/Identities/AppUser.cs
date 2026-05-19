@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -13,6 +13,8 @@ namespace ProjeHavuzu.Data.Entites.Identity
         public Guid? FacultyId { get; set; } 
         public Guid? DepartmentId { get; set; }
         public string? StudentNumber { get; set; }
+        public string? StaffNumber { get; set; }
+        public string? AcademicTitle { get; set; }
         public bool IsActive { get; set; } = true;
         public string? DeactivationReason { get; set; }
 

@@ -150,10 +150,23 @@ namespace ProjeHavuzu.MVCUI.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            // Domain Kontrolü: Sadece okul mailleri
-            if (!model.Email.Trim().EndsWith("ozal.edu.tr", StringComparison.OrdinalIgnoreCase))
+            if (!model.Email.Trim().EndsWith("@ozal.edu.tr", StringComparison.OrdinalIgnoreCase))
             {
-                ModelState.AddModelError("Email", "Sadece kurumsal üniversite e-postanız ile (@ozal.edu.tr vb.) kayıt olabilirsiniz.");
+                ModelState.AddModelError("Email", "Sadece @ozal.edu.tr uzantılı kurumsal e-posta ile kayıt olabilirsiniz.");
+                return View(model);
+            }
+
+            var emailPrefix = model.Email.Split('@')[0];
+            if (!string.Equals(model.StudentNumber.Trim(), emailPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                ModelState.AddModelError("StudentNumber", "Öğrenci numaranız e-posta adresinizin @ işaretinden önceki kısımla aynı olmalıdır.");
+                return View(model);
+            }
+
+            var existingUser = await _userManager.FindByEmailAsync(model.Email);
+            if (existingUser != null)
+            {
+                ModelState.AddModelError("Email", "Bu e-posta adresi zaten kayıtlı.");
                 return View(model);
             }
 
@@ -163,8 +176,9 @@ namespace ProjeHavuzu.MVCUI.Controllers
                 UserName = model.Email,
                 Email = model.Email,
                 FirstName = model.FirstName,
-                LastName = model.LastName
-
+                LastName = model.LastName,
+                StudentNumber = model.StudentNumber.Trim(),
+                IsActive = true
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);

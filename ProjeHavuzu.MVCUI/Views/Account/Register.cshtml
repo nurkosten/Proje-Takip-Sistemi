@@ -1,24 +1,25 @@
-ï»¿@using ProjeHavuzu.Data.Entites.Enums
+@using ProjeHavuzu.Data.Entites.Enums
 @using ProjeHavuzu.Data.Entites.Identity
 @using ProjeHavuzu.MVCUI.Models.AccountModels
 @model RegisterViewModel
 @{
     Layout = "_LoginLayout";
-    ViewData["Title"] = "KayÄ±t Ol";
+    ViewData["Title"] = "Kayýt Ol";
 }
 
 <div class="auth-container">
-    <!-- Sol Panel: Ä°llÃ¼strasyon + Branding -->
+    <!-- Sol Panel: Ýllüstrasyon + Branding -->
     <div class="auth-left">
         <img src="~/images/auth-illustration.png" alt="Proje Takip" class="auth-left-illustration" />
         <img src="~/images/mtu-logo.png" alt="MTU Logo" class="auth-left-logo" />
         <h2 class="auth-left-title">Proje Takip Sistemi</h2>
-        <p class="auth-left-subtitle">GeleceÄŸi Birlikte Ä°nÅŸa Ediyoruz</p>
+        <p class="auth-left-subtitle">Geleceði Birlikte Ýnþa Ediyoruz</p>
     </div>
 
-    <!-- SaÄŸ Panel: KayÄ±t Formu -->
+    <!-- Sað Panel: Kayýt Formu -->
     <div class="auth-right">
-        <h3 class="auth-right-title">KayÄ±t Ol</h3>
+        <h3 class="auth-right-title">Öðrenci Kayýt</h3>
+        <p class="text-muted small mb-3">Bu sayfa yalnýzca <strong>öðrenciler</strong> içindir. Akademisyen hesaplarý sistem yöneticisi tarafýndan oluþturulur.</p>
 
         <form asp-action="Register" asp-controller="Account" method="post" class="auth-form">
 
@@ -36,41 +37,47 @@
             </div>
 
             <div class="mb-3">
-                <label asp-for="Email" class="form-label">E-posta</label>
+                <label asp-for="StudentNumber" class="form-label">Öðrenci Numarasý</label>
+                <input asp-for="StudentNumber" class="form-control" placeholder="Örn: 202412345" />
+                <span asp-validation-for="StudentNumber" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label">Kurumsal E-posta</label>
                 <input asp-for="Email" class="form-control" placeholder="ogrencino@ozal.edu.tr" />
                 <div class="form-check mt-2">
                     <input class="form-check-input" type="checkbox" id="emailInfoCheck" checked disabled />
                     <label class="form-check-label" for="emailInfoCheck" style="font-size: 0.78rem; color: #6b7c93;">
-                        Sadece <strong>@@ozal.edu.tr</strong> uzantÄ±lÄ± okul mailinizle kayÄ±t olabilirsiniz.
+                        Sadece <strong>@@ozal.edu.tr</strong> uzantýlý okul mailinizle kayýt olabilirsiniz.
                     </label>
                 </div>
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
 
             <div class="mb-3">
-                <label asp-for="Password" class="form-label">Åžifre</label>
+                <label asp-for="Password" class="form-label">Þifre</label>
                 <input asp-for="Password" type="password" class="form-control" />
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
 
             <div class="mb-3">
-                <label asp-for="ConfirmPassword" class="form-label">Åžifre Tekrar</label>
+                <label asp-for="ConfirmPassword" class="form-label">Þifre Tekrar</label>
                 <input asp-for="ConfirmPassword" type="password" class="form-control" />
                 <div class="form-check mt-2">
                     <input class="form-check-input" type="checkbox" id="pwInfoCheck" checked disabled />
                     <label class="form-check-label" for="pwInfoCheck" style="font-size: 0.78rem; color: #6b7c93;">
-                        Åžifre en az 8 karakter uzunluÄŸunda, sayÄ± ve Ã¶zel karakter iÃ§ermelidir.
+                        Þifre en az 8 karakter uzunluðunda, sayý ve özel karakter içermelidir.
                     </label>
                 </div>
                 <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
             </div>
 
             <button type="submit" class="btn-auth-primary">
-                KayÄ±t Ol
+                Kayýt Ol
             </button>
 
             <div class="auth-footer-text">
-                HesabÄ±n var mÄ±? <a asp-action="Login">GiriÅŸ Yap</a>
+                Hesabýn var mý? <a asp-action="Login">Giriþ Yap</a>
             </div>
 
         </form>

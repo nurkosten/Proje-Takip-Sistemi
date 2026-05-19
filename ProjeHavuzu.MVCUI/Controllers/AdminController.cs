@@ -22,19 +22,25 @@ namespace ProjeHavuzu.MVCUI.Controllers
         private readonly IUnifiedLogService _unifiedLogService;
         private readonly IProjectService _projectService;
         private readonly IProjectRequestService _projectRequestService;
+        private readonly IFacultyService _facultyService;
+        private readonly IDepartmentService _departmentService;
 
         public AdminController(
             UserManager<AppUser> userManager,
             RoleManager<AppRole> roleManager,
             IUnifiedLogService unifiedLogService,
             IProjectService projectService,
-            IProjectRequestService projectRequestService)
+            IProjectRequestService projectRequestService,
+            IFacultyService facultyService,
+            IDepartmentService departmentService)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _unifiedLogService = unifiedLogService;
             _projectService = projectService;
             _projectRequestService = projectRequestService;
+            _facultyService = facultyService;
+            _departmentService = departmentService;
         }
 
         public IActionResult Index()
@@ -140,6 +146,94 @@ namespace ProjeHavuzu.MVCUI.Controllers
 
             ViewBag.UserRoles = roleMap;
             return View(teachers);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> AddAcademician()
+        {
+            var model = new AdminAddAcademicianViewModel
+            {
+                Faculties = await _facultyService.GetAllFacultiesAsync()
+            };
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddAcademician(AdminAddAcademicianViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                model.Faculties = await _facultyService.GetAllFacultiesAsync();
+                if (model.FacultyId.HasValue)
+                {
+                    model.Departments = await _departmentService.GetDepartmentsByFacultyIdAsync(model.FacultyId.Value);
+                }
+                return View(model);
+            }
+
+            if (!model.Email.Trim().EndsWith("@ozal.edu.tr", StringComparison.OrdinalIgnoreCase))
+            {
+                ModelState.AddModelError("Email", "Akademisyen e-postası @ozal.edu.tr uzantılı olmalıdır.");
+                model.Faculties = await _facultyService.GetAllFacultiesAsync();
+                return View(model);
+            }
+
+            if (await _userManager.FindByEmailAsync(model.Email) != null)
+            {
+                ModelState.AddModelError("Email", "Bu e-posta adresi zaten kayıtlı.");
+                model.Faculties = await _facultyService.GetAllFacultiesAsync();
+                return View(model);
+            }
+
+            var user = new AppUser
+            {
+                Id = Guid.NewGuid(),
+                UserName = model.Email.Trim(),
+                Email = model.Email.Trim(),
+                FirstName = model.FirstName.Trim(),
+                LastName = model.LastName.Trim(),
+                StaffNumber = model.StaffNumber.Trim(),
+                AcademicTitle = model.AcademicTitle,
+                PhoneNumber = model.PhoneNumber,
+                FacultyId = model.FacultyId,
+                DepartmentId = model.DepartmentId,
+                EmailConfirmed = true,
+                IsActive = true
+            };
+
+            var createResult = await _userManager.CreateAsync(user, model.Password);
+            if (!createResult.Succeeded)
+            {
+                foreach (var error in createResult.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+                model.Faculties = await _facultyService.GetAllFacultiesAsync();
+                if (model.FacultyId.HasValue)
+                {
+                    model.Departments = await _departmentService.GetDepartmentsByFacultyIdAsync(model.FacultyId.Value);
+                }
+                return View(model);
+            }
+
+            var roleResult = await _userManager.AddToRoleAsync(user, "Teacher");
+            if (!roleResult.Succeeded)
+            {
+                await _userManager.DeleteAsync(user);
+                TempData["ErrorMessage"] = string.Join(", ", roleResult.Errors.Select(e => e.Description));
+                return RedirectToAction(nameof(Academicians));
+            }
+
+            TempData["SuccessMessage"] = $"{user.FullName} akademisyen olarak eklendi. Giriş bilgileri paylaşılabilir.";
+            return RedirectToAction(nameof(Academicians));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetDepartmentsByFaculty(Guid facultyId)
+        {
+            var departments = await _departmentService.GetDepartmentsByFacultyIdAsync(facultyId);
+            return Json(departments.Select(d => new { id = d.Id, name = d.DepartmentName }));
         }
 
         public async Task<IActionResult> Students()

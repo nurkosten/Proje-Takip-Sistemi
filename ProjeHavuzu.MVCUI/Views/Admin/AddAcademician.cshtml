@@ -1,0 +1,125 @@
+@model ProjeHavuzu.MVCUI.Models.AdminAddAcademicianViewModel
+
+@{
+    ViewData["Title"] = "Akademisyen Ekle";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3><i class="bi bi-person-plus-fill"></i> Akademisyen Ekle</h3>
+        <a asp-controller="Admin" asp-action="Academicians" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Akademisyenlere Dön
+        </a>
+    </div>
+
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle me-1"></i>
+        Akademisyenler kendi kendine kayıt olamaz. Yalnızca admin bu sayfadan <strong>Teacher</strong> rolü ile tanımlar.
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-controller="Admin" asp-action="AddAcademician" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="FirstName" class="form-label"></label>
+                        <input asp-for="FirstName" class="form-control" />
+                        <span asp-validation-for="FirstName" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="LastName" class="form-label"></label>
+                        <input asp-for="LastName" class="form-control" />
+                        <span asp-validation-for="LastName" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="StaffNumber" class="form-label"></label>
+                        <input asp-for="StaffNumber" class="form-control" placeholder="Örn: 12345" />
+                        <span asp-validation-for="StaffNumber" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="AcademicTitle" class="form-label"></label>
+                        <select asp-for="AcademicTitle" class="form-select">
+                            <option value="">Unvan seçiniz</option>
+                            @foreach (var title in AdminAddAcademicianViewModel.AcademicTitleOptions)
+                            {
+                                <option value="@title">@title</option>
+                            }
+                        </select>
+                        <span asp-validation-for="AcademicTitle" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" placeholder="ad.soyad@ozal.edu.tr" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="PhoneNumber" class="form-label"></label>
+                        <input asp-for="PhoneNumber" class="form-control" />
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="FacultyId" class="form-label"></label>
+                        <select asp-for="FacultyId" asp-items="@(new SelectList(Model.Faculties, "Id", "FacultyName"))" class="form-select" id="facultySelect">
+                            <option value="">Fakülte seçiniz</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="DepartmentId" class="form-label"></label>
+                        <select asp-for="DepartmentId" class="form-select" id="departmentSelect">
+                            <option value="">Önce fakülte seçiniz</option>
+                            @foreach (var dept in Model.Departments)
+                            {
+                                <option value="@dept.Id">@dept.DepartmentName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" class="form-control" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="ConfirmPassword" class="form-label"></label>
+                        <input asp-for="ConfirmPassword" class="form-control" />
+                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-lg"></i> Akademisyeni Kaydet
+                    </button>
+                    <a asp-action="Academicians" class="btn btn-outline-secondary ms-2">İptal</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.getElementById('facultySelect')?.addEventListener('change', async function () {
+            const facultyId = this.value;
+            const deptSelect = document.getElementById('departmentSelect');
+            deptSelect.innerHTML = '<option value="">Yükleniyor...</option>';
+            if (!facultyId) {
+                deptSelect.innerHTML = '<option value="">Önce fakülte seçiniz</option>';
+                return;
+            }
+            const response = await fetch('/Admin/GetDepartmentsByFaculty?facultyId=' + facultyId);
+            const data = await response.json();
+            deptSelect.innerHTML = '<option value="">Bölüm seçiniz</option>';
+            data.forEach(function (d) {
+                const opt = document.createElement('option');
+                opt.value = d.id;
+                opt.textContent = d.name;
+                deptSelect.appendChild(opt);
+            });
+        });
+    </script>
+}
