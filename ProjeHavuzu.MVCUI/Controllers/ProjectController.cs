@@ -16,13 +16,20 @@ namespace ProjeHavuzu.MVCUI.Controllers
         private readonly IMapper _mapper;
         private readonly Microsoft.AspNetCore.Identity.UserManager<ProjeHavuzu.Data.Entites.Identity.AppUser> _userManager;
         private readonly FluentValidation.IValidator<ProjectCreateDto> _validator;
+        private readonly IAdvisorCandidateService _advisorCandidateService;
 
-        public ProjectController(IProjectService projectService, IMapper mapper, Microsoft.AspNetCore.Identity.UserManager<ProjeHavuzu.Data.Entites.Identity.AppUser> userManager, FluentValidation.IValidator<ProjectCreateDto> validator)
+        public ProjectController(
+            IProjectService projectService,
+            IMapper mapper,
+            Microsoft.AspNetCore.Identity.UserManager<ProjeHavuzu.Data.Entites.Identity.AppUser> userManager,
+            FluentValidation.IValidator<ProjectCreateDto> validator,
+            IAdvisorCandidateService advisorCandidateService)
         {
             _projectService = projectService;
             _mapper = mapper;
             _userManager = userManager;
             _validator = validator;
+            _advisorCandidateService = advisorCandidateService;
         }
 
         public IActionResult Index()
@@ -122,6 +129,13 @@ namespace ProjeHavuzu.MVCUI.Controllers
                 return View(projectCreateDto);
             }
 
+            if (!await _advisorCandidateService.IsValidAdvisorAsync(projectCreateDto.ConsultantId))
+            {
+                ModelState.AddModelError(nameof(projectCreateDto.ConsultantId), "Lütfen listeden geçerli bir akademisyen danışman seçiniz.");
+                await PrepareProjectViewDataAsync(projectCreateDto);
+                return View(projectCreateDto);
+            }
+
             try
             {
                 if (User.Identity?.IsAuthenticated == true)
@@ -213,6 +227,16 @@ namespace ProjeHavuzu.MVCUI.Controllers
                 return View(projectCreateDto);
             }
 
+            if (projectCreateDto.ConsultantId.HasValue &&
+                !await _advisorCandidateService.IsValidAdvisorAsync(projectCreateDto.ConsultantId))
+            {
+                ModelState.AddModelError(nameof(projectCreateDto.ConsultantId), "Lütfen listeden geçerli bir akademisyen danışman seçiniz.");
+                ViewBag.ReturnUrl = GetDefaultEditReturnUrl(id, returnUrl);
+                ViewBag.ProjectId = id;
+                await PrepareProjectViewDataAsync(projectCreateDto);
+                return View(projectCreateDto);
+            }
+
             try
             {
                 await _projectService.UpdateProjectAsync(id, projectCreateDto);
@@ -260,30 +284,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
         {
             var createDto = await _projectService.GetProjectCreateDtoAsync();
             dto.Categories = createDto.Categories;
-            dto.Academicians = await GetAdvisorCandidatesAsync();
-        }
-
-        private async Task<List<ProjeHavuzu.Data.DTOs.AccountDto.UserListDto>> GetAdvisorCandidatesAsync()
-        {
-            var teachers = await _userManager.GetUsersInRoleAsync("Teacher");
-            var advisors = new List<ProjeHavuzu.Data.DTOs.AccountDto.UserListDto>();
-
-            foreach (var user in teachers)
-            {
-                if (await _userManager.IsInRoleAsync(user, "Student"))
-                    continue;
-                if (await _userManager.IsInRoleAsync(user, "Admin"))
-                    continue;
-
-                advisors.Add(new ProjeHavuzu.Data.DTOs.AccountDto.UserListDto
-                {
-                    Id = user.Id,
-                    FullName = user.FullName ?? $"{user.FirstName} {user.LastName}",
-                    Email = user.Email ?? string.Empty
-                });
-            }
-
-            return advisors.OrderBy(a => a.FullName).ToList();
+            dto.Academicians = await _advisorCandidateService.GetAdvisorCandidatesAsync();
         }
 
         public async Task<IActionResult> Details(Guid id)

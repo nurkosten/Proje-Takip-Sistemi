@@ -122,6 +122,12 @@ namespace ProjeHavuzu.Data.Helpers
                     throw new Exception($"Teacher kullanıcı oluşturulamadı: {errors}");
                 }
             }
+            else if (string.IsNullOrWhiteSpace(teacherUser.StaffNumber))
+            {
+                teacherUser.StaffNumber = "10001";
+                teacherUser.AcademicTitle ??= "Dr. Öğretim Üyesi";
+                await userManager.UpdateAsync(teacherUser);
+            }
 
             await AddRoleIfMissingAsync(userManager, teacherUser, "Teacher");
         }

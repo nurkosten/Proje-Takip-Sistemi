@@ -19,19 +19,22 @@ namespace ProjeHavuzu.MVCUI.Controllers
         private readonly IProjectRequestService _projectRequestService;
         private readonly IProjectSubmissionService _submissionService;
         private readonly UserManager<ProjeHavuzu.Data.Entites.Identity.AppUser> _userManager;
+        private readonly IAdvisorCandidateService _advisorCandidateService;
 
         public TeacherController(
             IProjectService projectService,
             IProjectStudentService projectStudentService,
             IProjectRequestService projectRequestService,
             IProjectSubmissionService submissionService,
-            UserManager<ProjeHavuzu.Data.Entites.Identity.AppUser> userManager)
+            UserManager<ProjeHavuzu.Data.Entites.Identity.AppUser> userManager,
+            IAdvisorCandidateService advisorCandidateService)
         {
             _projectService = projectService;
             _projectStudentService = projectStudentService;
             _projectRequestService = projectRequestService;
             _submissionService = submissionService;
             _userManager = userManager;
+            _advisorCandidateService = advisorCandidateService;
         }
 
         // Dashboard for teachers
@@ -614,15 +617,9 @@ namespace ProjeHavuzu.MVCUI.Controllers
             var projectDto = await _projectService.GetProjectCreateDtoAsync();
             dto.Categories = projectDto.Categories;
 
-            var teachers = await _userManager.GetUsersInRoleAsync("Teacher");
-            dto.Academicians = teachers.Select(u => new ProjeHavuzu.Data.DTOs.AccountDto.UserListDto
-            {
-                Id = u.Id,
-                FullName = u.FullName ?? $"{u.FirstName} {u.LastName}",
-                Email = u.Email ?? ""
-            }).ToList();
+            dto.Academicians = await _advisorCandidateService.GetAdvisorCandidatesAsync();
 
-            ViewBag.AcademicianCount = dto.Academicians.Count;
+            ViewBag.AcademicianCount = dto.Academicians?.Count ?? 0;
             ViewBag.ProjectId = projectId;
         }
 

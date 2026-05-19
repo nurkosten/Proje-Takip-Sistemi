@@ -31,6 +31,7 @@ namespace ProjeHavuzu.Business.DependencyResolvers
             services.AddScoped<IProjectRequestService, ProjectRequestService>();
             services.AddScoped<IUnifiedLogService, UnifiedLogService>(); // Birleşik Log Servisi
             services.AddScoped<IProjectSubmissionService, ProjectSubmissionService>();
+            services.AddScoped<IAdvisorCandidateService, AdvisorCandidateService>();
 
             // Validator Injections
             services.AddScoped<IValidator<ProjectCreateDto>, ProjectCreateValidator>();
