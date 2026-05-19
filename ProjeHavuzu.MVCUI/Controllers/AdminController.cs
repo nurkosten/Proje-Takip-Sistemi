@@ -242,6 +242,56 @@ namespace ProjeHavuzu.MVCUI.Controllers
             return View(students);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeactivateStudent(Guid studentId, string reason)
+        {
+            var student = await _userManager.FindByIdAsync(studentId.ToString());
+            if (student == null || !await _userManager.IsInRoleAsync(student, "Student"))
+            {
+                TempData["ErrorMessage"] = "Öğrenci bulunamadı.";
+                return RedirectToAction(nameof(Students));
+            }
+
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                TempData["ErrorMessage"] = "Pasifleştirme nedeni boş olamaz.";
+                return RedirectToAction(nameof(Students));
+            }
+
+            student.IsActive = false;
+            student.DeactivationReason = reason.Trim();
+            var result = await _userManager.UpdateAsync(student);
+
+            TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] = result.Succeeded
+                ? $"{student.FullName} pasifleştirildi."
+                : string.Join(", ", result.Errors.Select(e => e.Description));
+
+            return RedirectToAction(nameof(Students));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ActivateStudent(Guid studentId)
+        {
+            var student = await _userManager.FindByIdAsync(studentId.ToString());
+            if (student == null || !await _userManager.IsInRoleAsync(student, "Student"))
+            {
+                TempData["ErrorMessage"] = "Öğrenci bulunamadı.";
+                return RedirectToAction(nameof(Students));
+            }
+
+            student.IsActive = true;
+            student.DeactivationReason = null;
+            var result = await _userManager.UpdateAsync(student);
+
+            TempData[result.Succeeded ? "SuccessMessage" : "ErrorMessage"] = result.Succeeded
+                ? $"{student.FullName} aktifleştirildi."
+                : "Öğrenci durumu güncellenirken bir hata oluştu.";
+
+            return RedirectToAction(nameof(Students));
+        }
+
         [HttpGet]
         public async Task<IActionResult> AssignRole(Guid userId)
         {

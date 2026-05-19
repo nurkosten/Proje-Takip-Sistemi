@@ -64,10 +64,9 @@
                                     </td>
                                     <td>@(teacher.StaffNumber ?? "-")</td>
                                     <td>@(teacher.AcademicTitle ?? "-")</td>
-                                    <td>@teacher.UserName</td>
                                     <td>
                                         <a href="mailto:@teacher.Email" class="text-decoration-none">
-                                            <i class="bi bi-envelope"></i> @teacher.Email
+                                            <i class="bi bi-envelope"></i> @(teacher.Email ?? teacher.UserName)
                                         </a>
                                     </td>
                                     <td>@(teacher.PhoneNumber ?? "-")</td>

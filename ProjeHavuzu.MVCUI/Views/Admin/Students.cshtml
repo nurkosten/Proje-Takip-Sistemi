@@ -14,6 +14,21 @@
         </a>
     </div>
 
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
     <div class="card shadow-sm">
         <div class="card-body">
             @if (Model != null && Model.Any())
@@ -27,6 +42,7 @@
                                 <th>E-posta</th>
                                 <th>Bölüm</th>
                                 <th>Durum</th>
+                                <th class="text-center no-sort">İşlem</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -44,7 +60,31 @@
                                         }
                                         else
                                         {
-                                            <span class="badge bg-secondary">Pasif</span>
+                                            <span class="badge bg-secondary" data-bs-toggle="tooltip" title="Pasifleştirme nedeni: @(student.DeactivationReason ?? "-")">
+                                                <i class="bi bi-info-circle"></i> Pasif
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @if (student.IsActive)
+                                        {
+                                            <button type="button" class="btn btn-sm btn-warning"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#deactivateModal"
+                                                    data-student-id="@student.Id"
+                                                    data-student-name="@student.FullName">
+                                                <i class="bi bi-pause-circle"></i> Pasifleştir
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="btn btn-sm btn-info text-white"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#activateModal"
+                                                    data-student-id="@student.Id"
+                                                    data-student-name="@student.FullName">
+                                                <i class="bi bi-play-circle"></i> Aktifleştir
+                                            </button>
                                         }
                                     </td>
                                 </tr>
@@ -62,3 +102,95 @@
         </div>
     </div>
 </div>
+
+<!-- Pasifleştirme Modal -->
+<div class="modal fade" id="deactivateModal" tabindex="-1" aria-labelledby="deactivateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-controller="Admin" asp-action="DeactivateStudent" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title" id="deactivateModalLabel">
+                        <i class="bi bi-pause-circle"></i> Öğrenci Pasifleştir
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="studentId" id="modalStudentId" />
+                    <p class="mb-3">
+                        <strong id="modalStudentName"></strong> öğrencisini pasifleştirmek üzeresiniz.
+                    </p>
+                    <p class="text-muted small">Pasif öğrenciler sisteme giriş yapamaz.</p>
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">Pasifleştirme Nedeni <span class="text-danger">*</span></label>
+                        <textarea class="form-control" name="reason" id="reason" rows="3" required
+                                  placeholder="Pasifleştirme nedenini yazınız..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-pause-circle"></i> Pasifleştir
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Aktifleştirme Modal -->
+<div class="modal fade" id="activateModal" tabindex="-1" aria-labelledby="activateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-controller="Admin" asp-action="ActivateStudent" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title" id="activateModalLabel">
+                        <i class="bi bi-play-circle"></i> Öğrenci Aktifleştir
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="studentId" id="activateModalStudentId" />
+                    <p class="text-center mb-0">
+                        <strong id="activateModalStudentName"></strong> öğrencisinin hesabını tekrar aktifleştirmek istiyor musunuz?
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-info text-white">
+                        <i class="bi bi-check-lg"></i> Aktifleştir
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.body.appendChild(document.getElementById('deactivateModal'));
+            document.body.appendChild(document.getElementById('activateModal'));
+
+            var deactivateModal = document.getElementById('deactivateModal');
+            deactivateModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                document.getElementById('modalStudentId').value = button.getAttribute('data-student-id');
+                document.getElementById('modalStudentName').textContent = button.getAttribute('data-student-name');
+                document.getElementById('reason').value = '';
+            });
+
+            var activateModal = document.getElementById('activateModal');
+            activateModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                document.getElementById('activateModalStudentId').value = button.getAttribute('data-student-id');
+                document.getElementById('activateModalStudentName').textContent = button.getAttribute('data-student-name');
+            });
+
+            [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]')).forEach(function (el) {
+                new bootstrap.Tooltip(el);
+            });
+        });
+    </script>
+}
