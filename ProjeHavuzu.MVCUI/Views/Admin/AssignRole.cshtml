@@ -1,0 +1,64 @@
+@model ProjeHavuzu.MVCUI.Models.AdminAssignRoleViewModel
+
+@{
+    ViewData["Title"] = "Rol Ata";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3><i class="bi bi-shield-lock"></i> Rol Ata</h3>
+        <a asp-controller="Admin" asp-action="Academicians" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Akademisyenlere Dön
+        </a>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <p class="mb-1"><strong>Kullanıcı:</strong> @Model.UserFullName</p>
+            <p class="mb-3 text-muted">@Model.Email</p>
+            <p class="mb-3">
+                <strong>Mevcut roller:</strong>
+                @if (Model.CurrentRoles.Any())
+                {
+                    @string.Join(", ", Model.CurrentRoles)
+                }
+                else
+                {
+                    <span class="text-muted">Rol atanmamış</span>
+                }
+            </p>
+
+            <form asp-controller="Admin" asp-action="AssignRole" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="UserId" />
+                <input type="hidden" asp-for="UserFullName" />
+                <input type="hidden" asp-for="Email" />
+
+                <div class="mb-3">
+                    <label asp-for="SelectedRole" class="form-label fw-bold">Yeni Rol</label>
+                    <select asp-for="SelectedRole" class="form-select" required>
+                        <option value="">Rol seçiniz</option>
+                        @foreach (var role in Model.AvailableRoles)
+                        {
+                            <option value="@role">@role</option>
+                        }
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg"></i> Rolü Kaydet
+                </button>
+                <a asp-controller="Admin" asp-action="Academicians" class="btn btn-outline-secondary ms-2">İptal</a>
+            </form>
+        </div>
+    </div>
+</div>

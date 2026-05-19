@@ -19,5 +19,7 @@ namespace ProjeHavuzu.Data.Repository.Abstract
     Task<DataTableResponse<ProjectListDto>> GetProjectsServerSideAsync(DataTableRequest request);
     Task<List<ProjectListDto>> GetProjectsByConsultantIdAsync(Guid consultantId);
     Task<List<ProjectListDto>> GetProjectsForStudentAsync(Guid studentId);
+    Task<ProjectListDto?> GetProjectListByIdAsync(Guid id);
+    Task<List<ProjectListDto>> GetAllProjectsListAsync();
   }
 }

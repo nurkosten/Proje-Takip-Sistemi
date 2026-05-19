@@ -4,7 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 using ProjeHavuzu.Business.Services.Abstract;
 using ProjeHavuzu.Data.DTOs.Common;
 using ProjeHavuzu.Data.DTOs.LogDto;
+using ProjeHavuzu.Data.Entites.Enums;
 using ProjeHavuzu.Data.Entites.Identity;
+using ProjeHavuzu.MVCUI.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,18 +18,204 @@ namespace ProjeHavuzu.MVCUI.Controllers
     public class AdminController : Controller
     {
         private readonly UserManager<AppUser> _userManager;
+        private readonly RoleManager<AppRole> _roleManager;
         private readonly IUnifiedLogService _unifiedLogService;
+        private readonly IProjectService _projectService;
+        private readonly IProjectRequestService _projectRequestService;
 
-        public AdminController(UserManager<AppUser> userManager, IUnifiedLogService unifiedLogService)
+        public AdminController(
+            UserManager<AppUser> userManager,
+            RoleManager<AppRole> roleManager,
+            IUnifiedLogService unifiedLogService,
+            IProjectService projectService,
+            IProjectRequestService projectRequestService)
         {
             _userManager = userManager;
+            _roleManager = roleManager;
             _unifiedLogService = unifiedLogService;
+            _projectService = projectService;
+            _projectRequestService = projectRequestService;
+        }
+
+        public IActionResult Index()
+        {
+            return RedirectToAction(nameof(MyProjects));
+        }
+
+        public async Task<IActionResult> MyProjects()
+        {
+            var projects = await _projectService.GetAllProjectsAsync();
+            return View(projects);
+        }
+
+        public async Task<IActionResult> AdvisorApprovals()
+        {
+            var projects = await _projectService.GetAllProjectsAsync();
+            var pending = projects.Where(p => p.ApprovalStatus == ProjectApprovalStatus.Pending).ToList();
+            return View(pending);
+        }
+
+        public async Task<IActionResult> ProjectRequests()
+        {
+            var requests = await _projectRequestService.GetAllPendingRequestsAsync();
+            return View(requests);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApproveProject(Guid id, string? returnUrl = null)
+        {
+            try
+            {
+                var admin = await _userManager.GetUserAsync(User);
+                if (admin == null)
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                await _projectService.ApproveProjectAsync(id, admin.Id, isAdmin: true);
+                TempData["SuccessMessage"] = "Proje onaylandı.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+
+            return RedirectToAdminReturn(returnUrl, nameof(AdvisorApprovals));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectProject(Guid id, string rejectionReason, string? returnUrl = null)
+        {
+            try
+            {
+                var admin = await _userManager.GetUserAsync(User);
+                if (admin == null)
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                await _projectService.RejectProjectAsync(id, admin.Id, rejectionReason, isAdmin: true);
+                TempData["SuccessMessage"] = "Proje reddedildi.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+
+            return RedirectToAdminReturn(returnUrl, nameof(AdvisorApprovals));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApproveRequest(Guid requestId, string? responseMessage, string? returnUrl = null)
+        {
+            var result = await _projectRequestService.ApproveRequestAsync(requestId, responseMessage);
+            TempData[result ? "SuccessMessage" : "ErrorMessage"] = result
+                ? "Proje isteği onaylandı."
+                : "İstek onaylanırken bir hata oluştu.";
+            return RedirectToAdminReturn(returnUrl, nameof(ProjectRequests));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectRequest(Guid requestId, string? responseMessage, string? returnUrl = null)
+        {
+            var result = await _projectRequestService.RejectRequestAsync(requestId, responseMessage);
+            TempData[result ? "SuccessMessage" : "ErrorMessage"] = result
+                ? "Proje isteği reddedildi."
+                : "İstek reddedilirken bir hata oluştu.";
+            return RedirectToAdminReturn(returnUrl, nameof(ProjectRequests));
         }
 
         public async Task<IActionResult> Academicians()
         {
             var teachers = await _userManager.GetUsersInRoleAsync("Teacher");
+            var roleMap = new Dictionary<Guid, IList<string>>();
+            foreach (var teacher in teachers)
+            {
+                roleMap[teacher.Id] = await _userManager.GetRolesAsync(teacher);
+            }
+
+            ViewBag.UserRoles = roleMap;
             return View(teachers);
+        }
+
+        public async Task<IActionResult> Students()
+        {
+            var students = await _userManager.GetUsersInRoleAsync("Student");
+            return View(students);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> AssignRole(Guid userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "Kullanıcı bulunamadı.";
+                return RedirectToAction(nameof(Academicians));
+            }
+
+            var availableRoles = new[] { "Teacher", "Student", "Admin" };
+            var model = new AdminAssignRoleViewModel
+            {
+                UserId = user.Id,
+                UserFullName = user.FullName ?? $"{user.FirstName} {user.LastName}",
+                Email = user.Email ?? string.Empty,
+                CurrentRoles = (await _userManager.GetRolesAsync(user)).ToList(),
+                AvailableRoles = availableRoles.ToList()
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AssignRole(AdminAssignRoleViewModel model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId.ToString());
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "Kullanıcı bulunamadı.";
+                return RedirectToAction(nameof(Academicians));
+            }
+
+            if (string.IsNullOrWhiteSpace(model.SelectedRole))
+            {
+                TempData["ErrorMessage"] = "Lütfen bir rol seçiniz.";
+                return RedirectToAction(nameof(AssignRole), new { userId = model.UserId });
+            }
+
+            if (!await _roleManager.RoleExistsAsync(model.SelectedRole))
+            {
+                TempData["ErrorMessage"] = "Seçilen rol sistemde bulunamadı.";
+                return RedirectToAction(nameof(AssignRole), new { userId = model.UserId });
+            }
+
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            if (currentRoles.Any())
+            {
+                var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                if (!removeResult.Succeeded)
+                {
+                    TempData["ErrorMessage"] = string.Join(", ", removeResult.Errors.Select(e => e.Description));
+                    return RedirectToAction(nameof(AssignRole), new { userId = model.UserId });
+                }
+            }
+
+            var addResult = await _userManager.AddToRoleAsync(user, model.SelectedRole);
+            if (addResult.Succeeded)
+            {
+                TempData["SuccessMessage"] = $"{user.FullName} kullanıcısına '{model.SelectedRole}' rolü atandı.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = string.Join(", ", addResult.Errors.Select(e => e.Description));
+            }
+
+            return RedirectToAction(nameof(Academicians));
         }
 
         /// <summary>
@@ -98,16 +287,10 @@ namespace ProjeHavuzu.MVCUI.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ERROR in GetLogsData: {ex.Message}");
-                Console.WriteLine(ex.StackTrace);
                 return BadRequest(new { error = ex.Message });
             }
         }
 
-        /// <summary>
-        /// Eski logları temizle
-        /// POST: /Admin/Logs/ClearOldLogs
-        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ClearOldLogs(int olderThanDays = 30)
@@ -115,6 +298,18 @@ namespace ProjeHavuzu.MVCUI.Controllers
             var deletedCount = await _unifiedLogService.ClearOldLogsAsync(olderThanDays);
             TempData["SuccessMessage"] = $"{deletedCount} adet {olderThanDays} günden eski log kaydı temizlendi.";
             return RedirectToAction("Logs");
+        }
+
+        private string? GetSafeReturnUrl(string? returnUrl) =>
+            !string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl) ? returnUrl : null;
+
+        private IActionResult RedirectToAdminReturn(string? returnUrl, string fallbackAction)
+        {
+            var safeReturn = GetSafeReturnUrl(returnUrl);
+            if (safeReturn != null)
+                return LocalRedirect(safeReturn);
+
+            return RedirectToAction(fallbackAction);
         }
     }
 }

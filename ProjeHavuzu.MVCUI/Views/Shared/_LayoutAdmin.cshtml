@@ -75,7 +75,7 @@
                     {
                         <!-- ADMIN MENU -->
                         <li class="nav-item">
-                            <a class="nav-link" href="/Teacher/ProjectPool">
+                            <a class="nav-link" asp-controller="Project" asp-action="Index">
                                 <i class="bi bi-collection"></i>
                                 <span>Proje Havuzu</span>
                             </a>
@@ -87,25 +87,37 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/Student/MyProjects">
+                            <a class="nav-link" asp-controller="Admin" asp-action="MyProjects">
                                 <i class="bi bi-folder-check"></i>
                                 <span>Projelerim & Durum</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/Project/Index">
+                            <a class="nav-link" asp-controller="Admin" asp-action="AdvisorApprovals">
+                                <i class="bi bi-person-check"></i>
+                                <span>Danışman Onay</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Admin" asp-action="ProjectRequests">
+                                <i class="bi bi-inbox"></i>
+                                <span>Proje İstekleri</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Project" asp-action="Index">
                                 <i class="bi bi-card-checklist"></i>
                                 <span>Tüm Projeler</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/Admin/Academicians">
+                            <a class="nav-link" asp-controller="Admin" asp-action="Academicians">
                                 <i class="bi bi-person-video3"></i>
                                 <span>Akademisyenler</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/Teacher/Students">
+                            <a class="nav-link" asp-controller="Admin" asp-action="Students">
                                 <i class="bi bi-people"></i>
                                 <span>Öğrenciler</span>
                             </a>

@@ -42,18 +42,12 @@ namespace ProjeHavuzu.Business.Services.Concrete
 
         public async Task<List<ProjectListDto>> GetAllProjectsAsync()
         {
-            var projects = await _projectRepository.GetAllProjectsByCategoryAsync();
-            return projects;
+            return await _projectRepository.GetAllProjectsListAsync();
         }
 
         public async Task<ProjectListDto> GetProjectByIdAsync(Guid id)
         {
-            var project = await _projectRepository.GetAsync(p => p.Id == id && !p.IsDeleted);
-            if (project == null)
-                return null;
-
-            var projectList = await _projectRepository.GetAllProjectsByCategoryAsync();
-            return projectList.FirstOrDefault(p => p.Id == id);
+            return await _projectRepository.GetProjectListByIdAsync(id);
         }
 
         public async Task<ProjectCreateDto> GetProjectCreateDtoAsync()

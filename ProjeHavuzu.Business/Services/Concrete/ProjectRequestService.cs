@@ -99,6 +99,11 @@ namespace ProjeHavuzu.Business.Services.Concrete
             return await _projectRequestRepository.GetPendingRequestsForConsultantAsync(consultantId);
         }
 
+        public async Task<List<ProjectRequest>> GetAllPendingRequestsAsync()
+        {
+            return await _projectRequestRepository.GetAllPendingRequestsAsync();
+        }
+
         public async Task<bool> HasPendingRequestAsync(Guid projectId, Guid studentId)
         {
             var existingRequest = await _projectRequestRepository.GetExistingRequestAsync(projectId, studentId);

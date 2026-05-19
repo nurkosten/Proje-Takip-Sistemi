@@ -12,5 +12,6 @@ namespace ProjeHavuzu.Data.Repository.Abstract
         Task<List<ProjectRequest>> GetRequestsByConsultantIdAsync(Guid consultantId);
         Task<ProjectRequest?> GetExistingRequestAsync(Guid projectId, Guid studentId);
         Task<List<ProjectRequest>> GetPendingRequestsForConsultantAsync(Guid consultantId);
+        Task<List<ProjectRequest>> GetAllPendingRequestsAsync();
     }
 }

@@ -9,6 +9,7 @@ using ProjeHavuzu.Data.Repository.Abstract;
 
 namespace ProjeHavuzu.MVCUI.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class DepartmentController : Controller
     {
         private readonly IDepartmentService _departmentService;

@@ -64,5 +64,15 @@ namespace ProjeHavuzu.Data.Repository.Concrete
                 .OrderByDescending(r => r.RequestDate)
                 .ToListAsync();
         }
+
+        public async Task<List<ProjectRequest>> GetAllPendingRequestsAsync()
+        {
+            return await _context.ProjectRequests
+                .Include(r => r.Student)
+                .Include(r => r.Project)
+                .Where(r => r.RequestStatus == ProjectRequestStatus.Pending && !r.IsDeleted)
+                .OrderByDescending(r => r.RequestDate)
+                .ToListAsync();
+        }
     }
 }

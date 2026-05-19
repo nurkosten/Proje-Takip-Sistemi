@@ -4,12 +4,31 @@
 @{
     ViewData["Title"] = "Akademisyenler";
     Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    var userRoles = ViewBag.UserRoles as Dictionary<Guid, IList<string>>;
 }
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3><i class="bi bi-people-fill"></i> Akademisyenler</h3>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Ana Sayfa
+        </a>
     </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
 
     <div class="card shadow-sm">
         <div class="card-body">
@@ -23,19 +42,19 @@
                                 <th>Kullanıcı Adı</th>
                                 <th>E-posta</th>
                                 <th>Telefon</th>
+                                <th>Roller</th>
+                                <th class="text-center">İşlem</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var teacher in Model)
                             {
+                                var roles = userRoles != null && userRoles.ContainsKey(teacher.Id)
+                                    ? userRoles[teacher.Id]
+                                    : new List<string>();
                                 <tr>
                                     <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar-circle me-2 bg-primary text-white d-flex align-items-center justify-content-center rounded-circle" style="width: 40px; height: 40px;">
-                                                @(teacher.FullName?.Length > 0 ? teacher.FullName.Substring(0, 1).ToUpper() : "T")
-                                            </div>
-                                            <strong>@teacher.FullName</strong>
-                                        </div>
+                                        <strong>@teacher.FullName</strong>
                                     </td>
                                     <td>@teacher.UserName</td>
                                     <td>
@@ -44,6 +63,24 @@
                                         </a>
                                     </td>
                                     <td>@(teacher.PhoneNumber ?? "-")</td>
+                                    <td>
+                                        @if (roles.Any())
+                                        {
+                                            @foreach (var role in roles)
+                                            {
+                                                <span class="badge bg-primary me-1">@role</span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <a asp-controller="Admin" asp-action="AssignRole" asp-route-userId="@teacher.Id" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-shield-lock"></i> Rol Ata
+                                        </a>
+                                    </td>
                                 </tr>
                             }
                         </tbody>

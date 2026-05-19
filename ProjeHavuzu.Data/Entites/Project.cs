@@ -35,7 +35,6 @@ namespace ProjeHavuzu.Data.Entites
         public virtual AppUser Consultant { get; set; } // Danışman Navigation
         public virtual ICollection<ProjectPhase> Phases { get; set; }
         public virtual ICollection<ProjectLanguage> Languages { get; set; }
-
-
+        public virtual ICollection<ProjectStudent> ProjectStudents { get; set; } = new List<ProjectStudent>();
     }
 }

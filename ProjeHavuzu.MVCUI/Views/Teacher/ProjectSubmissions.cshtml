@@ -1,0 +1,215 @@
+@using ProjeHavuzu.Data.Entites
+@using ProjeHavuzu.Data.Entites.Enums
+@model List<ProjectSubmission>
+
+@{
+    ViewData["Title"] = "Proje Teslimleri";
+    var studentNames = (Dictionary<Guid, string>)ViewBag.StudentNames;
+    var pendingItems = Model?.Where(x => x.SubmissionStatus == SubmissionStatus.Pending).ToList() ?? new List<ProjectSubmission>();
+    var processedItems = Model?.Where(x => x.SubmissionStatus != SubmissionStatus.Pending).ToList() ?? new List<ProjectSubmission>();
+    const string returnUrl = "/Teacher/ProjectSubmissions";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0 fw-bold" style="color: #003366;">
+            <i class="bi bi-cloud-download me-2"></i>Proje Teslimleri
+        </h3>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-dark rounded-pill px-4">
+            <i class="bi bi-arrow-left me-1"></i> Ana Sayfa
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-1"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-circle me-1"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm mb-4 border-0">
+        <div class="card-header py-3" style="background: linear-gradient(135deg, #003366 0%, #004080 100%);">
+            <h5 class="mb-0 text-white fw-bold">
+                <i class="bi bi-hourglass-split me-2"></i>Onay Bekleyen Gönderimler
+                <span class="badge bg-warning text-dark rounded-pill ms-2">@pendingItems.Count</span>
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table id="pendingTable" class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Tarih</th>
+                            <th>Öğrenci Adı</th>
+                            <th>Dosya Adı</th>
+                            <th>Boyut</th>
+                            <th>İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in pendingItems)
+                        {
+                            <tr>
+                                <td>@item.UploadDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td>
+                                    <i class="bi bi-person me-1 text-primary"></i>
+                                    @(studentNames.ContainsKey(item.StudentId) ? studentNames[item.StudentId] : item.StudentId.ToString())
+                                </td>
+                                <td><i class="bi bi-file-earmark-zip me-1 text-secondary"></i>@item.FileName</td>
+                                <td>@((item.FileSize / 1024.0 / 1024.0).ToString("F2")) MB</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-controller="ProjectSubmission" asp-action="Download" asp-route-id="@item.Id" asp-route-returnUrl="@returnUrl" class="btn btn-outline-primary" title="İndir">
+                                            <i class="bi bi-download"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-success btn-approve" data-id="@item.Id"
+                                            data-student="@(studentNames.ContainsKey(item.StudentId) ? studentNames[item.StudentId] : "Öğrenci")"
+                                            title="Onayla">
+                                            <i class="bi bi-check-lg"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-danger btn-reject" data-id="@item.Id"
+                                            data-student="@(studentNames.ContainsKey(item.StudentId) ? studentNames[item.StudentId] : "Öğrenci")"
+                                            title="Reddet">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </div>
+                                    <form id="approve-form-@item.Id" asp-controller="ProjectSubmission" asp-action="Approve" asp-route-id="@item.Id" method="post" style="display:none;">
+                                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                    </form>
+                                    <form id="reject-form-@item.Id" asp-controller="ProjectSubmission" asp-action="Reject" asp-route-id="@item.Id" method="post" style="display:none;">
+                                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4 border-0">
+        <div class="card-header py-3" style="background: linear-gradient(135deg, #003366 0%, #004080 100%);">
+            <h5 class="mb-0 text-white fw-bold">
+                <i class="bi bi-clipboard-check me-2"></i>İşlenmiş Gönderimler
+                <span class="badge bg-secondary rounded-pill ms-2">@processedItems.Count</span>
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table id="processedTable" class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Tarih</th>
+                            <th>Öğrenci Adı</th>
+                            <th>Dosya Adı</th>
+                            <th>Boyut</th>
+                            <th>Durum</th>
+                            <th>İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in processedItems)
+                        {
+                            <tr>
+                                <td>@item.UploadDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td>
+                                    <i class="bi bi-person me-1 text-primary"></i>
+                                    @(studentNames.ContainsKey(item.StudentId) ? studentNames[item.StudentId] : item.StudentId.ToString())
+                                </td>
+                                <td><i class="bi bi-file-earmark-zip me-1 text-secondary"></i>@item.FileName</td>
+                                <td>@((item.FileSize / 1024.0 / 1024.0).ToString("F2")) MB</td>
+                                <td>
+                                    @if (item.SubmissionStatus == SubmissionStatus.Approved)
+                                    {
+                                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Onaylandı</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Reddedildi</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a asp-controller="ProjectSubmission" asp-action="Download" asp-route-id="@item.Id" asp-route-returnUrl="@returnUrl" class="btn btn-sm btn-outline-primary" title="İndir">
+                                        <i class="bi bi-download"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function () {
+            if ($.fn.DataTable.isDataTable('#pendingTable')) {
+                $('#pendingTable').DataTable().destroy();
+            }
+            $('#pendingTable').DataTable({
+                language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json' },
+                order: [[0, 'desc']],
+                pageLength: 10
+            });
+
+            if ($.fn.DataTable.isDataTable('#processedTable')) {
+                $('#processedTable').DataTable().destroy();
+            }
+            $('#processedTable').DataTable({
+                language: { url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/tr.json' },
+                order: [[0, 'desc']],
+                pageLength: 10
+            });
+
+            $(document).on('click', '.btn-approve', function () {
+                var id = $(this).data('id');
+                var student = $(this).data('student');
+                Swal.fire({
+                    title: 'Gönderiyi Onayla',
+                    html: '<b>' + student + '</b> adlı öğrencinin proje gönderimini <span class="text-success fw-bold">onaylamak</span> istediğinize emin misiniz?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#198754',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: '<i class="bi bi-check-lg"></i> Evet, Onayla',
+                    cancelButtonText: 'İptal'
+                }).then(function (result) {
+                    if (result.isConfirmed) {
+                        $('#approve-form-' + id).submit();
+                    }
+                });
+            });
+
+            $(document).on('click', '.btn-reject', function () {
+                var id = $(this).data('id');
+                var student = $(this).data('student');
+                Swal.fire({
+                    title: 'Gönderiyi Reddet',
+                    html: '<b>' + student + '</b> adlı öğrencinin proje gönderimini <span class="text-danger fw-bold">reddetmek</span> istediğinize emin misiniz?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: '<i class="bi bi-x-lg"></i> Evet, Reddet',
+                    cancelButtonText: 'İptal'
+                }).then(function (result) {
+                    if (result.isConfirmed) {
+                        $('#reject-form-' + id).submit();
+                    }
+                });
+            });
+        });
+    </script>
+}

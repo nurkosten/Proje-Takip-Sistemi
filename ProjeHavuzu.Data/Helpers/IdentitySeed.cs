@@ -1,17 +1,22 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using ProjeHavuzu.Data.Entites.Identity;
 
 namespace ProjeHavuzu.Data.Helpers
 {
+    /// <summary>
+    /// İlk çalıştırmada roller ve varsayılan kullanıcıları oluşturur.
+    /// Üretim ortamında seed şifrelerini mutlaka değiştirin.
+    /// </summary>
     public static class IdentitySeed
     {
         public static async Task SeedAsync(
             UserManager<AppUser> userManager,
-            RoleManager<AppRole> roleManager)
+            RoleManager<AppRole> roleManager,
+            IConfiguration configuration)
         {
             await CreateRolesAsync(roleManager);
-
-            await CreateAdminUserAsync(userManager);
+            await CreateAdminUserAsync(userManager, configuration);
             await CreateTeacherUserAsync(userManager);
             await CreateStudentUserAsync(userManager);
         }
@@ -41,10 +46,10 @@ namespace ProjeHavuzu.Data.Helpers
             }
         }
 
-        private static async Task CreateAdminUserAsync(UserManager<AppUser> userManager)
+        private static async Task CreateAdminUserAsync(UserManager<AppUser> userManager, IConfiguration configuration)
         {
-            var adminEmail = "admin@admin.com";
-            var adminPassword = "Admin123+";
+            var adminEmail = configuration["SeedSettings:AdminEmail"] ?? "admin@admin.com";
+            var adminPassword = configuration["SeedSettings:AdminPassword"] ?? "Admin123+";
 
             var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
@@ -57,7 +62,8 @@ namespace ProjeHavuzu.Data.Helpers
                     Email = adminEmail,
                     FirstName = "System",
                     LastName = "Administrator",
-                    EmailConfirmed = true
+                    EmailConfirmed = true,
+                    IsActive = true
                 };
 
                 var createResult = await userManager.CreateAsync(adminUser, adminPassword);
@@ -66,6 +72,20 @@ namespace ProjeHavuzu.Data.Helpers
                 {
                     var errors = string.Join(", ", createResult.Errors.Select(e => e.Description));
                     throw new Exception($"Admin kullanıcı oluşturulamadı: {errors}");
+                }
+            }
+            else
+            {
+                if (!adminUser.EmailConfirmed)
+                {
+                    adminUser.EmailConfirmed = true;
+                    await userManager.UpdateAsync(adminUser);
+                }
+
+                if (!adminUser.IsActive)
+                {
+                    adminUser.IsActive = true;
+                    await userManager.UpdateAsync(adminUser);
                 }
             }
 
@@ -88,7 +108,8 @@ namespace ProjeHavuzu.Data.Helpers
                     Email = teacherEmail,
                     FirstName = "Test",
                     LastName = "Teacher",
-                    EmailConfirmed = true
+                    EmailConfirmed = true,
+                    IsActive = true
                 };
 
                 var createResult = await userManager.CreateAsync(teacherUser, teacherPassword);
@@ -120,7 +141,8 @@ namespace ProjeHavuzu.Data.Helpers
                     FirstName = "Test",
                     LastName = "Student",
                     StudentNumber = "20260001",
-                    EmailConfirmed = true
+                    EmailConfirmed = true,
+                    IsActive = true
                 };
 
                 var createResult = await userManager.CreateAsync(studentUser, studentPassword);

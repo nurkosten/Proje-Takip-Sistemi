@@ -11,23 +11,26 @@ using System.Threading.Tasks;
 
 namespace ProjeHavuzu.MVCUI.Controllers
 {
-    [Authorize(Roles = "Teacher,Admin")]
+    [Authorize(Roles = "Teacher")]
     public class TeacherController : Controller
     {
         private readonly IProjectService _projectService;
         private readonly IProjectStudentService _projectStudentService;
         private readonly IProjectRequestService _projectRequestService;
+        private readonly IProjectSubmissionService _submissionService;
         private readonly UserManager<ProjeHavuzu.Data.Entites.Identity.AppUser> _userManager;
 
         public TeacherController(
             IProjectService projectService,
             IProjectStudentService projectStudentService,
             IProjectRequestService projectRequestService,
+            IProjectSubmissionService submissionService,
             UserManager<ProjeHavuzu.Data.Entites.Identity.AppUser> userManager)
         {
             _projectService = projectService;
             _projectStudentService = projectStudentService;
             _projectRequestService = projectRequestService;
+            _submissionService = submissionService;
             _userManager = userManager;
         }
 
@@ -120,7 +123,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ProjectDetails(Guid id)
+        public async Task<IActionResult> ProjectDetails(Guid id, string? returnUrl = null)
         {
             try
             {
@@ -128,14 +131,16 @@ namespace ProjeHavuzu.MVCUI.Controllers
                 if (project == null)
                 {
                     TempData["ErrorMessage"] = "Proje bulunamadı.";
-                    return RedirectToAction("AllProjects");
+                    return RedirectToTeacherReturn(returnUrl, nameof(AllProjects));
                 }
+
+                ViewBag.ReturnUrl = GetSafeReturnUrl(returnUrl) ?? Url.Action(nameof(AllProjects))!;
                 return View(project);
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = $"Proje yüklenirken hata oluştu: {ex.Message}";
-                return RedirectToAction("AllProjects");
+                return RedirectToTeacherReturn(returnUrl, nameof(AllProjects));
             }
         }
 
@@ -216,7 +221,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> EditProject(Guid id)
+        public async Task<IActionResult> EditProject(Guid id, string? returnUrl = null)
         {
             try
             {
@@ -226,7 +231,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
                 if (projectDetail == null)
                 {
                     TempData["ErrorMessage"] = "Proje bulunamadı.";
-                    return RedirectToAction("AllProjects");
+                    return RedirectToTeacherReturn(returnUrl, nameof(AllProjects));
                 }
 
                 // Map to create DTO for editing
@@ -255,23 +260,26 @@ namespace ProjeHavuzu.MVCUI.Controllers
                     SelectedLanguagesJson = projectDetail.Languages != null ? string.Join(",", projectDetail.Languages) : ""
                 };
 
+                ViewBag.ReturnUrl = GetSafeReturnUrl(returnUrl) ?? Url.Action(nameof(ProjectDetails), new { id })!;
                 await PrepareEditProjectViewDataAsync(id, editDto);
                 return View(editDto);
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = $"Proje yüklenirken hata oluştu: {ex.Message}";
-                return RedirectToAction("AllProjects");
+                return RedirectToTeacherReturn(returnUrl, nameof(AllProjects));
             }
         }
 
         [HttpPost]
-        public async Task<IActionResult> EditProject(Guid id, ProjeHavuzu.Data.DTOs.ProjectDto.ProjectCreateDto projectDto)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditProject(Guid id, ProjeHavuzu.Data.DTOs.ProjectDto.ProjectCreateDto projectDto, string? returnUrl = null)
         {
             try
             {
                 if (!ModelState.IsValid)
                 {
+                    ViewBag.ReturnUrl = GetSafeReturnUrl(returnUrl) ?? Url.Action(nameof(ProjectDetails), new { id })!;
                     await PrepareEditProjectViewDataAsync(id, projectDto);
                     return View(projectDto);
                 }
@@ -281,18 +289,18 @@ namespace ProjeHavuzu.MVCUI.Controllers
                 if (result)
                 {
                     TempData["SuccessMessage"] = "Proje başarıyla güncellendi.";
-                    return RedirectToAction("AllProjects");
+                    return RedirectToTeacherReturn(returnUrl, nameof(ProjectDetails), new { id });
                 }
-                else
-                {
-                    TempData["ErrorMessage"] = "Proje güncellenirken bir hata oluştu.";
-                    await PrepareEditProjectViewDataAsync(id, projectDto);
-                    return View(projectDto);
-                }
+
+                TempData["ErrorMessage"] = "Proje güncellenirken bir hata oluştu.";
+                ViewBag.ReturnUrl = GetSafeReturnUrl(returnUrl) ?? Url.Action(nameof(ProjectDetails), new { id })!;
+                await PrepareEditProjectViewDataAsync(id, projectDto);
+                return View(projectDto);
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = $"Hata: {ex.Message}";
+                ViewBag.ReturnUrl = GetSafeReturnUrl(returnUrl) ?? Url.Action(nameof(ProjectDetails), new { id })!;
                 await PrepareEditProjectViewDataAsync(id, projectDto);
                 return View(projectDto);
             }
@@ -318,22 +326,24 @@ namespace ProjeHavuzu.MVCUI.Controllers
         // ====================
 
         [HttpGet]
-        public async Task<IActionResult> AssignStudentsToProject(Guid projectId)
+        public async Task<IActionResult> AssignStudentsToProject(Guid projectId, string? returnUrl = null)
         {
             try
             {
                 var dto = await _projectStudentService.GetAssignStudentsToProjectDtoAsync(projectId);
+                ViewBag.ReturnUrl = GetSafeReturnUrl(returnUrl) ?? Url.Action(nameof(ProjectDetails), new { id = projectId })!;
                 return View(dto);
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = $"Hata: {ex.Message}";
-                return RedirectToAction("AllProjects");
+                return RedirectToTeacherReturn(returnUrl, nameof(AllProjects));
             }
         }
 
         [HttpPost]
-        public async Task<IActionResult> AssignStudentsToProject(Guid projectId, List<Guid> selectedStudentIds)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AssignStudentsToProject(Guid projectId, List<Guid> selectedStudentIds, string? returnUrl = null)
         {
             try
             {
@@ -342,12 +352,12 @@ namespace ProjeHavuzu.MVCUI.Controllers
 
                 await _projectStudentService.AssignStudentsToProjectAsync(projectId, selectedStudentIds);
                 TempData["SuccessMessage"] = "Öğrenci atamaları başarıyla güncellendi.";
-                return RedirectToAction("AllProjects");
+                return RedirectToTeacherReturn(returnUrl, nameof(ProjectDetails), new { id = projectId });
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = $"Hata: {ex.Message}";
-                return RedirectToAction("AssignStudentsToProject", new { projectId });
+                return RedirectToAction(nameof(AssignStudentsToProject), new { projectId, returnUrl });
             }
         }
 
@@ -413,7 +423,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
         // ====================
 
         [HttpGet]
-        public async Task<IActionResult> ViewProjectStudents(Guid projectId)
+        public async Task<IActionResult> ViewProjectStudents(Guid projectId, string? returnUrl = null)
         {
             try
             {
@@ -422,14 +432,32 @@ namespace ProjeHavuzu.MVCUI.Controllers
 
                 ViewBag.ProjectTitle = project?.ProjectTitle ?? "Unknown";
                 ViewBag.ProjectId = projectId;
+                ViewBag.ReturnUrl = GetSafeReturnUrl(returnUrl) ?? Url.Action(nameof(ProjectDetails), new { id = projectId })!;
 
                 return View(students);
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = $"Hata: {ex.Message}";
-                return RedirectToAction("AllProjects");
+                return RedirectToTeacherReturn(returnUrl, nameof(AllProjects));
             }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ProjectSubmissions()
+        {
+            var submissions = await _submissionService.GetAllSubmissionsAsync();
+
+            var studentIds = submissions.Select(s => s.StudentId).Distinct().ToList();
+            var studentNames = new Dictionary<Guid, string>();
+            foreach (var sid in studentIds)
+            {
+                var user = await _userManager.FindByIdAsync(sid.ToString());
+                studentNames[sid] = user != null ? $"{user.FirstName} {user.LastName}" : sid.ToString();
+            }
+
+            ViewBag.StudentNames = studentNames;
+            return View(submissions);
         }
 
         // ====================
@@ -596,6 +624,18 @@ namespace ProjeHavuzu.MVCUI.Controllers
 
             ViewBag.AcademicianCount = dto.Academicians.Count;
             ViewBag.ProjectId = projectId;
+        }
+
+        private string? GetSafeReturnUrl(string? returnUrl) =>
+            !string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl) ? returnUrl : null;
+
+        private IActionResult RedirectToTeacherReturn(string? returnUrl, string fallbackAction, object? fallbackRouteValues = null)
+        {
+            var safeReturn = GetSafeReturnUrl(returnUrl);
+            if (safeReturn != null)
+                return LocalRedirect(safeReturn);
+
+            return RedirectToAction(fallbackAction, fallbackRouteValues);
         }
     }
 }

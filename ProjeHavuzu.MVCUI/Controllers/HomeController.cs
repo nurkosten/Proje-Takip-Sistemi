@@ -1,28 +1,18 @@
-using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ProjeHavuzu.Data.Context;
+using ProjeHavuzu.Business.Services.Abstract;
 using ProjeHavuzu.Data.DTOs.Common;
-using ProjeHavuzu.Data.DTOs.ProjectDto;
-using ProjeHavuzu.Data.Entites;
-using ProjeHavuzu.Data.Repository.Abstract;
-using ProjeHavuzu.Data.Repository.Concrete;
-using ProjeHavuzu.MVCUI.Models;
-using System.Diagnostics;
-using System.Security.AccessControl;
 
 namespace ProjeHavuzu.MVCUI.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
-        private readonly IProjectRepository _projectRepository;
-        private readonly ICategoryRepository _categoryRepository;
-        private readonly IMapper _mapper;
+        private readonly IProjectService _projectService;
 
-        public HomeController(IProjectRepository projectRepository, ICategoryRepository categoryRepository, IMapper mapper)
+        public HomeController(IProjectService projectService)
         {
-            _projectRepository = projectRepository;
-            _categoryRepository = categoryRepository;
-            _mapper = mapper;
+            _projectService = projectService;
         }
 
         public IActionResult Index()
@@ -82,7 +72,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
                 orderIdx++;
             }
 
-            var result = await _projectRepository.GetProjectsServerSideAsync(request);
+            var result = await _projectService.GetProjectsServerSideAsync(request);
 
             return Json(new
             {
@@ -98,20 +88,25 @@ namespace ProjeHavuzu.MVCUI.Controllers
                     completionPercentage = p.CompletionPercentage,
                     endDate = p.EndDate.ToString("dd.MM.yyyy"),
                     createdByFullName = p.CreatedByFullName,
+                    consultantFullName = p.ConsultantFullName ?? "Danışman Atanmadı",
                     isActive = p.IsActive
                 })
             });
         }
 
-        public IActionResult ProjectDetails(Guid id)
+        public IActionResult ProjectDetails(Guid id, string? returnUrl = null)
         {
-            if (User.IsInRole("Teacher") || User.IsInRole("Admin"))
+            if (User.IsInRole("Teacher"))
             {
-                return RedirectToAction("ProjectDetails", "Teacher", new { id = id });
+                return RedirectToAction("ProjectDetails", "Teacher", new { id, returnUrl = returnUrl ?? "/Home/Index" });
             }
 
-            // Öğrenci ise veya rolü yoksa Student detayına gönder (Student controller Authorize ile login'e zorlayabilir)
-            return RedirectToAction("ProjectDetails", "Student", new { id = id });
+            if (User.IsInRole("Admin"))
+            {
+                return RedirectToAction("Details", "Project", new { id });
+            }
+
+            return RedirectToAction("ProjectDetails", "Student", new { id, returnUrl = returnUrl ?? "/Home/Index" });
         }
     }
 }

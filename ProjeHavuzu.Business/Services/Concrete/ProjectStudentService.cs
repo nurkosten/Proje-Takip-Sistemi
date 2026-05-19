@@ -207,17 +207,16 @@ namespace ProjeHavuzu.Business.Services.Concrete
 
             foreach (var assignment in assignments)
             {
-                var student = await _userManager.FindByIdAsync(assignment.StudentId.ToString());
-                if (student != null)
+                if (assignment.Student == null)
+                    continue;
+
+                result.Add(new ProjectStudentAssignDto
                 {
-                    result.Add(new ProjectStudentAssignDto
-                    {
-                        ProjectId = assignment.ProjectId,
-                        StudentId = assignment.StudentId,
-                        StudentFullName = student.FullName,
-                        StudentNumber = student.StudentNumber ?? "Öğrenci No Yok"
-                    });
-                }
+                    ProjectId = assignment.ProjectId,
+                    StudentId = assignment.StudentId,
+                    StudentFullName = assignment.Student.FullName,
+                    StudentNumber = assignment.Student.StudentNumber ?? "Öğrenci No Yok"
+                });
             }
 
             return result;

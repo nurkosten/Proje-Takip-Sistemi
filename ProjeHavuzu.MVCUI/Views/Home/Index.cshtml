@@ -31,16 +31,37 @@
     <div class="col-md-4">
         <div class="card h-100">
             <div class="card-icon"><i class="fas fa-tasks"></i></div>
-            <a href="/Student/MyProjects">
-                <h3>Projelerim &amp; Durum</h3>
-            </a>
+            @if (User.IsInRole("Admin"))
+            {
+                <a href="/Admin/MyProjects">
+                    <h3>Projelerim &amp; Durum</h3>
+                </a>
+            }
+            else if (User.IsInRole("Teacher"))
+            {
+                <a href="/Teacher/MyProjects">
+                    <h3>Projelerim &amp; Durum</h3>
+                </a>
+            }
+            else
+            {
+                <a href="/Student/MyProjects">
+                    <h3>Projelerim &amp; Durum</h3>
+                </a>
+            }
             <p>Mevcut projelerinizin onay durumunu ve görevleri takip edin.</p>
         </div>
     </div>
     <div class="col-md-4">
         <div class="card h-100">
             <div class="card-icon"><i class="bi bi-search"></i></div>
-            @if (User.IsInRole("Teacher") || User.IsInRole("Admin"))
+            @if (User.IsInRole("Admin"))
+            {
+                <a href="/Project/Index">
+                    <h3>Proje Havuzu</h3>
+                </a>
+            }
+            else if (User.IsInRole("Teacher"))
             {
                 <a href="/Teacher/ProjectPool">
                     <h3>Proje Havuzu</h3>
@@ -154,7 +175,7 @@
                         "searchable": false,
                         "render": function (data) {
                             return '<div class="d-grid gap-2">' +
-                                '<a href="/Home/ProjectDetails/' + data + '" class="btn btn-primary btn-sm">' +
+                                '<a href="/Home/ProjectDetails/' + data + '?returnUrl=' + encodeURIComponent('/Home/Index') + '" class="btn btn-primary btn-sm">' +
                                 '<i class="bi bi-eye"></i> Detay</a></div>';
                         }
                     }

@@ -1,7 +1,36 @@
 ﻿@{
-    var role = User.IsInRole("Admin") ? "_LayoutAdmin" :
-    User.IsInRole("Teacher") ? "_LayoutTeacher" :
-    User.IsInRole("Student") ? "_LayoutStudent" :
-    "_Layout";
-    Layout = role;
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    string layout;
+
+    // Panel controller sayfaları ilgili panel layout'unu kullanır
+    if (string.Equals(controller, "Admin", StringComparison.OrdinalIgnoreCase) && User.IsInRole("Admin"))
+    {
+        layout = "_LayoutAdmin";
+    }
+    else if (string.Equals(controller, "Student", StringComparison.OrdinalIgnoreCase) && User.IsInRole("Student"))
+    {
+        layout = "_LayoutStudent";
+    }
+    else if (string.Equals(controller, "Teacher", StringComparison.OrdinalIgnoreCase) && User.IsInRole("Teacher"))
+    {
+        layout = "_LayoutTeacher";
+    }
+    else if (User.IsInRole("Admin"))
+    {
+        layout = "_LayoutAdmin";
+    }
+    else if (User.IsInRole("Teacher"))
+    {
+        layout = "_LayoutTeacher";
+    }
+    else if (User.IsInRole("Student"))
+    {
+        layout = "_LayoutStudent";
+    }
+    else
+    {
+        layout = "_Layout";
+    }
+
+    Layout = layout;
 }

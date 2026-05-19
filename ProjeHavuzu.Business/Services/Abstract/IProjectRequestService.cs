@@ -12,6 +12,7 @@ namespace ProjeHavuzu.Business.Services.Abstract
         Task<bool> RejectRequestAsync(Guid requestId, string? responseMessage);
         Task<List<ProjectRequest>> GetRequestsByStudentIdAsync(Guid studentId);
         Task<List<ProjectRequest>> GetPendingRequestsForConsultantAsync(Guid consultantId);
+        Task<List<ProjectRequest>> GetAllPendingRequestsAsync();
         Task<bool> HasPendingRequestAsync(Guid projectId, Guid studentId);
         Task<ProjectRequest?> GetRequestByIdAsync(Guid requestId);
     }

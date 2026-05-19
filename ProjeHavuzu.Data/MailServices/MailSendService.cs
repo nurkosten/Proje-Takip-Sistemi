@@ -1,7 +1,4 @@
 ﻿using ProjeHavuzu.Data.MailService;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ProjeHavuzu.Data.MailServices
 {
@@ -18,17 +15,19 @@ namespace ProjeHavuzu.Data.MailServices
         {
             try
             {
-                // TEST MODU KAPALI: Artık mailler gerçek alıcıya (öğrenciye) gidecek.
-                // string originalReceiver = email;
-                // email = "nurkosten@gmail.com";
-
                 var mailSettings = _configuration.GetSection("EmailSettings");
+                var testMode = bool.TryParse(mailSettings["TestMode"], out var isTestMode) && isTestMode;
+                var testEmail = mailSettings["TestEmail"];
+
+                if (testMode && !string.IsNullOrWhiteSpace(testEmail))
+                {
+                    email = testEmail;
+                }
 
                 var senderEmail = mailSettings["Mail"];
                 var senderPassword = mailSettings["Password"];
                 var senderHost = mailSettings["Host"];
 
-                // Placeholder kontrolü
                 if (senderEmail == "your-email@gmail.com" || senderPassword == "your-app-password")
                 {
                     throw new Exception("SMTP Ayarları Yapılmadı: Lütfen appsettings.json dosyasındaki EmailSettings bölümüne geçerli bir Gmail adresi ve Uygulama Şifresi giriniz.");
@@ -41,18 +40,19 @@ namespace ProjeHavuzu.Data.MailServices
 
                 if (!int.TryParse(mailSettings["Port"], out int senderPort))
                 {
-                    senderPort = 587; // Default fallback
+                    senderPort = 587;
                 }
+
                 var displayName = mailSettings["DisplayName"] ?? "Proje Takip Sistemi";
 
-                var smtpClient = new System.Net.Mail.SmtpClient(senderHost)
+                using var smtpClient = new System.Net.Mail.SmtpClient(senderHost)
                 {
                     Port = senderPort,
                     Credentials = new System.Net.NetworkCredential(senderEmail, senderPassword),
                     EnableSsl = true,
                 };
 
-                var mailMessage = new System.Net.Mail.MailMessage
+                using var mailMessage = new System.Net.Mail.MailMessage
                 {
                     From = new System.Net.Mail.MailAddress(senderEmail, displayName),
                     Subject = subject,
@@ -66,7 +66,6 @@ namespace ProjeHavuzu.Data.MailServices
             }
             catch (Exception ex)
             {
-                // Hatayı fırlat
                 throw new Exception($"Mail gönderme başarısız: {ex.Message}");
             }
         }

@@ -3,6 +3,7 @@
 
 @{
     ViewData["Title"] = Model.ProjectTitle;
+    var returnUrl = ViewBag.ReturnUrl as string ?? Url.Action("ProjectPool", "Student");
 }
 
 <div class="container mt-4">
@@ -51,7 +52,7 @@
                     </div>
 
                     <div class="row mb-4">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="d-flex align-items-center mb-3">
                                 <i class="bi bi-clock-fill text-secondary fs-4 me-2"></i>
                                 <div>
@@ -60,12 +61,21 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="d-flex align-items-center mb-3">
                                 <i class="bi bi-person-fill text-primary fs-4 me-2"></i>
                                 <div>
                                     <small class="text-primary fw-bold d-block">Ekleyen</small>
                                     <strong>@Model.CreatedByFullName</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="bi bi-person-badge text-info fs-4 me-2"></i>
+                                <div>
+                                    <small class="text-primary fw-bold d-block">Danışman</small>
+                                    <strong>@(string.IsNullOrWhiteSpace(Model.ConsultantFullName) ? "Danışman Atanmadı" : Model.ConsultantFullName)</strong>
                                 </div>
                             </div>
                         </div>
@@ -97,10 +107,10 @@
                 </div>
                 <div class="card-footer bg-white">
                     <div class="d-flex justify-content-between">
-                        <a asp-action="ProjectPool" class="btn btn-secondary">
-                            <i class="bi bi-arrow-left"></i> Proje Havuzuna Dön
+                        <a href="@returnUrl" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Geri Dön
                         </a>
-                        <a asp-action="MyProjects" class="btn btn-primary">
+                        <a asp-controller="Student" asp-action="MyProjects" class="btn btn-primary">
                             <i class="bi bi-folder-check"></i> Projelerime Git
                         </a>
                     </div>

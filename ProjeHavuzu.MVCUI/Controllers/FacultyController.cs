@@ -8,7 +8,7 @@ using System;
 
 namespace ProjeHavuzu.MVCUI.Controllers
 {
-
+    [Authorize(Roles = "Admin")]
     public class FacultyController : Controller
     {
         private readonly IFacultyService _facultyService;

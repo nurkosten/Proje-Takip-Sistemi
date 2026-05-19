@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace ProjeHavuzu.MVCUI.Controllers
 {
-    [Authorize(Roles = "Student,Teacher,Admin")]
+    [Authorize(Roles = "Student")]
     public class StudentController : Controller
     {
         private readonly IProjectService _projectService;
@@ -130,7 +130,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
                     categoryName = p.CategoryName,
                     difficultyLevel = p.DifficultyLevel.ToString(),
                     completionPercentage = p.CompletionPercentage,
-                    createdByFullName = p.CreatedByFullName,
+                    consultantFullName = string.IsNullOrWhiteSpace(p.ConsultantFullName) ? "Danışman Atanmadı" : p.ConsultantFullName,
                     endDate = p.EndDate.ToString("dd.MM.yyyy")
                 })
             });
@@ -138,7 +138,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
 
         // Proje detayı görüntüleme
         [HttpGet]
-        public async Task<IActionResult> ProjectDetails(Guid id)
+        public async Task<IActionResult> ProjectDetails(Guid id, string? returnUrl = null)
         {
             try
             {
@@ -146,14 +146,16 @@ namespace ProjeHavuzu.MVCUI.Controllers
                 if (project == null)
                 {
                     TempData["ErrorMessage"] = "Proje bulunamadı.";
-                    return RedirectToAction("ProjectPool");
+                    return RedirectToStudentReturn(returnUrl, nameof(ProjectPool));
                 }
+
+                ViewBag.ReturnUrl = GetSafeReturnUrl(returnUrl) ?? Url.Action(nameof(ProjectPool))!;
                 return View(project);
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = $"Proje yüklenirken hata oluştu: {ex.Message}";
-                return RedirectToAction("ProjectPool");
+                return RedirectToStudentReturn(returnUrl, nameof(ProjectPool));
             }
         }
 
@@ -236,6 +238,18 @@ namespace ProjeHavuzu.MVCUI.Controllers
                 TempData["ErrorMessage"] = $"İstekler yüklenirken hata oluştu: {ex.Message}";
                 return RedirectToAction("Index", "Home");
             }
+        }
+
+        private string? GetSafeReturnUrl(string? returnUrl) =>
+            !string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl) ? returnUrl : null;
+
+        private IActionResult RedirectToStudentReturn(string? returnUrl, string fallbackAction, object? fallbackRouteValues = null)
+        {
+            var safeReturn = GetSafeReturnUrl(returnUrl);
+            if (safeReturn != null)
+                return LocalRedirect(safeReturn);
+
+            return RedirectToAction(fallbackAction, fallbackRouteValues);
         }
     }
 }

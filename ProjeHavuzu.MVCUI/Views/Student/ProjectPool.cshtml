@@ -120,9 +120,12 @@
                     },
                     { "data": "description" },
                     {
-                        "data": "createdByFullName",
+                        "data": "consultantFullName",
                         "render": function (data) {
-                            return '<i class="bi bi-person"></i> ' + data;
+                            if (!data || data === 'Danışman Atanmadı') {
+                                return '<span class="text-muted"><i class="bi bi-person-x"></i> Danışman Atanmadı</span>';
+                            }
+                            return '<i class="bi bi-person-badge"></i> ' + data;
                         }
                     },
                     { "data": "endDate" },
@@ -134,7 +137,7 @@
                         "render": function (data, type, row) {
                             var hasPending = pendingIds.indexOf(data) > -1;
                             var html = '<div class="btn-group" role="group">' +
-                                '<a href="/Student/ProjectDetails/' + data + '" class="btn btn-primary btn-sm" title="Detay"><i class="bi bi-eye"></i></a>';
+                                '<a href="/Student/ProjectDetails/' + data + '?returnUrl=' + encodeURIComponent('/Student/ProjectPool') + '" class="btn btn-primary btn-sm" title="Detay"><i class="bi bi-eye"></i></a>';
 
                             if (hasPending) {
                                 html += '<button type="button" class="btn btn-secondary btn-sm" disabled title="İstek Gönderildi"><i class="bi bi-clock-history"></i> Beklemede</button>';

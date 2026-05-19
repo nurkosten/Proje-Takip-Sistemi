@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,7 @@ using ForgotPasswordViewModel = ProjeHavuzu.MVCUI.Models.AccountModels.ForgotPas
 
 namespace ProjeHavuzu.MVCUI.Controllers
 {
+    [Authorize]
     public class AccountController : Controller
     {
         private readonly UserManager<AppUser> _userManager;
@@ -45,12 +47,14 @@ namespace ProjeHavuzu.MVCUI.Controllers
             _departmentService = departmentService;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult ForgotPassword()
         {
             return View();
         }
 
+        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
@@ -80,6 +84,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
 
 
         }
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult ResetPassword(string token, string email)
         {
@@ -89,6 +94,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
                 Email = email
             });
         }
+        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> ResetPassword(
     ResetPasswordViewModel model)
@@ -118,22 +124,26 @@ namespace ProjeHavuzu.MVCUI.Controllers
 
 
 
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult ForgotPasswordConfirmation()
         {
             return View();
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult ResetPasswordConfirmation()
         {
             return View();
         }
 
+        [AllowAnonymous]
         public async Task<IActionResult> Register()
         {
             return View("Register");
         }
+        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
@@ -185,6 +195,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
             return View(model);
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> ConfirmEmail(string token, string email)
         {
@@ -206,9 +217,11 @@ namespace ProjeHavuzu.MVCUI.Controllers
             return RedirectToAction("Login", "Account");
         }
 
+        [AllowAnonymous]
         public IActionResult Login() => View();
 
 
+        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
@@ -221,6 +234,12 @@ namespace ProjeHavuzu.MVCUI.Controllers
             if (user == null)
             {
                 ModelState.AddModelError("", "Email veya şifre hatalı");
+                return View(model);
+            }
+
+            if (!user.IsActive)
+            {
+                ModelState.AddModelError("", "Hesabınız pasifleştirilmiştir. Lütfen sistem yöneticisi ile iletişime geçiniz.");
                 return View(model);
             }
 
@@ -397,6 +416,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
 
             return Json(result);
         }
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult AccessDenied()
         {

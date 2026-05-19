@@ -74,7 +74,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
         }
 
         // ADMIN: Tüm Gönderimleri Listele
-        [Authorize(Roles = "Admin,Teacher")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AdminList()
         {
             var submissions = await _submissionService.GetAllSubmissionsAsync();
@@ -94,7 +94,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
 
         // ORTAK: Dosya İndirme
         [Authorize(Roles = "Admin,Teacher,Student")] // Student kendi dosyasını indirebilir mi? Evet.
-        public async Task<IActionResult> Download(Guid id)
+        public async Task<IActionResult> Download(Guid id, string? returnUrl = null)
         {
             try
             {
@@ -105,11 +105,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = "Dosya indirilemedi: " + ex.Message;
-                // Kullanıcı rolüne göre yönlendirme
-                if (User.IsInRole("Admin") || User.IsInRole("Teacher"))
-                    return RedirectToAction("AdminList");
-                else
-                    return RedirectToAction("Index");
+                return RedirectToSubmissionsList(returnUrl);
             }
         }
 
@@ -126,20 +122,31 @@ namespace ProjeHavuzu.MVCUI.Controllers
         // ADMIN: Onaylama
         [HttpPost]
         [Authorize(Roles = "Admin,Teacher")]
-        public async Task<IActionResult> Approve(Guid id)
+        public async Task<IActionResult> Approve(Guid id, string? returnUrl = null)
         {
             await _submissionService.ApproveSubmissionAsync(id);
             TempData["SuccessMessage"] = "Proje onaylandı.";
-            return RedirectToAction("AdminList");
+            return RedirectToSubmissionsList(returnUrl);
         }
 
         // ADMIN: Reddetme
         [HttpPost]
         [Authorize(Roles = "Admin,Teacher")]
-        public async Task<IActionResult> Reject(Guid id)
+        public async Task<IActionResult> Reject(Guid id, string? returnUrl = null)
         {
             await _submissionService.RejectSubmissionAsync(id);
             TempData["SuccessMessage"] = "Proje reddedildi.";
+            return RedirectToSubmissionsList(returnUrl);
+        }
+
+        private IActionResult RedirectToSubmissionsList(string? returnUrl = null)
+        {
+            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return LocalRedirect(returnUrl);
+
+            if (User.IsInRole("Teacher"))
+                return RedirectToAction("ProjectSubmissions", "Teacher");
+
             return RedirectToAction("AdminList");
         }
     }

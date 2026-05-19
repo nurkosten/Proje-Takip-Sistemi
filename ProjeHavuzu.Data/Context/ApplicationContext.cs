@@ -39,7 +39,7 @@ namespace ProjeHavuzu.Data.Context
         public override int SaveChanges()
         {
             var entries = ChangeTracker.Entries<BaseEntity>();
-            var currentUserId = _currentUser?.UserId;
+            var currentUserId = _currentUser?.UserId ?? Guid.Empty;
 
             foreach (var entry in entries)
             {
@@ -68,7 +68,7 @@ namespace ProjeHavuzu.Data.Context
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             var entries = ChangeTracker.Entries<BaseEntity>();
-            var currentUserId = _currentUser?.UserId;
+            var currentUserId = _currentUser?.UserId ?? Guid.Empty;
 
             foreach (var entry in entries)
             {
@@ -109,6 +109,22 @@ namespace ProjeHavuzu.Data.Context
                 .WithMany()
                 .HasForeignKey(p => p.ConsultantId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<ProjectStudent>()
+                .HasOne(ps => ps.Project)
+                .WithMany(p => p.ProjectStudents)
+                .HasForeignKey(ps => ps.ProjectId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<ProjectStudent>()
+                .HasOne(ps => ps.Student)
+                .WithMany(u => u.ProjectStudents)
+                .HasForeignKey(ps => ps.StudentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<ProjectStudent>()
+                .HasIndex(ps => new { ps.ProjectId, ps.StudentId })
+                .IsUnique();
         }
 
 

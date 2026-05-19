@@ -19,6 +19,6 @@ namespace ProjeHavuzu.Data.Entites.Identity
         //relations property
         public Faculty Faculty { get; set; }
         public Department Department { get; set; }
-        
+        public ICollection<ProjectStudent> ProjectStudents { get; set; } = new List<ProjectStudent>();
     }
 }

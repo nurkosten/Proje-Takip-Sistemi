@@ -74,7 +74,8 @@ using (var scope = app.Services.CreateScope())
     var userManager = services.GetRequiredService<UserManager<AppUser>>();
     var roleManager = services.GetRequiredService<RoleManager<AppRole>>();
 
-    await IdentitySeed.SeedAsync(userManager, roleManager);
+    var configuration = services.GetRequiredService<IConfiguration>();
+    await IdentitySeed.SeedAsync(userManager, roleManager, configuration);
     await FacultyDepartmentSeed.SeedAsync(services);
 }
 
@@ -105,7 +106,10 @@ app.UseAuthentication(); // ❗ MUTLAKA ÖNCE
 app.UseAuthorization();  // ❗ SONRA
 
 
-app.UseHangfireDashboard("/hangfire");
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new ProjeHavuzu.MVCUI.Filters.HangfireAuthorizationFilter() }
+});
 
 // Sistem Sağlık Kontrolü (Her Dakika)
 RecurringJob.AddOrUpdate<ProjeHavuzu.Business.Services.Abstract.ISystemHealthService>(

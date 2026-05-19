@@ -102,6 +102,9 @@ namespace ProjeHavuzu.Data.Repository.Concrete
                 join u in _context.Users.AsNoTracking()
                     on p.CreatedBy equals u.Id into userGroup
                 from u in userGroup.DefaultIfEmpty()
+                join consultant in _context.Users.AsNoTracking()
+                    on p.ConsultantId equals consultant.Id into consultantGroup
+                from consultant in consultantGroup.DefaultIfEmpty()
                 select new
                 {
                     p.Id,
@@ -115,6 +118,7 @@ namespace ProjeHavuzu.Data.Repository.Concrete
                     CategoryId = c.Id,
                     CategoryName = c.CategoryName,
                     CreatedByFullName = u != null ? u.FirstName + " " + u.LastName : "Unknown",
+                    ConsultantFullName = consultant != null ? consultant.FirstName + " " + consultant.LastName : null,
                     TotalPhasesCount = p.Phases != null ? p.Phases.Count(ph => !ph.IsDeleted) : 0,
                     CompletedPhasesCount = p.Phases != null ? p.Phases.Count(ph => !ph.IsDeleted && ph.IsCompleted) : 0
                 };
@@ -130,7 +134,8 @@ namespace ProjeHavuzu.Data.Repository.Concrete
                     p.ProjectTitle.ToLower().Contains(searchValue) ||
                     p.Description.ToLower().Contains(searchValue) ||
                     p.CategoryName.ToLower().Contains(searchValue) ||
-                    p.CreatedByFullName.ToLower().Contains(searchValue)
+                    p.CreatedByFullName.ToLower().Contains(searchValue) ||
+                    (p.ConsultantFullName != null && p.ConsultantFullName.ToLower().Contains(searchValue))
                 );
             }
 
@@ -153,6 +158,7 @@ namespace ProjeHavuzu.Data.Repository.Concrete
                     "difficultylevel" => isDesc ? baseQuery.OrderByDescending(p => p.DifficultyLevel) : baseQuery.OrderBy(p => p.DifficultyLevel),
                     "enddate" => isDesc ? baseQuery.OrderByDescending(p => p.EndDate) : baseQuery.OrderBy(p => p.EndDate),
                     "createdbyfullname" => isDesc ? baseQuery.OrderByDescending(p => p.CreatedByFullName) : baseQuery.OrderBy(p => p.CreatedByFullName),
+                    "consultantfullname" => isDesc ? baseQuery.OrderByDescending(p => p.ConsultantFullName) : baseQuery.OrderBy(p => p.ConsultantFullName),
                     _ => baseQuery.OrderByDescending(p => p.CreatedDate)
                 };
             }
@@ -178,6 +184,7 @@ namespace ProjeHavuzu.Data.Repository.Concrete
                     CategoryId = p.CategoryId,
                     CategoryName = p.CategoryName,
                     CreatedByFullName = p.CreatedByFullName,
+                    ConsultantFullName = p.ConsultantFullName,
                     TotalPhasesCount = p.TotalPhasesCount,
                     CompletedPhasesCount = p.CompletedPhasesCount
                 })
@@ -190,6 +197,19 @@ namespace ProjeHavuzu.Data.Repository.Concrete
                 RecordsFiltered = filteredRecords,
                 Data = data
             };
+        }
+
+        public async Task<ProjectListDto?> GetProjectListByIdAsync(Guid id)
+        {
+            return await BuildProjectListQuery()
+                .FirstOrDefaultAsync(p => p.Id == id);
+        }
+
+        public async Task<List<ProjectListDto>> GetAllProjectsListAsync()
+        {
+            return await BuildProjectListQuery()
+                .OrderByDescending(p => p.CreatedDate)
+                .ToListAsync();
         }
 
         public async Task<List<ProjectListDto>> GetProjectsByConsultantIdAsync(Guid consultantId)
@@ -267,39 +287,43 @@ namespace ProjeHavuzu.Data.Repository.Concrete
 
         public async Task<ProjectDetailDto> GetProjectDetailWithPhasesAsync(Guid projectId)
         {
-            var project = await _context.Projects
-                .Include(p => p.Phases.Where(ph => !ph.IsDeleted).OrderBy(ph => ph.Order))
-                .Include(p => p.Languages)
-                .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
+            var detail = await (
+                from p in _context.Projects.AsNoTracking()
+                where p.Id == projectId && !p.IsDeleted
+                join c in _context.Categories.AsNoTracking() on p.CategoryId equals c.Id into categoryGroup
+                from c in categoryGroup.DefaultIfEmpty()
+                join creator in _context.Users.AsNoTracking() on p.CreatedBy equals creator.Id into creatorGroup
+                from creator in creatorGroup.DefaultIfEmpty()
+                join consultant in _context.Users.AsNoTracking() on p.ConsultantId equals consultant.Id into consultantGroup
+                from consultant in consultantGroup.DefaultIfEmpty()
+                select new ProjectDetailDto
+                {
+                    Id = p.Id,
+                    ProjectTitle = p.ProjectTitle,
+                    Description = p.Description,
+                    DifficultyLevel = p.DifficultyLevel,
+                    StartDate = p.StartDate,
+                    EndDate = p.EndDate,
+                    ProjectLink = p.ProjectLink,
+                    CategoryId = p.CategoryId,
+                    CategoryName = c != null ? c.CategoryName : "Bilinmiyor",
+                    CreatedDate = p.CreatedDate,
+                    CreatedByFullName = creator != null ? creator.FirstName + " " + creator.LastName : "Bilinmiyor",
+                    ConsultantFullName = consultant != null ? consultant.FirstName + " " + consultant.LastName : null,
+                    ProjectArea = p.ProjectArea,
+                    InitialCode = p.InitialCode,
+                    IsActive = p.IsActive,
+                    IsDeleted = p.IsDeleted
+                }).FirstOrDefaultAsync();
 
-            if (project == null)
+            if (detail == null)
                 return null!;
 
-            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == project.CategoryId);
-            var createdByUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == project.CreatedBy);
-            var consultant = project.ConsultantId.HasValue
-                ? await _context.Users.FirstOrDefaultAsync(u => u.Id == project.ConsultantId.Value)
-                : null;
-
-            return new ProjectDetailDto
-            {
-                Id = project.Id,
-                ProjectTitle = project.ProjectTitle,
-                Description = project.Description,
-                DifficultyLevel = project.DifficultyLevel,
-                StartDate = project.StartDate,
-                EndDate = project.EndDate,
-                ProjectLink = project.ProjectLink,
-                CategoryId = project.CategoryId,
-                CategoryName = category?.CategoryName ?? "Bilinmiyor",
-                CreatedDate = project.CreatedDate,
-                CreatedByFullName = createdByUser != null ? $"{createdByUser.FirstName} {createdByUser.LastName}" : "Bilinmiyor",
-                ConsultantFullName = consultant != null ? $"{consultant.FirstName} {consultant.LastName}" : null,
-                ProjectArea = project.ProjectArea,
-                InitialCode = project.InitialCode,
-                IsActive = project.IsActive,
-                IsDeleted = project.IsDeleted,
-                Phases = project.Phases?.Select(ph => new ProjectPhaseDto
+            var phases = await _context.ProjectPhases
+                .AsNoTracking()
+                .Where(ph => ph.ProjectId == projectId && !ph.IsDeleted)
+                .OrderBy(ph => ph.Order)
+                .Select(ph => new ProjectPhaseDto
                 {
                     Id = ph.Id,
                     ProjectId = ph.ProjectId,
@@ -308,9 +332,18 @@ namespace ProjeHavuzu.Data.Repository.Concrete
                     Order = ph.Order,
                     IsCompleted = ph.IsCompleted,
                     CompletedDate = ph.CompletedDate
-                }).ToList() ?? new List<ProjectPhaseDto>(),
-                Languages = project.Languages?.Select(l => l.LanguageName).ToList() ?? new List<string>()
-            };
+                })
+                .ToListAsync();
+
+            var languages = await _context.ProjectLanguages
+                .AsNoTracking()
+                .Where(l => l.ProjectId == projectId && !l.IsDeleted)
+                .Select(l => l.LanguageName)
+                .ToListAsync();
+
+            detail.Phases = phases;
+            detail.Languages = languages;
+            return detail;
         }
     }
 }

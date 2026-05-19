@@ -143,10 +143,15 @@ namespace ProjeHavuzu.MVCUI.Controllers
 
                 if (User.IsInRole("Teacher"))
                 {
-                    return RedirectToAction("AllProjects", "Teacher");
+                    return RedirectToAction("MyProjects", "Teacher");
                 }
 
-                return RedirectToAction("Index", "Project");
+                if (User.IsInRole("Admin"))
+                {
+                    return RedirectToAction("MyProjects", "Admin");
+                }
+
+                return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
@@ -159,17 +164,19 @@ namespace ProjeHavuzu.MVCUI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Edit(Guid id)
+        public async Task<IActionResult> Edit(Guid id, string? returnUrl = null)
         {
             var project = await _projectService.GetProjectDetailAsync(id);
             if (project == null)
             {
                 TempData["ErrorMessage"] = "Proje bulunamadı.";
-                return RedirectToAction("Index");
+                return RedirectAfterEdit(id, returnUrl);
             }
 
             var dto = new ProjectCreateDto();
             await PrepareProjectViewDataAsync(dto);
+            ViewBag.ReturnUrl = GetDefaultEditReturnUrl(id, returnUrl);
+            ViewBag.ProjectId = id;
 
             // Mevcut verileri DTO'ya map et
             dto.ProjectTitle = project.ProjectTitle;
@@ -195,10 +202,13 @@ namespace ProjeHavuzu.MVCUI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit(Guid id, ProjectCreateDto projectCreateDto)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(Guid id, ProjectCreateDto projectCreateDto, string? returnUrl = null)
         {
             if (!ModelState.IsValid)
             {
+                ViewBag.ReturnUrl = GetDefaultEditReturnUrl(id, returnUrl);
+                ViewBag.ProjectId = id;
                 await PrepareProjectViewDataAsync(projectCreateDto);
                 return View(projectCreateDto);
             }
@@ -207,28 +217,73 @@ namespace ProjeHavuzu.MVCUI.Controllers
             {
                 await _projectService.UpdateProjectAsync(id, projectCreateDto);
                 TempData["SuccessMessage"] = "Proje güncellendi.";
-                return RedirectToAction("Index");
+                return RedirectAfterEdit(id, returnUrl);
             }
             catch (Exception ex)
             {
                 ModelState.AddModelError("", ex.Message);
+                ViewBag.ReturnUrl = GetDefaultEditReturnUrl(id, returnUrl);
+                ViewBag.ProjectId = id;
                 await PrepareProjectViewDataAsync(projectCreateDto);
                 return View(projectCreateDto);
             }
+        }
+
+        private string? GetSafeReturnUrl(string? returnUrl) =>
+            !string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl) ? returnUrl : null;
+
+        private string GetDefaultEditReturnUrl(Guid id, string? returnUrl)
+        {
+            return GetSafeReturnUrl(returnUrl)
+                ?? (User.IsInRole("Student") ? Url.Action("MyProjects", "Student")!
+                    : User.IsInRole("Teacher") ? Url.Action("ProjectDetails", "Teacher", new { id })!
+                    : User.IsInRole("Admin") ? Url.Action("MyProjects", "Admin")!
+                    : Url.Action("Index")!);
+        }
+
+        private IActionResult RedirectAfterEdit(Guid id, string? returnUrl)
+        {
+            var safeReturn = GetSafeReturnUrl(returnUrl);
+            if (safeReturn != null)
+                return LocalRedirect(safeReturn);
+
+            if (User.IsInRole("Student"))
+                return RedirectToAction("MyProjects", "Student");
+            if (User.IsInRole("Teacher"))
+                return RedirectToAction("ProjectDetails", "Teacher", new { id });
+            if (User.IsInRole("Admin"))
+                return RedirectToAction("MyProjects", "Admin");
+            return RedirectToAction("Index");
         }
 
         private async Task PrepareProjectViewDataAsync(ProjectCreateDto dto)
         {
             var createDto = await _projectService.GetProjectCreateDtoAsync();
             dto.Categories = createDto.Categories;
+            dto.Academicians = await GetAdvisorCandidatesAsync();
+        }
 
+        private async Task<List<ProjeHavuzu.Data.DTOs.AccountDto.UserListDto>> GetAdvisorCandidatesAsync()
+        {
             var teachers = await _userManager.GetUsersInRoleAsync("Teacher");
-            dto.Academicians = teachers.Select(u => new ProjeHavuzu.Data.DTOs.AccountDto.UserListDto
+            var advisors = new List<ProjeHavuzu.Data.DTOs.AccountDto.UserListDto>();
+
+            foreach (var user in teachers)
             {
-                Id = u.Id,
-                FullName = u.FullName,
-                Email = u.Email
-            }).ToList();
+                if (await _userManager.IsInRoleAsync(user, "Student"))
+                    continue;
+                if (await _userManager.IsInRoleAsync(user, "Admin"))
+                    continue;
+
+                advisors.Add(new ProjeHavuzu.Data.DTOs.AccountDto.UserListDto
+                {
+                    Id = user.Id,
+                    FullName = user.FullName ?? $"{user.FirstName} {user.LastName}",
+                    Email = user.Email ?? string.Empty
+                });
+            }
+
+            return advisors.OrderBy(a => a.FullName).ToList();
         }
 
         public async Task<IActionResult> Details(Guid id)
@@ -258,6 +313,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
         }
 
         // SOFT DELETE (Çöp Kutusuna Gönder)
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(Guid id)
         {
             try
@@ -275,6 +331,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
         // --- RECYCLE BIN ---
 
         // Çöp Kutusu Listesi
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RecycleBin()
         {
             var deletedProjects = await _projectService.GetDeletedProjectsAsync();
@@ -282,6 +339,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
         }
 
         // Geri Yükle
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Restore(Guid id)
         {
             try
@@ -297,6 +355,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
         }
 
         // Kalıcı Olarak Sil
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> HardDelete(Guid id)
         {
             try

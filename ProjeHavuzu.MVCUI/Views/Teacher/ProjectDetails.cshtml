@@ -6,6 +6,7 @@
     ViewData["Title"] = "Proje Detayı";
     var progressColor = Model.CompletionPercentage < 30 ? "bg-danger" : 
                         Model.CompletionPercentage < 70 ? "bg-warning" : "bg-success";
+    var returnUrl = ViewBag.ReturnUrl as string ?? Url.Action("AllProjects", "Teacher");
 }
 
 <div style="display:none;">
@@ -163,15 +164,18 @@
 
 
                 <div class="card-footer d-flex justify-content-between bg-white border-top py-3">
-                    <a asp-action="AllProjects" class="btn btn-outline-secondary">
+                    <a href="@returnUrl" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left me-1"></i> Geri Dön
                     </a>
                     <div>
-                        <a asp-action="EditProject" asp-route-id="@Model.Id" class="btn btn-warning me-2">
+                        <a asp-controller="Teacher" asp-action="EditProject" asp-route-id="@Model.Id" asp-route-returnUrl="@returnUrl" class="btn btn-warning me-2">
                             <i class="bi bi-pencil me-1"></i> Düzenle
                         </a>
-                        <a asp-action="ViewProjectStudents" asp-route-id="@Model.Id" class="btn btn-info">
-                            <i class="bi bi-people me-1"></i> Öğrencileri Görüntüle
+                        <a asp-controller="Teacher" asp-action="AssignStudentsToProject" asp-route-projectId="@Model.Id" asp-route-returnUrl="@returnUrl" class="btn btn-info me-2">
+                            <i class="bi bi-people me-1"></i> Öğrencileri Düzenle
+                        </a>
+                        <a asp-controller="Teacher" asp-action="ViewProjectStudents" asp-route-projectId="@Model.Id" asp-route-returnUrl="@returnUrl" class="btn btn-outline-info">
+                            <i class="bi bi-eye me-1"></i> Atanmış Öğrenciler
                         </a>
                     </div>
                 </div>
