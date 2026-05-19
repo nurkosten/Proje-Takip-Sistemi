@@ -1,0 +1,74 @@
+@using System.Text.Json
+@{
+    var formId = ViewData["FormId"] as string ?? "projectForm";
+    var isEdit = ViewData["IsEdit"] as bool? ?? false;
+    var languagesJson = ViewData["LanguagesJson"] as string ?? "";
+}
+
+<script src="https://cdn.jsdelivr.net/npm/@@yaireo/tagify"></script>
+<script src="https://cdn.jsdelivr.net/npm/@@yaireo/tagify/dist/tagify.polyfills.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/@@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css" />
+
+<script>
+    (function () {
+        var form = document.getElementById('@formId');
+        var input = document.querySelector('#@formId input[name="SelectedLanguagesJson"]');
+        if (!input) return;
+
+        var tagify = new Tagify(input, {
+            whitelist: ["C#", "Java", "Python", "JavaScript", "TypeScript", "HTML", "CSS", "SQL", "React", "Angular", "Vue", "Kotlin", "Swift", "PHP", "Go", "Ruby", ".NET", "Node.js"],
+            maxTags: 10,
+            dropdown: { maxItems: 20, classname: "tags-look", enabled: 0, closeOnSelect: false }
+        });
+
+        @if (isEdit)
+        {
+            <text>
+            var existingLanguages = @Html.Raw(JsonSerializer.Serialize(languagesJson));
+            if (existingLanguages) {
+                existingLanguages.split(',').filter(function (x) { return x.trim() !== ''; }).forEach(function (lang) {
+                    tagify.addTags(lang.trim());
+                });
+            }
+            </text>
+        }
+
+        if (form) {
+            form.addEventListener('submit', function () {
+                input.value = tagify.value.map(function (x) { return x.value; }).join(',');
+            });
+        }
+
+        var phasesContainer = document.getElementById('phasesContainer');
+        var addPhaseBtn = document.getElementById('addPhaseBtn');
+        if (!phasesContainer || !addPhaseBtn) return;
+
+        addPhaseBtn.addEventListener('click', function () {
+            var index = phasesContainer.children.length + 1;
+            var phaseHtml = '<div class="phase-item card mb-2">' +
+                '<div class="card-body">' +
+                '<div class="d-flex justify-content-between mb-2">' +
+                '<h6 class="fw-bold phase-title mb-0">' + index + '. Aşama</h6>' +
+                '<button type="button" class="btn-close remove-phase" aria-label="Kaldır"></button>' +
+                '</div>' +
+                '<input name="PhaseNames" class="form-control modern-input mb-2" placeholder="Aşama Başlığı *" required />' +
+                '<textarea name="PhaseDescriptions" class="form-control modern-input" rows="2" placeholder="Açıklama..."></textarea>' +
+                '</div></div>';
+            phasesContainer.insertAdjacentHTML('beforeend', phaseHtml);
+        });
+
+        phasesContainer.addEventListener('click', function (e) {
+            if (e.target.classList.contains('remove-phase')) {
+                e.target.closest('.phase-item').remove();
+                updatePhaseNumbers();
+            }
+        });
+
+        function updatePhaseNumbers() {
+            phasesContainer.querySelectorAll('.phase-item').forEach(function (item, index) {
+                var title = item.querySelector('.phase-title');
+                if (title) title.textContent = (index + 1) + '. Aşama';
+            });
+        }
+    })();
+</script>

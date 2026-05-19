@@ -1,0 +1,51 @@
+@using ProjeHavuzu.Data.DTOs.ProjectDto
+@model ProjectCreateDto
+
+@{
+    var isEdit = ViewData["IsEdit"] as bool? ?? false;
+    var formId = ViewData["FormId"] as string ?? "projectForm";
+    var formController = ViewData["FormController"] as string ?? "Project";
+    var formAction = ViewData["FormAction"] as string ?? "Create";
+    var projectId = ViewData["ProjectId"] as Guid?;
+    var returnUrl = ViewData["ReturnUrl"] as string;
+    var cancelUrl = ViewData["CancelUrl"] as string ?? Url.Action("Index", "Home")!;
+    var pageTitle = ViewData["PageTitle"] as string ?? (isEdit ? "Proje Düzenle" : "Proje Ekle");
+    var pageDescription = ViewData["PageDescription"] as string ?? (isEdit
+        ? "Mevcut proje bilgilerini güncelleyebilirsiniz."
+        : "Yeni proje bilgilerini girerek sisteme proje ekleyebilirsiniz.");
+    var submitText = ViewData["SubmitText"] as string ?? (isEdit ? "Değişiklikleri Kaydet" : "Kaydet");
+
+    ViewData["CancelUrl"] = cancelUrl;
+    ViewData["SubmitText"] = submitText;
+}
+
+<link rel="stylesheet" href="~/css/project-form.css" asp-append-version="true" />
+
+<div class="project-form-page container-fluid px-4 mb-5">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="bi @(isEdit ? "bi-pencil-square" : "bi-folder-plus")"></i>
+            @pageTitle
+        </h1>
+        <p class="page-description">@pageDescription</p>
+    </div>
+
+    @if (isEdit)
+    {
+        <form asp-controller="@formController" asp-action="@formAction" asp-route-id="@projectId" method="post" id="@formId" class="modern-form">
+            @if (!string.IsNullOrEmpty(returnUrl))
+            {
+                <input type="hidden" name="returnUrl" value="@returnUrl" />
+            }
+            @Html.AntiForgeryToken()
+            @await Html.PartialAsync("_ProjectFormFields", Model)
+        </form>
+    }
+    else
+    {
+        <form asp-controller="@formController" asp-action="@formAction" method="post" id="@formId" class="modern-form">
+            @Html.AntiForgeryToken()
+            @await Html.PartialAsync("_ProjectFormFields", Model)
+        </form>
+    }
+</div>

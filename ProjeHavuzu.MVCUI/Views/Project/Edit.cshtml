@@ -1,280 +1,32 @@
 @using ProjeHavuzu.Data.DTOs.ProjectDto
-@using ProjeHavuzu.Data.Entites.Enums
 @model ProjectCreateDto
 
 @{
     ViewData["Title"] = "Proje Düzenle";
     var projectId = ViewBag.ProjectId ?? ViewContext.RouteData.Values["id"];
     var returnUrl = ViewBag.ReturnUrl as string ?? Url.Action("Index", "Project");
+
+    ViewData["IsEdit"] = true;
+    ViewData["FormId"] = "editProjectForm";
+    ViewData["FormController"] = "Project";
+    ViewData["FormAction"] = "Edit";
+    ViewData["ProjectId"] = projectId;
+    ViewData["ReturnUrl"] = returnUrl;
+    ViewData["CancelUrl"] = returnUrl;
+    ViewData["PageTitle"] = "Proje Düzenle";
+    ViewData["PageDescription"] = "Mevcut proje bilgilerini güncelleyebilirsiniz.";
+    ViewData["SubmitText"] = "Değişiklikleri Kaydet";
+    ViewData["LanguagesJson"] = Model.SelectedLanguagesJson ?? "";
 }
 
-<div class="container mt-4 mb-5">
-    <form asp-action="Edit" asp-route-id="@projectId" method="post" id="editProjectForm">
-        <input type="hidden" name="returnUrl" value="@returnUrl" />
-        
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h2 class="fw-bold mb-0">Proje Düzenle</h2>
-                <p class="text-dark">Proje bilgilerini güncelleyin.</p>
-            </div>
-            <div>
-                 <a href="@returnUrl" class="btn btn-outline-secondary me-2">İptal</a>
-                 <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save"></i> Değişiklikleri Kaydet</button>
-            </div>
-        </div>
-        
-        <div asp-validation-summary="All" class="text-danger mb-3"></div>
-
-        @if (TempData["ErrorMessage"] != null)
-        {
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="bi bi-exclamation-triangle-fill"></i> @TempData["ErrorMessage"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        }
-
-        <div class="row g-4">
-            <!-- Sol Kolon: Temel Bilgiler & Roadmap -->
-            <div class="col-lg-8">
-                
-                <!-- 1. Proje Temel Bilgileri -->
-                <div class="card shadow-sm mb-4 border-0">
-                    <div class="card-header bg-white border-bottom py-3">
-                        <h5 class="mb-0 fw-bold text-primary"><i class="bi bi-info-circle me-2"></i>Proje Temel Bilgileri</h5>
-                    </div>
-                    <div class="card-body p-4">
-                        <div class="mb-3">
-                            <label asp-for="ProjectTitle" class="form-label fw-bold">Proje Başlığı <span class="text-danger">*</span></label>
-                            <input asp-for="ProjectTitle" class="form-control form-control-lg" placeholder="Örn: Akıllı Ev Otomasyon Sistemi" />
-                            <span asp-validation-for="ProjectTitle" class="text-danger"></span>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="CategoryId" class="form-label fw-bold">Kategori <span class="text-danger">*</span></label>
-                                <select asp-for="CategoryId" class="form-select">
-                                    <option value="">Kategori Seçiniz...</option>
-                                    @if (Model.Categories != null)
-                                    {
-                                        foreach (var category in Model.Categories)
-                                        {
-                                            <option value="@category.Id">@category.CategoryName</option>
-                                        }
-                                    }
-                                </select>
-                                <span asp-validation-for="CategoryId" class="text-danger"></span>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="ConsultantId" class="form-label fw-bold">Danışman Seçimi</label>
-                                <select asp-for="ConsultantId" asp-items="@(new SelectList(Model.Academicians ?? new List<ProjeHavuzu.Data.DTOs.AccountDto.UserListDto>(), "Id", "FullName"))" class="form-select">
-                                    <option value="">Danışman Seçiniz...</option>
-                                </select>
-                                <span asp-validation-for="ConsultantId" class="text-danger"></span>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="ProjectArea" class="form-label fw-bold">Alan / Domain</label>
-                                <input asp-for="ProjectArea" class="form-control" placeholder="Örn: Sağlık, Finans, E-Ticaret" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 2. Proje Yol Haritası (Roadmap) -->
-                <div class="card shadow-sm border-0">
-                    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0 fw-bold text-primary"><i class="bi bi-map me-2"></i>Proje Yol Haritası</h5>
-                        <button type="button" class="btn btn-sm btn-outline-primary" id="addPhaseBtn"><i class="bi bi-plus-lg"></i> Aşama Ekle</button>
-                    </div>
-                    <div class="card-body p-4">
-                        <p class="text-dark small">Projenizi yönetilebilir parçalara bölün (Fazlar).</p>
-                        
-                        <div id="phasesContainer">
-                            @if (Model.ExistingPhases != null && Model.ExistingPhases.Any())
-                            {
-                                int phaseIndex = 0;
-                                foreach (var phase in Model.ExistingPhases.OrderBy(p => p.Order))
-                                {
-                                    phaseIndex++;
-                                    <div class="phase-item card mb-3 bg-light border">
-                                        <div class="card-body">
-                                            <div class="d-flex justify-content-between mb-2">
-                                                <h6 class="fw-bold phase-title">@phaseIndex. Aşama</h6>
-                                                <button type="button" class="btn-close remove-phase" aria-label="Kaldır"></button>
-                                            </div>
-                                            <div class="mb-2">
-                                                <input name="PhaseNames" class="form-control mb-2" placeholder="Aşama Başlığı *" value="@phase.PhaseName" />
-                                                <textarea name="PhaseDescriptions" class="form-control" rows="2" placeholder="Bu aşamada yapılacaklar...">@phase.Description</textarea>
-                                            </div>
-                                        </div>
-                                    </div>
-                                }
-                            }
-                            else
-                            {
-                                <!-- Varsayılan İlk Faz -->
-                                <div class="phase-item card mb-3 bg-light border">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between mb-2">
-                                            <h6 class="fw-bold phase-title">1. Aşama</h6>
-                                            <button type="button" class="btn-close remove-phase" aria-label="Kaldır"></button>
-                                        </div>
-                                        <div class="mb-2">
-                                            <input name="PhaseNames" class="form-control mb-2" placeholder="Aşama Başlığı (Örn: Veritabanı Tasarımı) *" />
-                                            <textarea name="PhaseDescriptions" class="form-control" rows="2" placeholder="Bu aşamada yapılacaklar..."></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Sağ Kolon: Teknik Detaylar & Kaynaklar -->
-            <div class="col-lg-4">
-                
-                <!-- 3. Teknik Detaylar -->
-                <div class="card shadow-sm mb-4 border-0">
-                    <div class="card-header bg-white border-bottom py-3">
-                        <h5 class="mb-0 fw-bold text-primary"><i class="bi bi-cpu me-2"></i>Teknik Detaylar</h5>
-                    </div>
-                    <div class="card-body p-4">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Programlama Dilleri</label>
-                            <input asp-for="SelectedLanguagesJson" id="tagsInput" class="form-control" placeholder="Yazıp Enter'a basın..." />
-                            <div class="form-text">Örn: C#, Python, React</div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="DifficultyLevel" class="form-label fw-bold">Zorluk Seviyesi</label>
-                             <select asp-for="DifficultyLevel" asp-items="Html.GetEnumSelectList<DifficultStatus>()" class="form-select">
-                                <option value="">Seçiniz</option>
-                            </select>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Zaman Çizelgesi</label>
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <small class="text-dark d-block">Başlangıç</small>
-                                    <input asp-for="StartDate" type="date" class="form-control form-control-sm" />
-                                </div>
-                                <div class="col-6">
-                                    <small class="text-dark d-block">Bitiş</small>
-                                    <input asp-for="EndDate" type="date" class="form-control form-control-sm" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 4. Kaynaklar ve Kodlar -->
-                <div class="card shadow-sm border-0">
-                    <div class="card-header bg-white border-bottom py-3">
-                        <h5 class="mb-0 fw-bold text-primary"><i class="bi bi-code-slash me-2"></i>Kaynaklar</h5>
-                    </div>
-                    <div class="card-body p-4">
-                        <div class="mb-3">
-                            <label asp-for="ProjectLink" class="form-label fw-bold">Repository Linki</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-github"></i></span>
-                                <input asp-for="ProjectLink" class="form-control" placeholder="https://github.com/..." />
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="InitialCode" class="form-label fw-bold">Başlangıç Kodu / Notlar</label>
-                            <textarea asp-for="InitialCode" class="form-control" rows="6" placeholder="Öğrenciler için başlangıç ipuçları veya kod parçacıkları..."></textarea>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label asp-for="Description" class="form-label fw-bold">Genel Açıklama <span class="text-danger">*</span></label>
-                            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
-                            <span asp-validation-for="Description" class="text-danger"></span>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </form>
-</div>
+@await Html.PartialAsync("_ProjectFormBody", Model)
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    
-    <!-- Tagify for Tags Input -->
-    <script src="https://cdn.jsdelivr.net/npm/@@yaireo/tagify"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@@yaireo/tagify/dist/tagify.polyfills.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/@@yaireo/tagify/dist/tagify.css" rel="stylesheet" type="text/css" />
-
-    <script>
-        // Tagify Initialization
-        var input = document.querySelector('input[name="SelectedLanguagesJson"]');
-        var tagify = new Tagify(input, {
-            whitelist: ["C#", "Java", "Python", "JavaScript", "TypeScript", "HTML", "CSS", "SQL", "React", "Angular", "Vue", "Kotlin", "Swift", "PHP", "Go", "Ruby"],
-            maxTags: 10,
-            dropdown: {
-                maxItems: 20,           
-                classname: "tags-look", 
-                enabled: 0,             
-                closeOnSelect: false 
-            }
-        });
-
-        // Mevcut dilleri yükle
-        var existingLanguages = '@Html.Raw(Model.SelectedLanguagesJson ?? "")';
-        if (existingLanguages) {
-            var langs = existingLanguages.split(',').filter(x => x.trim() !== '');
-            langs.forEach(lang => tagify.addTags(lang.trim()));
-        }
-        
-        // Tagify verisini submit öncesi düzeltme
-        document.getElementById('editProjectForm').addEventListener('submit', function(e) {
-             var tags = tagify.value.map(x => x.value).join(',');
-             input.value = tags;
-        });
-
-        // Dynamic Phases
-        const phasesContainer = document.getElementById('phasesContainer');
-        const addPhaseBtn = document.getElementById('addPhaseBtn');
-
-        addPhaseBtn.addEventListener('click', () => {
-            const index = phasesContainer.children.length + 1;
-            const phaseHtml = `
-                <div class="phase-item card mb-3 bg-light border">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between mb-2">
-                            <h6 class="fw-bold phase-title">${index}. Aşama</h6>
-                            <button type="button" class="btn-close remove-phase" aria-label="Kaldır"></button>
-                        </div>
-                        <div class="mb-2">
-                            <input name="PhaseNames" class="form-control mb-2" placeholder="Aşama Başlığı *" required />
-                            <textarea name="PhaseDescriptions" class="form-control" rows="2" placeholder="Açıklama..."></textarea>
-                        </div>
-                    </div>
-                </div>
-            `;
-            phasesContainer.insertAdjacentHTML('beforeend', phaseHtml);
-        });
-
-        phasesContainer.addEventListener('click', (e) => {
-            if (e.target.classList.contains('remove-phase')) {
-                e.target.closest('.phase-item').remove();
-                // Numaraları güncelle
-                updatePhaseNumbers();
-            }
-        });
-
-        function updatePhaseNumbers() {
-            const items = phasesContainer.querySelectorAll('.phase-item');
-            items.forEach((item, index) => {
-                item.querySelector('.phase-title').textContent = `${index + 1}. Aşama`;
-            });
-        }
-    </script>
+    @{
+        ViewData["FormId"] = "editProjectForm";
+        ViewData["IsEdit"] = true;
+        ViewData["LanguagesJson"] = Model.SelectedLanguagesJson ?? "";
+    }
+    @await Html.PartialAsync("_ProjectFormScripts")
 }

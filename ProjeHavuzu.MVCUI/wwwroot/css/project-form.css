@@ -1,0 +1,249 @@
+/* =============================================================
+   Project Form — Admin / Teacher / Student panel uyumu
+   Renk paleti: #003366, #004080 (datatable-theme ile uyumlu)
+   ============================================================= */
+
+.project-form-page {
+    font-family: 'Poppins', sans-serif;
+    max-width: 1200px;
+}
+
+.project-form-page .page-header {
+    margin-bottom: 1.5rem;
+}
+
+.project-form-page .page-title {
+    color: #003366;
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.project-form-page .page-description {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin-bottom: 0;
+}
+
+.project-form-page .form-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 51, 102, 0.08);
+    overflow: hidden;
+    margin-bottom: 1.25rem;
+    background: #fff;
+}
+
+.project-form-page .form-card-header {
+    background: linear-gradient(135deg, #003366 0%, #004080 100%);
+    color: #fff;
+    padding: 0.85rem 1.25rem;
+    border-bottom: none;
+}
+
+.project-form-page .form-card-header h5 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.project-form-page .form-card-body {
+    padding: 1.25rem 1.5rem;
+}
+
+.project-form-page .form-section-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #94a3b8;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid #f1f3f7;
+}
+
+.project-form-page .form-group {
+    margin-bottom: 0;
+}
+
+.project-form-page .form-label {
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 0.35rem;
+}
+
+.project-form-page .form-label .required-mark {
+    color: #dc2626;
+}
+
+.project-form-page .modern-input,
+.project-form-page .form-control,
+.project-form-page .form-select {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.55rem 0.85rem;
+    font-size: 0.875rem;
+    color: #1e293b;
+    min-height: 42px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.project-form-page .form-control:focus,
+.project-form-page .form-select:focus {
+    border-color: #004080;
+    box-shadow: 0 0 0 3px rgba(0, 64, 128, 0.12);
+}
+
+.project-form-page textarea.form-control {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.project-form-page textarea.form-control.description-field {
+    min-height: 140px;
+}
+
+.project-form-page .form-text {
+    font-size: 0.78rem;
+    color: #94a3b8;
+}
+
+.project-form-page .field-validation-error,
+.project-form-page .text-danger:not(.required-mark) {
+    font-size: 0.78rem;
+    display: block;
+    margin-top: 0.25rem;
+}
+
+/* Hata yokken boş kutu gösterme */
+.project-form-page .validation-summary-valid {
+    display: none;
+}
+
+.project-form-page .validation-summary-errors {
+    font-size: 0.85rem;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.project-form-page .validation-summary-errors:empty {
+    display: none;
+}
+
+.project-form-page .form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: #f8fafc;
+    border-top: 1px solid #e5e9f0;
+    border-radius: 0 0 12px 12px;
+    margin-top: -1px;
+}
+
+.project-form-page .btn-form-primary {
+    background: linear-gradient(135deg, #003366 0%, #004080 100%);
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    padding: 0.55rem 1.5rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.project-form-page .btn-form-primary:hover {
+    opacity: 0.92;
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.project-form-page .btn-form-secondary {
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    font-weight: 500;
+    padding: 0.55rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+}
+
+.project-form-page .btn-form-secondary:hover {
+    background: #f1f5f9;
+    color: #334155;
+    border-color: #94a3b8;
+}
+
+.project-form-page .btn-form-outline {
+    border: 1px solid #004080;
+    color: #004080;
+    font-weight: 500;
+    padding: 0.4rem 0.85rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    background: #fff;
+}
+
+.project-form-page .btn-form-outline:hover {
+    background: #e8f0fe;
+    color: #003366;
+}
+
+/* Yol haritası — faz kartları */
+.project-form-page .phase-item {
+    border: 1px solid #e5e9f0 !important;
+    border-radius: 10px !important;
+    background: #fafbfe !important;
+    margin-bottom: 0.75rem;
+}
+
+.project-form-page .phase-item .card-body {
+    padding: 1rem;
+}
+
+.project-form-page .phase-item .phase-title {
+    color: #003366;
+    font-size: 0.88rem;
+}
+
+/* Tagify uyumu */
+.project-form-page .tagify {
+    border-radius: 8px;
+    border-color: #e2e8f0;
+    min-height: 42px;
+}
+
+.project-form-page .input-group-text {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+    border-radius: 8px 0 0 8px;
+    color: #64748b;
+}
+
+.project-form-page .input-group .form-control {
+    border-radius: 0 8px 8px 0;
+}
+
+@media (max-width: 767.98px) {
+    .project-form-page .form-actions {
+        flex-direction: column-reverse;
+    }
+
+    .project-form-page .form-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .project-form-page .page-title {
+        font-size: 1.15rem;
+    }
+}

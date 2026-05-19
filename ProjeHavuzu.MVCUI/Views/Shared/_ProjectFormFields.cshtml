@@ -1,0 +1,214 @@
+@using ProjeHavuzu.Data.DTOs.ProjectDto
+@using ProjeHavuzu.Data.Entites.Enums
+@model ProjectCreateDto
+
+@{
+    var isEdit = ViewData["IsEdit"] as bool? ?? false;
+    var cancelUrl = ViewData["CancelUrl"] as string ?? Url.Action("Index", "Home")!;
+    var submitText = ViewData["SubmitText"] as string ?? (isEdit ? "Değişiklikleri Kaydet" : "Kaydet");
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-3" role="alert" style="border-left: 4px solid #dc2626 !important;">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-3" role="alert" style="border-left: 4px solid #059669 !important;">
+        <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div asp-validation-summary="All" class="text-danger mb-3" role="alert"></div>
+
+<div class="card form-card">
+    <div class="form-card-header">
+        <h5><i class="bi bi-info-circle me-2"></i>Proje Bilgileri</h5>
+    </div>
+    <div class="form-card-body">
+        <div class="row g-3 form-grid">
+            <div class="col-12">
+                <div class="form-group">
+                    <label asp-for="ProjectTitle" class="form-label">Proje Adı <span class="required-mark">*</span></label>
+                    <input asp-for="ProjectTitle" class="form-control modern-input" placeholder="Örn: Akıllı Ev Otomasyon Sistemi" />
+                    <span asp-validation-for="ProjectTitle" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label asp-for="CategoryId" class="form-label">Kategori <span class="required-mark">*</span></label>
+                    <select asp-for="CategoryId" class="form-select modern-input">
+                        <option value="">Kategori Seçiniz</option>
+                        @if (Model.Categories != null)
+                        {
+                            foreach (var category in Model.Categories)
+                            {
+                                <option value="@category.Id">@category.CategoryName</option>
+                            }
+                        }
+                    </select>
+                    <span asp-validation-for="CategoryId" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label asp-for="ConsultantId" class="form-label">
+                        Danışman @if (!isEdit) { <span class="required-mark">*</span> }
+                    </label>
+                    <select asp-for="ConsultantId" asp-items="@(new SelectList(Model.Academicians ?? new List<ProjeHavuzu.Data.DTOs.AccountDto.UserListDto>(), "Id", "FullName"))" class="form-select modern-input">
+                        <option value="">Danışman Seçiniz</option>
+                    </select>
+                    <span asp-validation-for="ConsultantId" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label asp-for="DifficultyLevel" class="form-label">Proje Durumu</label>
+                    <select asp-for="DifficultyLevel" asp-items="Html.GetEnumSelectList<DifficultStatus>()" class="form-select modern-input">
+                        <option value="">Seçiniz</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label asp-for="ProjectArea" class="form-label">Alan / Domain</label>
+                    <input asp-for="ProjectArea" class="form-control modern-input" placeholder="Örn: Sağlık, Finans, E-Ticaret" />
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label asp-for="StartDate" class="form-label">Başlangıç Tarihi</label>
+                    <input asp-for="StartDate" type="date" class="form-control modern-input" />
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label asp-for="EndDate" class="form-label">Bitiş Tarihi</label>
+                    <input asp-for="EndDate" type="date" class="form-control modern-input" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card form-card">
+    <div class="form-card-header">
+        <h5><i class="bi bi-card-text me-2"></i>Açıklama</h5>
+    </div>
+    <div class="form-card-body">
+        <div class="form-group">
+            <label asp-for="Description" class="form-label">Proje Açıklaması <span class="required-mark">*</span></label>
+            <textarea asp-for="Description" class="form-control modern-input description-field" rows="5" placeholder="Projenin amacı, kapsamı ve hedeflerini kısaca açıklayın..."></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+
+<div class="card form-card">
+    <div class="form-card-header">
+        <h5><i class="bi bi-cpu me-2"></i>Teknik Detaylar</h5>
+    </div>
+    <div class="form-card-body">
+        <div class="row g-3 form-grid">
+            <div class="col-12">
+                <div class="form-group">
+                    <label class="form-label">Programlama Dilleri</label>
+                    <input asp-for="SelectedLanguagesJson" id="tagsInput" class="form-control modern-input" placeholder="Yazıp Enter'a basın..." />
+                    <div class="form-text">Örn: C#, Python, React</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card form-card">
+    <div class="form-card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h5 class="mb-0">
+            <i class="bi bi-map me-2"></i>Proje Yol Haritası
+            @if (!isEdit) { <span class="required-mark">*</span> }
+        </h5>
+        <button type="button" class="btn btn-form-outline btn-sm" id="addPhaseBtn">
+            <i class="bi bi-plus-lg"></i> Aşama Ekle
+        </button>
+    </div>
+    <div class="form-card-body">
+        <p class="form-text mb-3">Projenizi yönetilebilir aşamalara bölün.</p>
+        <div id="phasesContainer">
+            @if (isEdit && Model.ExistingPhases != null && Model.ExistingPhases.Any())
+            {
+                int phaseIndex = 0;
+                foreach (var phase in Model.ExistingPhases.OrderBy(p => p.Order))
+                {
+                    phaseIndex++;
+                    <div class="phase-item card mb-2">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <h6 class="fw-bold phase-title mb-0">@phaseIndex. Aşama</h6>
+                                <button type="button" class="btn-close remove-phase" aria-label="Kaldır"></button>
+                            </div>
+                            <input name="PhaseNames" class="form-control modern-input mb-2" placeholder="Aşama Başlığı *" value="@phase.PhaseName" />
+                            <textarea name="PhaseDescriptions" class="form-control modern-input" rows="2" placeholder="Bu aşamada yapılacaklar...">@phase.Description</textarea>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="phase-item card mb-2">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <h6 class="fw-bold phase-title mb-0">1. Aşama</h6>
+                            <button type="button" class="btn-close remove-phase" aria-label="Kaldır"></button>
+                        </div>
+                        <input name="PhaseNames" class="form-control modern-input mb-2" placeholder="Aşama Başlığı (Örn: Veritabanı Tasarımı) *" @(isEdit ? "" : "required") />
+                        <textarea name="PhaseDescriptions" class="form-control modern-input" rows="2" placeholder="Bu aşamada yapılacaklar..."></textarea>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="card form-card mb-0">
+    <div class="form-card-header">
+        <h5><i class="bi bi-link-45deg me-2"></i>Kaynaklar</h5>
+    </div>
+    <div class="form-card-body">
+        <div class="row g-3 form-grid">
+            <div class="col-12">
+                <div class="form-group">
+                    <label asp-for="ProjectLink" class="form-label">Repository Linki</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-github"></i></span>
+                        <input asp-for="ProjectLink" class="form-control modern-input" placeholder="https://github.com/..." />
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="form-group">
+                    <label asp-for="InitialCode" class="form-label">Başlangıç Kodu / Notlar</label>
+                    <textarea asp-for="InitialCode" class="form-control modern-input" rows="4" placeholder="Öğrenciler için başlangıç ipuçları veya kod parçacıkları..."></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="form-actions">
+        <a href="@cancelUrl" class="btn btn-form-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Geri Dön
+        </a>
+        <button type="submit" class="btn btn-form-primary">
+            <i class="bi bi-check-lg me-1"></i> @submitText
+        </button>
+    </div>
+</div>
