@@ -1,4 +1,4 @@
-# Proje Takip Sistemi (ProjeHavuzu)
+# Proje Takip Sistemi
 
 Malatya Turgut Özal Üniversitesi öğrenci proje süreçlerini yönetmek için geliştirilmiş web tabanlı bir **ASP.NET Core MVC** uygulamasıdır. Öğrenciler proje oluşturur, danışman onayı alır; akademisyenler ve yöneticiler süreci takip eder.
 
