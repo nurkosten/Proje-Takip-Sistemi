@@ -1,121 +1,38 @@
 @using ProjeHavuzu.Data.DTOs.ProjectDto
-@model ProjectListDto
+@model ProjectDetailDto
 
 @{
-    ViewData["Title"] = Model.ProjectTitle;
+    ViewData["Title"] = "Proje Detayları";
     var returnUrl = ViewBag.ReturnUrl as string ?? Url.Action("ProjectPool", "Student");
+    ViewData["EnablePhaseToggle"] = false;
+    ViewData["ShowStudentsSection"] = false;
 }
 
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">
-                        <i class="bi bi-folder-fill"></i> @Model.ProjectTitle
-                    </h4>
-                </div>
-                <div class="card-body">
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <div class="d-flex align-items-center mb-3">
-                                <i class="bi bi-tag-fill text-info fs-4 me-2"></i>
-                                <div>
-                                    <small class="text-primary fw-bold d-block">Kategori</small>
-                                    <span class="badge bg-info fs-6">@Model.CategoryName</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="d-flex align-items-center mb-3">
-                                <i class="bi bi-speedometer2 text-warning fs-4 me-2"></i>
-                                <div>
-                                    <small class="text-primary fw-bold d-block">Zorluk Seviyesi</small>
-                                    @switch (Model.DifficultyLevel.ToString())
-                                    {
-                                        case "Easy":
-                                            <span class="badge bg-success fs-6">Kolay</span>
-                                            break;
-                                        case "Medium":
-                                            <span class="badge bg-warning text-dark fs-6">Orta</span>
-                                            break;
-                                        case "Hard":
-                                            <span class="badge bg-danger fs-6">Zor</span>
-                                            break;
-                                        default:
-                                            <span class="badge bg-secondary fs-6">@Model.DifficultyLevel</span>
-                                            break;
-                                    }
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+<link rel="stylesheet" href="~/css/project-details.css" asp-append-version="true" />
 
-                    <div class="row mb-4">
-                        <div class="col-md-4">
-                            <div class="d-flex align-items-center mb-3">
-                                <i class="bi bi-clock-fill text-secondary fs-4 me-2"></i>
-                                <div>
-                                    <small class="text-primary fw-bold d-block">Tarih Aralığı</small>
-                                    <strong>@Model.StartDate.ToShortDateString() - @Model.EndDate.ToShortDateString()</strong>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="d-flex align-items-center mb-3">
-                                <i class="bi bi-person-fill text-primary fs-4 me-2"></i>
-                                <div>
-                                    <small class="text-primary fw-bold d-block">Ekleyen</small>
-                                    <strong>@Model.CreatedByFullName</strong>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="d-flex align-items-center mb-3">
-                                <i class="bi bi-person-badge text-info fs-4 me-2"></i>
-                                <div>
-                                    <small class="text-primary fw-bold d-block">Danışman</small>
-                                    <strong>@(string.IsNullOrWhiteSpace(Model.ConsultantFullName) ? "Danışman Atanmadı" : Model.ConsultantFullName)</strong>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    @if (!string.IsNullOrEmpty(Model.ProjectLink))
-                    {
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <div class="d-flex align-items-center">
-                                    <i class="bi bi-link-45deg text-success fs-4 me-2"></i>
-                                    <div>
-                                        <small class="text-primary fw-bold d-block">Proje Linki</small>
-                                        <a href="@Model.ProjectLink" target="_blank" class="btn btn-outline-success btn-sm">
-                                            <i class="bi bi-box-arrow-up-right"></i> Projeyi Görüntüle
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    }
-
-                    <hr />
-
-                    <h5 class="mb-3"><i class="bi bi-file-text"></i> Proje Açıklaması</h5>
-                    <div class="bg-light p-3 rounded">
-                        <p class="mb-0" style="white-space: pre-wrap;">@Model.Description</p>
-                    </div>
-                </div>
-                <div class="card-footer bg-white">
-                    <div class="d-flex justify-content-between">
-                        <a href="@returnUrl" class="btn btn-secondary">
-                            <i class="bi bi-arrow-left"></i> Geri Dön
-                        </a>
-                        <a asp-controller="Student" asp-action="MyProjects" class="btn btn-primary">
-                            <i class="bi bi-folder-check"></i> Projelerime Git
-                        </a>
-                    </div>
+<div class="project-details-page container-fluid px-4 mb-5">
+    <div class="details-header">
+        <div class="row align-items-start g-3">
+            <div class="col-lg-7">
+                <h1 class="details-title">
+                    <i class="bi bi-folder2-open"></i> Proje Detayları
+                </h1>
+                <p class="details-description">
+                    Seçilen projeye ait temel bilgiler, danışman bilgileri ve proje durumu aşağıda listelenmiştir.
+                </p>
+            </div>
+            <div class="col-lg-5">
+                <div class="details-actions">
+                    <a href="@returnUrl" class="btn btn-details-outline">
+                        <i class="bi bi-arrow-left me-1"></i> Geri Dön
+                    </a>
+                    <a asp-controller="Student" asp-action="MyProjects" class="btn btn-details-primary">
+                        <i class="bi bi-folder-check me-1"></i> Projelerime Git
+                    </a>
                 </div>
             </div>
         </div>
     </div>
+
+    @await Html.PartialAsync("_ProjectDetailsContent", Model)
 </div>

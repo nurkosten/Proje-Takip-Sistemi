@@ -118,8 +118,8 @@
                         "searchable": false,
                         "render": function (data) {
                             return '<div class="btn-group" role="group">' +
-                                '<a href="/Project/Details/' + data + '" class="btn btn-sm btn-info text-white" title="İncele"><i class="bi bi-eye"></i></a>' +
-                                '<a href="/Project/Edit/' + data + '" class="btn btn-sm btn-primary" title="Düzenle"><i class="bi bi-pencil-fill"></i></a>' +
+                                '<a href="/Project/Details/' + data + '?returnUrl=' + encodeURIComponent('/Project/Index') + '" class="btn btn-sm btn-info text-white" title="İncele"><i class="bi bi-eye"></i></a>' +
+                                '<a href="/Project/Edit/' + data + '?returnUrl=' + encodeURIComponent('/Project/Index') + '" class="btn btn-sm btn-primary" title="Düzenle"><i class="bi bi-pencil-fill"></i></a>' +
                                 '<a href="/Teacher/AssignStudentsToProject?projectId=' + data + '" class="btn btn-sm btn-success" title="Öğrenci Ata"><i class="bi bi-person-plus-fill"></i></a>' +
                                 '<a href="/Teacher/ViewProjectStudents?projectId=' + data + '" class="btn btn-sm btn-info" title="Atanmış Öğrenciler"><i class="bi bi-people-fill"></i></a>' +
                                 '<a href="/Project/Delete/' + data + '" class="btn btn-sm btn-danger" onclick="return confirm(\'Bu projeyi çöp kutusuna taşımak istediğinize emin misiniz?\');" title="Sil"><i class="bi bi-trash-fill"></i></a>' +

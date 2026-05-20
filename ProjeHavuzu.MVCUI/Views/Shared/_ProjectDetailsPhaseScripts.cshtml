@@ -1,0 +1,28 @@
+<script>
+    $(document).ready(function () {
+        $('.phase-checkbox').on('change', function () {
+            var checkbox = $(this);
+            var phaseId = checkbox.data('phase-id');
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            $.ajax({
+                url: '@Url.Action("TogglePhaseCompletion", "Project")',
+                type: 'POST',
+                data: { phaseId: phaseId },
+                headers: { 'RequestVerificationToken': token },
+                success: function (result) {
+                    if (result.success) {
+                        setTimeout(function () { location.reload(); }, 300);
+                    } else {
+                        alert('Hata: ' + (result.message || 'Bilinmeyen hata'));
+                        checkbox.prop('checked', !checkbox.prop('checked'));
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert('İstek başarısız oldu.');
+                    checkbox.prop('checked', !checkbox.prop('checked'));
+                }
+            });
+        });
+    });
+</script>

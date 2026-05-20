@@ -103,7 +103,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
 
             if (User.IsInRole("Admin"))
             {
-                return RedirectToAction("Details", "Project", new { id });
+                return RedirectToAction("Details", "Project", new { id, returnUrl });
             }
 
             return RedirectToAction("ProjectDetails", "Student", new { id, returnUrl = returnUrl ?? "/Home/Index" });

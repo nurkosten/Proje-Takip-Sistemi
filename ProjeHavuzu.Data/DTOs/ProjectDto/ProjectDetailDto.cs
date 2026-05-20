@@ -1,4 +1,3 @@
-using ProjeHavuzu.Data.Entites;
 using ProjeHavuzu.Data.Entites.Enums;
 using System;
 using System.Collections.Generic;
@@ -23,6 +22,7 @@ namespace ProjeHavuzu.Data.DTOs.ProjectDto
         public string? InitialCode { get; set; }
         public bool IsActive { get; set; }
         public bool IsDeleted { get; set; }
+        public ProjectApprovalStatus ApprovalStatus { get; set; }
 
         // Aşamalar
         public List<ProjectPhaseDto> Phases { get; set; } = new();

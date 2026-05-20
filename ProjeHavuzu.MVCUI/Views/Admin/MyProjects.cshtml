@@ -81,7 +81,7 @@
                                     </td>
                                     <td>%@project.CompletionPercentage</td>
                                     <td class="text-center">
-                                        <a asp-controller="Project" asp-action="Details" asp-route-id="@project.Id" class="btn btn-sm btn-primary">Detay</a>
+                                        <a asp-controller="Project" asp-action="Details" asp-route-id="@project.Id" asp-route-returnUrl="/Admin/MyProjects" class="btn btn-sm btn-primary">Detay</a>
                                         <a asp-controller="Project" asp-action="Edit" asp-route-id="@project.Id" asp-route-returnUrl="/Admin/MyProjects" class="btn btn-sm btn-outline-secondary">Düzenle</a>
                                     </td>
                                 </tr>

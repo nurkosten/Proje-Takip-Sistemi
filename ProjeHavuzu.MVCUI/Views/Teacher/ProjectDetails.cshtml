@@ -1,321 +1,50 @@
 @using ProjeHavuzu.Data.DTOs.ProjectDto
-@using ProjeHavuzu.Data.Entites.Enums
 @model ProjectDetailDto
 
 @{
-    ViewData["Title"] = "Proje Detayı";
-    var progressColor = Model.CompletionPercentage < 30 ? "bg-danger" : 
-                        Model.CompletionPercentage < 70 ? "bg-warning" : "bg-success";
+    ViewData["Title"] = "Proje Detayları";
     var returnUrl = ViewBag.ReturnUrl as string ?? Url.Action("AllProjects", "Teacher");
+    ViewData["EnablePhaseToggle"] = true;
+    ViewData["ShowStudentsSection"] = true;
 }
 
-<div style="display:none;">
-    @Html.AntiForgeryToken()
-</div>
+<link rel="stylesheet" href="~/css/project-details.css" asp-append-version="true" />
 
-<div class="container mt-4 mb-5">
-    <div class="row">
-        <div class="col-lg-8">
-            <!-- Proje Başlık Kartı -->
-            <div class="card shadow-sm mb-4 border-0">
-                <div class="card-header bg-gradient d-flex justify-content-between align-items-center py-3" 
-                     style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                    <div class="text-dark">
-                        <h3 class="mb-1 fw-bold">
-                            <i class="bi bi-folder-open me-2"></i>@Model.ProjectTitle
-                        </h3>
-                        <small class="opacity-75">
-                            <i class="bi bi-calendar me-1"></i>@Model.StartDate.ToString("dd MMM yyyy") - @Model.EndDate.ToString("dd MMM yyyy")
-                        </small>
-                    </div>
-                    <div>
-                        @if (Model.DifficultyLevel == DifficultStatus.Kolay)
-                        {
-                            <span class="badge bg-success fs-6 px-3 py-2">Kolay</span>
-                        }
-                        else if (Model.DifficultyLevel == DifficultStatus.Orta)
-                        {
-                            <span class="badge bg-warning text-dark fs-6 px-3 py-2">Orta</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-danger fs-6 px-3 py-2">Zor</span>
-                        }
-                    </div>
-                </div>
-                
-                <div class="card-body p-4">
-                    <!-- İlerleme Çubuğu -->
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="mb-0 fw-bold text-primary">
-                                <i class="bi bi-graph-up me-2"></i>Proje İlerlemesi
-                            </h6>
-                            <span class="badge @progressColor fs-6">
-                                %@Model.CompletionPercentage
-                            </span>
-                        </div>
-                        <div class="progress" style="height: 25px; border-radius: 15px;">
-                            <div class="progress-bar @progressColor progress-bar-striped progress-bar-animated" 
-                                 role="progressbar" 
-                                 style="width: @Model.CompletionPercentage%;" 
-                                 aria-valuenow="@Model.CompletionPercentage" 
-                                 aria-valuemin="0" 
-                                 aria-valuemax="100">
-                                @Model.CompletedPhasesCount / @Model.TotalPhasesCount Aşama
-                            </div>
-                        </div>
-                    </div>
+<div style="display:none;">@Html.AntiForgeryToken()</div>
 
-                    <!-- Açıklama -->
-                    <div class="mb-4">
-                        <h5 class="text-dark mb-2">
-                            <i class="bi bi-file-text me-2"></i>Açıklama
-                        </h5>
-                        <p class="lead text-dark">@(string.IsNullOrEmpty(Model.Description) ? "Açıklama bulunmuyor." : Model.Description)</p>
-                    </div>
-
-                    <hr />
-
-                    <!-- Bilgi Satırları -->
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-tag fs-4 text-primary me-3"></i>
-                                <div>
-                                    <small class="text-dark d-block">Kategori</small>
-                                    <strong class="text-dark">@Model.CategoryName</strong>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-person fs-4 text-success me-3"></i>
-                                <div>
-                                    <small class="text-dark d-block">Oluşturan</small>
-                                    <strong class="text-dark">@(Model.CreatedByFullName ?? "-")</strong>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-person-badge fs-4 text-info me-3"></i>
-                                <div>
-                                    <small class="text-dark d-block">Danışman</small>
-                                    <strong class="text-dark">@(Model.ConsultantFullName ?? "Atanmadı")</strong>
-                                </div>
-                            </div>
-                        </div>
-                        @if (!string.IsNullOrEmpty(Model.ProjectArea))
-                        {
-                            <div class="col-md-6 mb-3">
-                                <div class="d-flex align-items-center">
-                                    <i class="bi bi-geo-alt fs-4 text-warning me-3"></i>
-                                    <div>
-                                        <small class="text-dark d-block">Alan / Domain</small>
-                                        <strong class="text-dark">@Model.ProjectArea</strong>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                    </div>
-
-                    @if (!string.IsNullOrEmpty(Model.ProjectLink))
-                    {
-                        <div class="row">
-                            <div class="col-12 mb-3">
-                                <div class="d-flex align-items-center">
-                                    <i class="bi bi-link-45deg fs-4 text-primary me-3"></i>
-                                    <div>
-                                        <small class="text-dark d-block">Proje Linki</small>
-                                        <a href="@Model.ProjectLink" target="_blank" class="fw-bold">
-                                            Projeyi Görüntüle <i class="bi bi-box-arrow-up-right"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    }
-
-                    <!-- Diller -->
-                    @if (Model.Languages != null && Model.Languages.Any())
-                    {
-                        <div class="mt-3">
-                            <h6 class="text-dark mb-2">
-                                <i class="bi bi-code-slash me-2"></i>Programlama Dilleri
-                            </h6>
-                            <div>
-                                @foreach (var lang in Model.Languages)
-                                {
-                                    <span class="badge bg-secondary me-1 mb-1">@lang</span>
-                                }
-                            </div>
-                        </div>
-                    }
-                </div>
-
-
-
-
-
-
-
-                <div class="card-footer d-flex justify-content-between bg-white border-top py-3">
-                    <a href="@returnUrl" class="btn btn-outline-secondary">
+<div class="project-details-page container-fluid px-4 mb-5">
+    <div class="details-header">
+        <div class="row align-items-start g-3">
+            <div class="col-lg-7">
+                <h1 class="details-title">
+                    <i class="bi bi-folder2-open"></i> Proje Detayları
+                </h1>
+                <p class="details-description">
+                    Seçilen projeye ait temel bilgiler, danışman bilgileri ve proje durumu aşağıda listelenmiştir.
+                </p>
+            </div>
+            <div class="col-lg-5">
+                <div class="details-actions">
+                    <a href="@returnUrl" class="btn btn-details-outline">
                         <i class="bi bi-arrow-left me-1"></i> Geri Dön
                     </a>
-                    <div>
-                        <a asp-controller="Teacher" asp-action="EditProject" asp-route-id="@Model.Id" asp-route-returnUrl="@returnUrl" class="btn btn-warning me-2">
-                            <i class="bi bi-pencil me-1"></i> Düzenle
-                        </a>
-                        <a asp-controller="Teacher" asp-action="AssignStudentsToProject" asp-route-projectId="@Model.Id" asp-route-returnUrl="@returnUrl" class="btn btn-info me-2">
-                            <i class="bi bi-people me-1"></i> Öğrencileri Düzenle
-                        </a>
-                        <a asp-controller="Teacher" asp-action="ViewProjectStudents" asp-route-projectId="@Model.Id" asp-route-returnUrl="@returnUrl" class="btn btn-outline-info">
-                            <i class="bi bi-eye me-1"></i> Atanmış Öğrenciler
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Sağ Panel: Aşamalar -->
-        <div class="col-lg-4">
-            <div class="card shadow-sm border-0 sticky-top" style="top: 20px;">
-                <div class="card-header bg-white border-bottom py-3">
-                    <h5 class="mb-0 fw-bold text-dark">
-                        <i class="bi bi-list-check me-2"></i>Proje Aşamaları
-                        <span class="badge bg-primary rounded-pill float-end">@Model.TotalPhasesCount</span>
-                    </h5>
-                </div>
-                <div class="card-body p-0">
-                    @if (Model.Phases != null && Model.Phases.Any())
-                    {
-                        <div class="list-group list-group-flush" id="phasesList">
-                            @foreach (var phase in Model.Phases.OrderBy(p => p.Order))
-                            {
-                                <div class="list-group-item py-3 phase-item @(phase.IsCompleted ? "phase-completed" : "")" 
-                                     data-phase-id="@phase.Id"
-                                     style="border-left: 3px solid @(phase.IsCompleted ? "#198754" : "#dee2e6"); transition: all 0.2s ease;">
-                                    <div class="d-flex align-items-center">
-                                        <div class="me-3" style="min-width: 28px;">
-                                            <input class="form-check-input phase-checkbox" 
-                                                   type="checkbox" 
-                                                   id="phase_@phase.Id" 
-                                                   data-phase-id="@phase.Id"
-                                                   @(phase.IsCompleted ? "checked" : "")
-                                                   style="width: 20px; height: 20px; cursor: pointer; border: 2px solid #adb5bd; border-radius: 4px !important; margin: 0;">
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <span class="fw-semibold @(phase.IsCompleted ? "text-decoration-line-through" : "")" style="font-size: 0.93rem; color: @(phase.IsCompleted ? "#6c757d" : "#212529");">
-                                                @phase.Order. @phase.PhaseName
-                                            </span>
-                                            @if (!string.IsNullOrEmpty(phase.Description))
-                                            {
-                                                <small class="d-block mt-1 @(phase.IsCompleted ? "text-decoration-line-through text-muted" : "text-secondary")">
-                                                    @phase.Description
-                                                </small>
-                                            }
-                                            @if (phase.IsCompleted && phase.CompletedDate.HasValue)
-                                            {
-                                                <small class="d-block text-success mt-1" style="font-size: 0.75rem;">
-                                                    <i class="bi bi-check-lg me-1"></i>@phase.CompletedDate.Value.ToString("dd MMM yyyy HH:mm")
-                                                </small>
-                                            }
-                                        </div>
-                                        @if (phase.IsCompleted)
-                                        {
-                                            <span class="badge bg-success bg-opacity-10 text-success ms-2" style="font-size: 0.7rem;">
-                                                <i class="bi bi-check-lg"></i> Tamamlandı
-                                            </span>
-                                        }
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="text-center py-5 text-dark">
-                            <i class="bi bi-inbox fs-1 mb-2 d-block"></i>
-                            <p class="mb-0 text-dark">Henüz aşama eklenmemiş.</p>
-                        </div>
-                    }
+                    <a asp-controller="Teacher" asp-action="EditProject" asp-route-id="@Model.Id" asp-route-returnUrl="@returnUrl" class="btn btn-details-primary">
+                        <i class="bi bi-pencil me-1"></i> Düzenle
+                    </a>
+                    <a asp-controller="Teacher" asp-action="AssignStudentsToProject" asp-route-projectId="@Model.Id" asp-route-returnUrl="@returnUrl" class="btn btn-details-outline">
+                        <i class="bi bi-people me-1"></i> Öğrencileri Düzenle
+                    </a>
+                    <a asp-controller="Teacher" asp-action="ViewProjectStudents" asp-route-projectId="@Model.Id" asp-route-returnUrl="@returnUrl" class="btn btn-details-outline">
+                        <i class="bi bi-eye me-1"></i> Atanmış Öğrenciler
+                    </a>
                 </div>
             </div>
         </div>
     </div>
+
+    @await Html.PartialAsync("_ProjectDetailsContent", Model)
 </div>
 
 @section Scripts {
-    <style>
-        /* Checkbox düzgün kare şekli */
-        .phase-checkbox {
-            appearance: none !important;
-            -webkit-appearance: none !important;
-            width: 20px !important;
-            height: 20px !important;
-            border: 2px solid #adb5bd !important;
-            border-radius: 4px !important;
-            background: #fff !important;
-            cursor: pointer;
-            position: relative;
-            margin: 0 !important;
-            transition: all 0.15s ease;
-        }
-        .phase-checkbox:checked {
-            background: #198754 !important;
-            border-color: #198754 !important;
-        }
-        .phase-checkbox:checked::after {
-            content: '✓';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #fff;
-            font-size: 14px;
-            font-weight: bold;
-        }
-        .phase-checkbox:hover {
-            border-color: #198754 !important;
-            box-shadow: 0 0 0 2px rgba(25, 135, 84, 0.15);
-        }
-        .phase-item:hover {
-            background: #f8f9fa;
-        }
-    </style>
-
-    <script>
-        $(document).ready(function() {
-            $('.phase-checkbox').on('change', function() {
-                var checkbox = $(this);
-                var phaseId = checkbox.data('phase-id');
-                var token = $('input[name="__RequestVerificationToken"]').val();
-
-                $.ajax({
-                    url: '@Url.Action("TogglePhaseCompletion", "Project")',
-                    type: 'POST',
-                    data: { phaseId: phaseId },
-                    headers: { 'RequestVerificationToken': token },
-                    success: function(result) {
-                        if (result.success) {
-                            setTimeout(function() { location.reload(); }, 300);
-                        } else {
-                            alert('Hata: ' + (result.message || 'Bilinmeyen hata'));
-                            checkbox.prop('checked', !checkbox.prop('checked'));
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('AJAX Error:', status, error, xhr.responseText);
-                        alert('İstek başarısız oldu: ' + (xhr.status === 400 ? 'Geçersiz istek' : xhr.status === 403 ? 'Erişim engellendi' : error));
-                        checkbox.prop('checked', !checkbox.prop('checked'));
-                    }
-                });
-            });
-        });
-    </script>
+    @await Html.PartialAsync("_ProjectDetailsPhaseScripts")
 }

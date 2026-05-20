@@ -313,7 +313,8 @@ namespace ProjeHavuzu.Data.Repository.Concrete
                     ProjectArea = p.ProjectArea,
                     InitialCode = p.InitialCode,
                     IsActive = p.IsActive,
-                    IsDeleted = p.IsDeleted
+                    IsDeleted = p.IsDeleted,
+                    ApprovalStatus = p.ApprovalStatus
                 }).FirstOrDefaultAsync();
 
             if (detail == null)

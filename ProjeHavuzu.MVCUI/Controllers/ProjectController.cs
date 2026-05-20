@@ -287,7 +287,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
             dto.Academicians = await _advisorCandidateService.GetAdvisorCandidatesAsync();
         }
 
-        public async Task<IActionResult> Details(Guid id)
+        public async Task<IActionResult> Details(Guid id, string? returnUrl = null)
         {
             var project = await _projectService.GetProjectDetailAsync(id);
             if (project == null)
@@ -295,6 +295,8 @@ namespace ProjeHavuzu.MVCUI.Controllers
                 TempData["ErrorMessage"] = "Proje bulunamadı.";
                 return RedirectToAction("Index");
             }
+
+            ViewBag.ReturnUrl = GetSafeReturnUrl(returnUrl) ?? Url.Action("Index")!;
             return View(project);
         }
 

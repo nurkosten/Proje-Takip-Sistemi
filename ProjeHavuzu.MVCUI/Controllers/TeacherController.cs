@@ -138,6 +138,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
                 }
 
                 ViewBag.ReturnUrl = GetSafeReturnUrl(returnUrl) ?? Url.Action(nameof(AllProjects))!;
+                ViewBag.AssignedStudents = await _projectStudentService.GetStudentsByProjectIdAsync(id);
                 return View(project);
             }
             catch (Exception ex)

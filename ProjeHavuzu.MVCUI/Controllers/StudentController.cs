@@ -142,7 +142,7 @@ namespace ProjeHavuzu.MVCUI.Controllers
         {
             try
             {
-                var project = await _projectService.GetProjectByIdAsync(id);
+                var project = await _projectService.GetProjectDetailAsync(id);
                 if (project == null)
                 {
                     TempData["ErrorMessage"] = "Proje bulunamadı.";

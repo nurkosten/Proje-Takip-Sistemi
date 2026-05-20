@@ -1,0 +1,312 @@
+@using ProjeHavuzu.Data.DTOs.ProjectDto
+@using ProjeHavuzu.Data.DTOs.ProjectStudentDto
+@using ProjeHavuzu.Data.Entites.Enums
+@model ProjectDetailDto
+
+@{
+    var enablePhaseToggle = ViewData["EnablePhaseToggle"] as bool? ?? false;
+    var assignedStudents = ViewBag.AssignedStudents as List<ProjectStudentAssignDto>;
+    var showStudentsSection = ViewData["ShowStudentsSection"] as bool? ?? (assignedStudents != null);
+    var progressColor = Model.CompletionPercentage < 30 ? "bg-danger" : Model.CompletionPercentage < 70 ? "bg-warning" : "bg-success";
+
+    string DifficultyBadge(DifficultStatus level) => level switch
+    {
+        DifficultStatus.Kolay => "bg-success",
+        DifficultStatus.Orta => "bg-warning text-dark",
+        _ => "bg-danger"
+    };
+
+    string DifficultyText(DifficultStatus level) => level switch
+    {
+        DifficultStatus.Kolay => "Kolay",
+        DifficultStatus.Orta => "Orta",
+        _ => "Zor"
+    };
+}
+
+@if (Model.TotalPhasesCount > 0)
+{
+    <div class="details-progress-wrap">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="details-label mb-0">Proje İlerlemesi</span>
+            <span class="badge detail-badge @progressColor">%@Model.CompletionPercentage</span>
+        </div>
+        <div class="progress">
+            <div class="progress-bar @progressColor"
+                 role="progressbar"
+                 style="width: @Model.CompletionPercentage%;"
+                 aria-valuenow="@Model.CompletionPercentage"
+                 aria-valuemin="0"
+                 aria-valuemax="100">
+                @Model.CompletedPhasesCount / @Model.TotalPhasesCount aşama
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Temel Bilgiler -->
+<div class="details-card">
+    <div class="details-card-header">
+        <h5><i class="bi bi-info-circle me-2"></i>Temel Bilgiler</h5>
+    </div>
+    <div class="details-card-body">
+        <div class="details-grid">
+            <div class="details-item">
+                <span class="details-label">Proje Adı</span>
+                <span class="details-value">@Model.ProjectTitle</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Kategori</span>
+                <span class="details-value @(string.IsNullOrWhiteSpace(Model.CategoryName) ? "details-value-muted" : "")">
+                    @(string.IsNullOrWhiteSpace(Model.CategoryName) ? "Kategori Belirtilmedi" : Model.CategoryName)
+                </span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Danışman</span>
+                <span class="details-value @(string.IsNullOrWhiteSpace(Model.ConsultantFullName) ? "details-value-muted" : "")">
+                    @(string.IsNullOrWhiteSpace(Model.ConsultantFullName) ? "Danışman Atanmadı" : Model.ConsultantFullName)
+                </span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Oluşturan Kişi</span>
+                <span class="details-value @(string.IsNullOrWhiteSpace(Model.CreatedByFullName) ? "details-value-muted" : "")">
+                    @(string.IsNullOrWhiteSpace(Model.CreatedByFullName) ? "Belirtilmedi" : Model.CreatedByFullName)
+                </span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Zorluk Seviyesi</span>
+                <span class="details-value">
+                    <span class="badge detail-badge @DifficultyBadge(Model.DifficultyLevel)">@DifficultyText(Model.DifficultyLevel)</span>
+                </span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Proje Durumu</span>
+                <span class="details-value">
+                    @if (Model.IsActive)
+                    {
+                        <span class="badge detail-badge bg-success">Aktif</span>
+                    }
+                    else
+                    {
+                        <span class="badge detail-badge bg-secondary">Pasif</span>
+                    }
+                </span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Başlangıç Tarihi</span>
+                <span class="details-value">@Model.StartDate.ToString("dd.MM.yyyy")</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Bitiş Tarihi</span>
+                <span class="details-value">@Model.EndDate.ToString("dd.MM.yyyy")</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Onay Durumu</span>
+                <span class="details-value">
+                    @switch (Model.ApprovalStatus)
+                    {
+                        case ProjectApprovalStatus.Pending:
+                            <span class="badge detail-badge bg-warning text-dark">Onay Bekliyor</span>
+                            break;
+                        case ProjectApprovalStatus.Approved:
+                            <span class="badge detail-badge bg-success">Onaylandı</span>
+                            break;
+                        case ProjectApprovalStatus.Rejected:
+                            <span class="badge detail-badge bg-danger">Reddedildi</span>
+                            break;
+                    }
+                </span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Proje Linki</span>
+                <span class="details-value">
+                    @if (!string.IsNullOrWhiteSpace(Model.ProjectLink))
+                    {
+                        <a href="@Model.ProjectLink" target="_blank" rel="noopener noreferrer" class="text-decoration-none">
+                            <i class="bi bi-box-arrow-up-right me-1"></i>Projeyi Görüntüle
+                        </a>
+                    }
+                    else
+                    {
+                        <span class="details-value-muted">Proje linki eklenmemiştir</span>
+                    }
+                </span>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(Model.ProjectArea))
+            {
+                <div class="details-item">
+                    <span class="details-label">Alan / Domain</span>
+                    <span class="details-value">@Model.ProjectArea</span>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Açıklama -->
+<div class="details-card">
+    <div class="details-card-header">
+        <h5><i class="bi bi-file-text me-2"></i>Proje Açıklaması</h5>
+    </div>
+    <div class="details-card-body">
+        @if (string.IsNullOrWhiteSpace(Model.Description))
+        {
+            <p class="details-description-text details-value-muted mb-0">Bu proje için açıklama eklenmemiştir.</p>
+        }
+        else
+        {
+            <p class="details-description-text">@Model.Description</p>
+        }
+    </div>
+</div>
+
+<!-- Teknolojiler -->
+<div class="details-card">
+    <div class="details-card-header">
+        <h5><i class="bi bi-code-slash me-2"></i>Kullanılan Teknolojiler</h5>
+    </div>
+    <div class="details-card-body">
+        @if (Model.Languages != null && Model.Languages.Any())
+        {
+            <div class="tech-badges">
+                @foreach (var lang in Model.Languages)
+                {
+                    <span class="tech-badge">@lang</span>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="details-value-muted mb-0">Teknoloji bilgisi eklenmemiştir.</p>
+        }
+    </div>
+</div>
+
+<!-- Aşamalar -->
+<div class="details-card">
+    <div class="details-card-header d-flex justify-content-between align-items-center">
+        <h5><i class="bi bi-list-check me-2"></i>Proje Aşamaları</h5>
+        @if (Model.TotalPhasesCount > 0)
+        {
+            <span class="badge bg-white text-dark rounded-pill">@Model.TotalPhasesCount</span>
+        }
+    </div>
+    <div class="details-card-body p-0">
+        @if (Model.Phases != null && Model.Phases.Any())
+        {
+            <div class="table-responsive">
+                <table class="table phase-table mb-0">
+                    <thead>
+                        <tr>
+                            @if (enablePhaseToggle)
+                            {
+                                <th style="width: 48px;" class="text-center"></th>
+                            }
+                            <th style="width: 56px;">Sıra</th>
+                            <th>Aşama Adı</th>
+                            <th>Açıklama</th>
+                            <th style="width: 130px;">Durum</th>
+                            <th style="width: 150px;">Tamamlanma Tarihi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var phase in Model.Phases.OrderBy(p => p.Order))
+                        {
+                            <tr class="@(phase.IsCompleted ? "phase-row-completed" : "")">
+                                @if (enablePhaseToggle)
+                                {
+                                    <td class="text-center">
+                                        <input class="form-check-input phase-checkbox"
+                                               type="checkbox"
+                                               data-phase-id="@phase.Id"
+                                               @(phase.IsCompleted ? "checked" : "") />
+                                    </td>
+                                }
+                                <td>@phase.Order</td>
+                                <td class="fw-semibold">@phase.PhaseName</td>
+                                <td>@(string.IsNullOrWhiteSpace(phase.Description) ? "—" : phase.Description)</td>
+                                <td>
+                                    @if (phase.IsCompleted)
+                                    {
+                                        <span class="badge detail-badge bg-success">Tamamlandı</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge detail-badge bg-warning text-dark">Beklemede</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (phase.IsCompleted && phase.CompletedDate.HasValue)
+                                    {
+                                        @phase.CompletedDate.Value.ToString("dd.MM.yyyy HH:mm")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="details-empty">
+                <i class="bi bi-inbox"></i>
+                Bu projeye ait aşama bulunmamaktadır.
+            </div>
+        }
+    </div>
+</div>
+
+@if (showStudentsSection)
+{
+    <div class="details-card">
+        <div class="details-card-header d-flex justify-content-between align-items-center">
+            <h5><i class="bi bi-people me-2"></i>Atanmış Öğrenciler</h5>
+            @if (assignedStudents != null && assignedStudents.Any())
+            {
+                <span class="badge bg-white text-dark rounded-pill">@assignedStudents.Count</span>
+            }
+        </div>
+        <div class="details-card-body p-0">
+            @if (assignedStudents != null && assignedStudents.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table phase-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Ad Soyad</th>
+                                <th>Öğrenci Numarası</th>
+                                <th>E-posta</th>
+                                <th>Bölüm</th>
+                                <th>Durum</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var student in assignedStudents)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@student.StudentFullName</td>
+                                    <td>@(string.IsNullOrWhiteSpace(student.StudentNumber) ? "—" : student.StudentNumber)</td>
+                                    <td class="text-muted">—</td>
+                                    <td class="text-muted">—</td>
+                                    <td><span class="badge detail-badge bg-success">Atandı</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="details-empty">
+                    <i class="bi bi-person-x"></i>
+                    Bu projeye atanmış öğrenci bulunmamaktadır.
+                </div>
+            }
+        </div>
+    </div>
+}
